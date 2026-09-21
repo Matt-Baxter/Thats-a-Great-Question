@@ -93,14 +93,31 @@ broad one that half-works.
   frozen.
 - A request MUST resolve to either questions or an error message within 30 seconds.
 
+## Documentation Standards
+
+- The README MUST state what the app does, how to run it, and how to supply the model API key,
+  and MUST be updated in the same commit as any change that makes it wrong.
+- Every module MUST open with a plain-English docstring, per Principle I.
+- The list of lines of inquiry that guides question generation MUST be written out and commented
+  in a file a reader can open, not left implicit in a prompt string. Anyone asking how the app
+  decides what to ask MUST be able to be shown the answer.
+- Any value that shapes user-visible behaviour — length limits, how many questions are returned,
+  the request timeout — MUST be named and commented where it is defined, not buried as a bare
+  number in the middle of a function.
+- AI assistance MUST be disclosed in work products, per course policy.
+
 ## Development Workflow
 
 - Specification before code: specify, plan, tasks, then implement.
-- Every requirement carries an ID (REQ-NNN). Tasks and tests reference the requirement they serve,
-  so any piece of code can be traced back to a stated reason for existing.
+- Every requirement carries an ID. Functional requirements are numbered FR-NNN and measurable
+  success criteria SC-NNN, matching the identifiers the specification template produces. Tasks and
+  tests reference the requirement they serve, so any piece of code can be traced back to a stated
+  reason for existing.
 - Tests MUST pass before a commit is pushed.
 - Commit messages MUST explain why a change was made, not only what changed.
-- AI assistance MUST be disclosed in work products, per course policy.
+- Specifications, plans, and tasks MUST live on the repository's default branch by the time work
+  is handed in or shared. Work stranded on a side branch is work nobody reviewing the repository
+  can see.
 
 ## Governance
 
@@ -113,5 +130,9 @@ broad one that half-works.
   citing it.
 - Every specification, plan, and task set MUST be checked against this file before implementation
   begins.
+- This file MUST be loaded at the start of every working session, not only by the Spec Kit
+  commands that read it automatically. `CLAUDE.md` at the repository root exists to make that
+  happen, so ordinary work is governed by these principles as much as `/speckit-*` work is. A
+  constitution that only applies to four commands is not a standing brief.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-21
+**Version**: 1.1.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-21
