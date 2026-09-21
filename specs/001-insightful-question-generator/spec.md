@@ -44,19 +44,22 @@ Having read the first set of questions, the user finds one that strikes them as 
 
 ---
 
-### User Story 3 - Stay oriented as the inquiry deepens (Priority: P3)
+### User Story 3 - Stay oriented and move between lines of inquiry (Priority: P3)
 
-The user has followed one line of questioning several levels down. They can still see how the question in front of them descends from the original seed, so they know where they are in their own line of reasoning rather than facing a set of questions with no context.
+The user has followed one line of questioning several levels down. Above the current set they see a compact trail of every question they came through, starting from the original seed, so they always know where they are in their own reasoning. Clicking any question in that trail takes them straight back to it — including all the way to the seed in a single click. Having gone back, they can open a different question at that level and follow a second line of inquiry instead, without losing the first: returning to the earlier branch shows the same questions it showed before.
 
-**Why this priority**: Without it the app is still usable — a user can expand and read — but the deeper they go, the less the output means, because a question detached from its lineage loses the thread that made it worth asking. It is P3 because value degrades gradually with depth rather than failing outright.
+**Why this priority**: Without it the app is still usable — a user can expand and read — but the deeper they go, the less the output means, because a question detached from its lineage loses the thread that made it worth asking. And a user who cannot come back up is forced into whichever branch they happened to open first. It is P3 because value degrades gradually with depth rather than failing outright.
 
-**Independent Test**: Can be fully tested by expanding to at least five levels and confirming that the path from the original seed to the current question remains visible and readable, including on a phone-sized screen.
+**Independent Test**: Can be fully tested by expanding to at least five levels, confirming the full trail from seed to current question is visible and each entry navigates correctly, then returning to an earlier level, opening a different question there, and confirming the original branch is unchanged when revisited. Verifiable on both a desktop and a phone-sized screen.
 
 **Acceptance Scenarios**:
 
-1. **Given** the user has expanded questions five or more levels deep, **When** they look at the current set of questions, **Then** the path from the original seed to the current question is visible.
-2. **Given** a deep chain of questions, **When** the app is viewed on a phone-sized screen, **Then** the chain remains readable without horizontal scrolling.
-3. **Given** the user has expanded several questions, **When** they review the display, **Then** it is clear which question each displayed set descends from.
+1. **Given** the user has expanded questions five or more levels deep, **When** they look at the display, **Then** a trail showing every ancestor from the original seed to the current question is visible, and the current question is shown in full.
+2. **Given** a trail of ancestors is displayed, **When** the user selects any entry in it, **Then** they are returned to that question and its existing child questions.
+3. **Given** the user is deep in one line of inquiry, **When** they return to the original seed, **Then** it takes a single action regardless of how deep they were.
+4. **Given** the user has returned to an earlier level, **When** they open a different question at that level, **Then** questions about that question are generated and displayed.
+5. **Given** the user has explored two different branches, **When** they navigate back to the first branch, **Then** it shows the same questions it showed originally, with no new generation.
+6. **Given** a deep chain of questions, **When** the app is viewed on a phone-sized screen, **Then** the trail and the current questions remain readable without horizontal scrolling.
 
 ---
 
@@ -70,9 +73,10 @@ The user has followed one line of questioning several levels down. They can stil
 - **Over-length question**: A returned question exceeds the maximum question length. The response is treated as unusable rather than displayed truncated.
 - **Slow response**: Generation does not complete promptly. The request resolves to either questions or a message within thirty seconds, never hanging indefinitely.
 - **Deep chain**: The user expands many levels. No limit is imposed, and the display continues to function.
-- **Refresh mid-inquiry**: The user reloads the page. They return to an empty starting state, with no partial inquiry restored.
-- **Narrow screen**: The app is used on a phone. All content, including a deep chain, remains readable and every control remains reachable.
-- **Repeat expansion**: The user expands the same question twice. Each expansion is treated as an independent request; identical results are not guaranteed.
+- **Revisiting an expanded question**: The user navigates back to a question they already expanded. Its existing questions are shown; nothing is regenerated and nothing is lost.
+- **Failed expansion, then retry**: An expansion fails. The user sees a message, the tree is unchanged, and the same question can be expanded again.
+- **Refresh mid-inquiry**: The user reloads the page. They return to an empty starting state, with no part of the inquiry restored.
+- **Narrow screen**: The app is used on a phone. All content, including a deep trail, remains readable and every control remains reachable.
 
 ## Requirements *(mandatory)*
 
@@ -102,42 +106,54 @@ The user has followed one line of questioning several levels down. They can stil
 
 **Staying oriented**
 
-- **FR-014**: Users MUST be able to see the path from the original seed to the question they are currently viewing, at any depth.
-- **FR-015**: System MUST make clear which seed or question each displayed set of questions descends from. [NEEDS CLARIFICATION: When a user expands a question, may they also expand a *sibling* question and keep both lines open — a branching tree — or does the app show one path at a time, replacing the previous set? This determines whether the display is a tree or a linear chain, and directly shapes the UI mockup.]
+- **FR-014**: System MUST display, above the current set of questions, a trail of every ancestor from the original seed through to the question currently being viewed.
+- **FR-015**: System MUST display the question currently being viewed in full, and MAY abbreviate ancestors in the trail to keep it compact.
+- **FR-016**: Users MUST be able to return to any ancestor in the trail, including the original seed, with a single action.
+- **FR-017**: System MUST show only the current question and its direct child questions alongside the trail, rather than the whole accumulated tree.
+
+**Moving between lines of inquiry**
+
+- **FR-018**: System MUST retain, for the duration of the browser session, every question generated and the parent-child structure connecting them.
+- **FR-019**: System MUST display the questions already generated for a question when the user returns to it, without generating new ones.
+- **FR-020**: System MUST generate questions when the user opens a question that has not been expanded before.
+- **FR-021**: Users MUST be able to open any sibling of a question they have already expanded, and MUST NOT be confined to a single line of inquiry.
+- **FR-022**: System MUST leave a previously explored branch unchanged when the user explores a different one.
 
 **Never answering**
 
-- **FR-016**: System MUST NOT provide answers, explanations, or commentary on any question it generates.
-- **FR-017**: System MUST present generated questions as suggestions, never as authoritative or complete.
+- **FR-023**: System MUST NOT provide answers, explanations, or commentary on any question it generates.
+- **FR-024**: System MUST present generated questions as suggestions, never as authoritative or complete.
 
 **Treating generated content as untrusted**
 
-- **FR-018**: System MUST validate every generated response — shape, count, and non-emptiness — before any part of it is displayed.
-- **FR-019**: System MUST display generated text exactly as text, never interpreting it as markup, formatting, or instructions.
+- **FR-025**: System MUST validate every generated response — shape, count, and non-emptiness — before any part of it is displayed.
+- **FR-026**: System MUST display generated text exactly as text, never interpreting it as markup, formatting, or instructions.
 
 **Failing safely**
 
-- **FR-020**: System MUST show a plain-language message when generation fails, is unavailable, or returns unusable output, and MUST remain usable afterward.
-- **FR-021**: System MUST display a visible loading state from the moment a request begins until it resolves.
-- **FR-022**: System MUST resolve every request to either questions or a message within thirty seconds.
-- **FR-023**: System MUST NOT crash, hang, or present a blank screen under any failure condition.
+- **FR-027**: System MUST show a plain-language message when generation fails, is unavailable, or returns unusable output, and MUST remain usable afterward.
+- **FR-028**: System MUST leave the existing tree of questions unchanged when an expansion fails, and MUST allow the same question to be opened again.
+- **FR-029**: System MUST display a visible loading state from the moment a request begins until it resolves.
+- **FR-030**: System MUST resolve every request to either questions or a message within thirty seconds.
+- **FR-031**: System MUST NOT crash, hang, or present a blank screen under any failure condition.
 
 **Privacy and persistence**
 
-- **FR-024**: System MUST NOT store anything a user types anywhere other than the user's own browser session.
-- **FR-025**: System MUST NOT require an account, login, or any user identification.
-- **FR-026**: System MUST return the user to an empty starting state when the page is reloaded.
+- **FR-032**: System MUST NOT store anything a user types anywhere other than the user's own browser session.
+- **FR-033**: System MUST NOT require an account, login, or any user identification.
+- **FR-034**: System MUST return the user to an empty starting state when the page is reloaded, retaining no part of the previous inquiry.
 
 **Access**
 
-- **FR-027**: System MUST make every interactive element reachable and operable using a keyboard alone.
-- **FR-028**: System MUST remain usable on a phone-sized screen, with no horizontal scrolling required to read content.
+- **FR-035**: System MUST make every interactive element reachable and operable using a keyboard alone.
+- **FR-036**: System MUST remain usable on a phone-sized screen, with no horizontal scrolling required to read content.
 
 ### Key Entities
 
-- **Seed**: The free text a user submits to begin an inquiry. Bounded in length. Not retained beyond the user's browser session.
-- **Question**: A single generated question. Non-empty, phrased as a question, bounded in length, unlabeled, and distinct from its siblings and from what it was generated from. Never accompanied by an answer.
-- **Inquiry Path**: The ordered lineage from the original seed through each expanded question to the set currently displayed. What gives a deep question its meaning, and what the user must be able to see.
+- **Seed**: The free text a user submits to begin an inquiry. Bounded in length. The root of the inquiry tree. Not retained beyond the user's browser session.
+- **Question**: A single generated question. Non-empty, phrased as a question, bounded in length, unlabeled, and distinct from its siblings and from its parent. Never accompanied by an answer. May be unexpanded, or expanded and therefore holding children of its own.
+- **Inquiry Tree**: The whole structure built during a session — the seed, every question generated from it, and the parent-child links between them. Retained in full for the session so the user can move freely between branches; discarded entirely on reload.
+- **Trail**: The ordered path from the seed to the question currently being viewed. What the user is shown in order to stay oriented, and the means by which they navigate back up. A view onto the tree rather than a separate structure.
 - **Lines of Inquiry**: The explicit written list of angles a question may take — assumption, evidence, consequence, alternative, stakeholder, definition, framing, precedent, incentive, failure mode, and others. Guides generation; is not exposed as labels on output.
 
 ## Success Criteria *(mandatory)*
@@ -148,21 +164,23 @@ The user has followed one line of questioning several levels down. They can stil
 - **SC-002**: 100% of successful responses contain between three and five questions, each non-empty, phrased as a question, distinct from its siblings, distinct from its parent, and within the maximum question length.
 - **SC-003**: 100% of induced failure conditions — unreachable generation, malformed output, empty output, too few questions, empty seed, over-length seed — produce a plain-language message with no crash, hang, or blank screen.
 - **SC-004**: A first-time user, given no instructions, can go from opening the app to reading generated questions in under sixty seconds.
-- **SC-005**: A user can expand to at least five levels deep and still correctly identify the original seed and the path to their current position, on both a desktop and a phone-sized screen.
-- **SC-006**: Across a review set of at least twenty varied seeds spanning technical, social, and philosophical subjects, a human reviewer judges that at least 80% of responses contain at least one question the reviewer had not already considered.
-- **SC-007**: Across the same review set, 100% of responses contain no answers, no commentary, and no question that merely restates the seed.
-- **SC-008**: 100% of interactive elements can be reached and operated using a keyboard alone.
+- **SC-005**: A user at any depth can identify the original seed from the trail and return to it in a single action, on both a desktop and a phone-sized screen.
+- **SC-006**: 100% of returns to a previously expanded question, within a session, display the same questions that were shown before, with no new generation.
+- **SC-007**: Across a review set of at least twenty varied seeds spanning technical, social, and philosophical subjects, a human reviewer judges that at least 80% of responses contain at least one question the reviewer had not already considered.
+- **SC-008**: Across the same review set, 100% of responses contain no answers, no commentary, and no question that merely restates the seed.
+- **SC-009**: 100% of interactive elements can be reached and operated using a keyboard alone.
 
 ## Assumptions
 
 - **Maximum seed length is 2,000 characters.** The input description required a cap and a message naming it, but did not fix a value. Two thousand characters comfortably holds a topic, a claim, or a paragraph-long idea while rejecting a pasted document. Adjustable without affecting any other requirement.
-- **Maximum question length is 300 characters.** Chosen so a question stays readable at a glance on a phone. Also adjustable in isolation.
-- **Question quality cannot be scored automatically.** Whether a question is genuinely insightful is context-dependent and assessed by human review (SC-006, SC-007). The automated criteria in SC-002 check the *shape* of a response, not its worth. No metric in this specification claims otherwise, because one that did would be false precision.
+- **Maximum question length is 300 characters.** Chosen so a question stays readable at a glance on a phone, including within a trail. Also adjustable in isolation.
+- **Generation happens once per question.** Opening a question that has never been expanded generates its children; returning to one that already has children displays them. Backtracking is only meaningful if a branch is stable, so results are not regenerated on revisit.
+- **The inquiry tree lives only in the browser, only for the session.** It is retained so the user can move between branches, and discarded on reload. Nothing is written to a server.
+- **Question quality cannot be scored automatically.** Whether a question is genuinely insightful is context-dependent and assessed by human review (SC-007, SC-008). The automated criteria in SC-002 check the *shape* of a response, not its worth. No metric in this specification claims otherwise, because one that did would be false precision.
 - **Users have an internet connection and a current browser.**
 - **Users want questions, not answers.** Someone seeking answers is explicitly not a target user and will find the product frustrating by design.
 - **A single user, in a single browser session, with no collaboration.** Nothing is shared, synced, or visible to anyone else.
 - **English-language seeds and questions for the first version.** Other languages are neither prevented nor guaranteed.
-- **Each expansion is an independent request.** Expanding the same question twice may produce different questions; reproducibility is not promised.
 
 ## Out of Scope
 
@@ -174,6 +192,8 @@ The user has followed one line of questioning several levels down. They can stil
 - Rating or giving feedback on question quality
 - Editing a generated question
 - Suggesting or scoring which question the user should expand next
+- Displaying the whole inquiry tree at once, or any overview map of it
+- Regenerating or refreshing the questions under an already-expanded question
 
 ## Specification Format Mapping
 
@@ -182,9 +202,9 @@ This specification is organized around the Spec Kit template. The four-part form
 | Format element | Where it lives in this document |
 |---|---|
 | **Objective** — the failure mode, not the feature description | The Input statement above, and the premise running through User Story 1: people stop at their first answer, accept the framing a topic arrives in, and act on conclusions whose assumptions were never named. The failure is not missing information — it is never asking the question that would have changed the conclusion. |
-| **Behavior** — observable outcomes only, no tech details | User Stories 1–3 with their acceptance scenarios, and Functional Requirements FR-001 through FR-028. |
-| **Constraints** — non-negotiables regardless of implementation | FR-012, FR-016 through FR-028 (no depth limit, never answers, untrusted output, fails safely, no storage, keyboard and phone access), plus Assumptions and Out of Scope. |
-| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, the Edge Cases, and Success Criteria SC-001 through SC-008. SC-006 and SC-007 are assessed by human review and are labeled as such rather than presented as automated tests. |
+| **Behavior** — observable outcomes only, no tech details | User Stories 1–3 with their acceptance scenarios, and Functional Requirements FR-001 through FR-022. |
+| **Constraints** — non-negotiables regardless of implementation | FR-012 (no depth limit), FR-023 and FR-024 (never answers), FR-025 and FR-026 (generated content untrusted), FR-027 through FR-031 (fails safely), FR-032 through FR-034 (no storage beyond the session), FR-035 and FR-036 (keyboard and phone access), plus Assumptions and Out of Scope. |
+| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, the Edge Cases, and Success Criteria SC-001 through SC-009. SC-007 and SC-008 are assessed by human review and are labeled as such rather than presented as automated tests. |
 
 ---
 

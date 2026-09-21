@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -33,20 +33,31 @@
 
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`
 
-### Outstanding
+**All 16 items pass.** The specification is ready for `/speckit-clarify`.
 
-**One `[NEEDS CLARIFICATION]` marker remains, at FR-015.** Whether expanding a question
-replaces the previous set (a linear chain) or keeps sibling lines open (a branching tree)
-is not determined by the input description. It changes what the interface must display at
-depth, so it is carried as an open question rather than guessed.
+### Resolved since the first validation pass
+
+The single `[NEEDS CLARIFICATION]` marker at the former FR-015 asked whether expanding a
+question keeps sibling lines open or replaces the current set. Resolved deliberately, and
+the answer separates structure from display:
+
+- The **inquiry tree is retained in full** for the session (FR-018), so a user is never
+  confined to whichever branch they opened first (FR-021, FR-022).
+- The **display shows one level at a time** — the current question and its direct children
+  (FR-017) — so the interface stays readable at depth and on a phone.
+- A **trail of every ancestor from the seed onward** sits above the current questions
+  (FR-014), each entry navigable in a single action (FR-016).
+
+This added requirements for retention and navigation, so functional requirements were
+renumbered; the count went from 28 to 36 and success criteria from 8 to 9.
 
 ### Validation notes
 
 - **No implementation details**: the specification names no language, framework, service,
-  or storage technology. "Browser" and "phone-sized screen" appear as platform constraints
-  on user experience, not as implementation choices.
-- **Success criteria**: SC-001 through SC-005 and SC-008 are objectively checkable.
-  SC-006 and SC-007 are assessed by human review over a defined set of at least twenty
+  or storage technology. "Browser session" appears as a boundary on persistence and
+  "phone-sized screen" as a constraint on user experience, not as implementation choices.
+- **Success criteria**: SC-001 through SC-006 and SC-009 are objectively checkable.
+  SC-007 and SC-008 are assessed by human review over a defined set of at least twenty
   seeds, and the specification labels them as such rather than presenting them as
   automated tests. This is deliberate — question quality is context-dependent and cannot
   be scored automatically, and a metric claiming to would be false precision.
