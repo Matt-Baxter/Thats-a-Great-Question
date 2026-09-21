@@ -55,9 +55,24 @@ Working notes, scope decisions, and course artifacts live in a separate reposito
   `SC-NNN`); tasks and tests cite the requirement they serve.
 - **Commits** are authored as `Matt-Baxter <Matthew.Baxter03@gmail.com>` with Claude as
   co-author, and explain *why* a change was made, not only what changed.
-- **Specs, plans, and tasks belong on the default branch** before anything is handed in. Work on a
-  side branch is invisible to anyone reading the repository.
+- **Work directly on `main`.** This is a solo project with no review step and no CI, so branches
+  and merges are overhead that buys nothing. Commit and push to `main` as work completes. If a
+  session starts on a session-generated branch, switch to `main` rather than accumulating work that
+  has to be merged later. (Revisit this if the project ever gains collaborators or CI.)
 - **Disclose AI assistance** in work products, per course policy.
+
+## How to communicate with the maintainer
+
+- **Keep answers as concise as they can be while still covering what is needed.** Prefer the short
+  version. Do not pad with restated context, repeated caveats, or option surveys the maintainer did
+  not ask for.
+- **Lead with the answer**, then the reasoning if it is load-bearing. Skip the preamble.
+- **Give a recommendation, not a menu.** When a decision is genuinely the maintainer's, present the
+  real options briefly and say which one you would pick and why.
+- The maintainer is newer to professional software development, so **explain jargon the first time
+  it appears** — but explain it in a sentence, not a section.
+- **Say when something is uncertain, missing, or wrong**, including in your own earlier work.
+  Surface the uncomfortable finding rather than the flattering one.
 
 ## Stack
 
