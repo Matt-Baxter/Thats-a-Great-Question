@@ -8,6 +8,12 @@
 
 **Input**: User description: A web app that takes a seed — a topic, a claim, a half-formed idea, or a question — and returns a small set of insightful questions worth asking about it. Any returned question can be opened to generate further questions about that question, so a user follows one line of inquiry deeper instead of stopping at the first set. The app generates questions only. It never answers them.
 
+## Clarifications
+
+### Session 2026-09-22
+
+- Q: Should the app limit how many question requests one visitor can make, and what should a visitor see when they hit that limit? → A: Cap requests per visitor over a rolling window; when exceeded, show a plain-language message saying to wait and try again.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Get questions about a seed (Priority: P1)
@@ -91,6 +97,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **Too many questions**: Generation returns more than five questions. This is treated as a failed response, not silently truncated to five — a response of the wrong shape is a signal that something went wrong, not something to quietly repair.
 - **Over-length question**: A returned question exceeds the maximum question length. The response is treated as unusable rather than displayed truncated.
 - **Near-duplicate questions**: Two returned questions differ only in wording. The response is treated as unusable rather than displayed with a redundant question in it.
+- **Request limit reached**: A visitor exceeds the per-visitor request limit. They see a plain-language message asking them to wait and try again, and the inquiry already on screen is untouched.
 - **Slow response**: Generation does not complete promptly. The request resolves to either questions or a message within thirty seconds, never hanging indefinitely.
 - **Deep chain**: The user expands many levels. No limit is imposed, and the display continues to function.
 - **Revisiting an expanded question**: The user navigates back to a question they already expanded. Its existing questions are shown; nothing is regenerated and nothing is lost.
@@ -182,6 +189,15 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **FR-043**: System MUST make every interactive element reachable and operable using a keyboard alone.
 - **FR-044**: System MUST remain usable on a phone-sized screen, with no horizontal scrolling required to read content.
 
+**Protecting against abuse**
+
+Requirement numbers are assigned once and never reused or reordered, so requirements added by
+later clarification appear at the end rather than beside related ones.
+
+- **FR-045**: System MUST limit the number of question requests a single visitor may make within a rolling time window.
+- **FR-046**: System MUST show a plain-language message asking the visitor to wait and try again when that limit is exceeded.
+- **FR-047**: System MUST leave the inquiry already on screen intact when a request is refused for exceeding the limit. Hitting a limit MUST NOT cost the user their work.
+
 ### Key Entities
 
 - **Seed**: The free text a user submits to begin an inquiry. Bounded in length. The root of the inquiry tree. Not retained beyond the user's browser session.
@@ -206,6 +222,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **SC-010**: Across the same review set, a human reviewer judges that at least 80% of responses contain no two questions pursuing the same underlying goal in different words.
 - **SC-011**: Across the same review set, 100% of responses contain no answers, no commentary, and no question that merely restates the seed.
 - **SC-012**: 100% of interactive elements can be reached and operated using a keyboard alone.
+- **SC-013**: 100% of requests beyond the per-visitor limit produce a plain-language wait-and-retry message, with the inquiry already on screen left intact.
 
 ## Assumptions
 
