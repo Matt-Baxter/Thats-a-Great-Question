@@ -7,8 +7,9 @@
                   expansion, the ancestor trail, asking again, and the failure
                   and loading states.
   What this isn't: the application. No model is called. Every question shown is
-                  a numbered placeholder, and the delay before one appears is a
-                  fixed timer standing in for a real request.
+                  written by hand as an example of the shape and calibre of
+                  question the app is meant to return, and the delay before one
+                  appears is a fixed timer standing in for a real request.
 
   Requirements demonstrated: FR-002, FR-003, FR-013, FR-017 to FR-020,
   FR-022, FR-024 to FR-028, FR-030, FR-031, FR-032, FR-037, FR-043, FR-044,
@@ -341,7 +342,6 @@
     font-size: 17px;
     line-height: 1.4;
   }
-  .q-placeholder { color: var(--muted); font-style: italic; }
   .q-open {
     margin-left: auto;
     flex: none;
@@ -406,6 +406,12 @@
     .q:hover { transform: none; }
   }
 
+  .example-hint {
+    color: var(--muted);
+    font-size: 12.5px;
+    margin: -12px 0 0;
+  }
+
   .msg {
     border-radius: 10px;
     padding: 13px 14px;
@@ -450,7 +456,7 @@
   }
 </style>
 
-<p class="notice">Mockup — no model connected, all questions are placeholders</p>
+<p class="notice">Mockup — no model connected; the questions shown are written examples</p>
 
 <div class="wrap">
 
@@ -458,18 +464,20 @@
   <section class="home" id="view-home">
     <h1 class="greeting">Let's investigate.<br><em>What are you turning over?</em></h1>
     <p class="sub">
-      Give it a topic, a claim, a half-formed idea, or a question. It returns the questions
-      worth asking about it — and never the answers.
+      Provide a topic, claim, half-formed idea, or a question. We return the questions worth
+      asking — and never the answers.
     </p>
 
     <div class="composer">
       <label class="sr" for="seed">Your seed — a topic, claim, idea, or question</label>
-      <textarea id="seed" placeholder="Superintelligence will arrive before governance is ready for it."></textarea>
+      <textarea id="seed" placeholder="A topic, a claim, or something you are turning over…">Superintelligence will arrive before governance is ready for it.</textarea>
       <div class="composer-foot">
         <span class="count" id="count">0 / 2,000</span>
         <button class="btn" id="go">Find the questions</button>
       </div>
     </div>
+
+    <p class="example-hint" id="example-hint">An example seed is loaded — replace it with anything you like.</p>
 
     <div class="msg warn" id="seed-error" hidden></div>
   </section>
@@ -523,6 +531,44 @@
   var CHILDREN_PER_SET = 5;
   var FAKE_DELAY_MS = 900;
 
+  // The seed the page opens with, and the questions written for it. Anything
+  // else a user types falls back to CLAIM_QUESTIONS, which read sensibly
+  // against almost any claim.
+  var SAMPLE_SEED = "Superintelligence will arrive before governance is ready for it.";
+
+  var SAMPLE_QUESTIONS = [
+    "What would \u201cready\u201d actually look like \u2014 which institutions, powers, or agreements would have to exist before governance counted as prepared?",
+    "What observable signal in the next two years would most change your confidence in this timing?",
+    "Is the binding constraint the pace of capability or the pace of institutions, and which of the two is more tractable to move?",
+    "If this is true, which decisions should be made differently today rather than on arrival?",
+    "Who benefits from governance staying unprepared, and what would changing that cost them?"
+  ];
+
+  var CLAIM_QUESTIONS = [
+    "What is being assumed here that has not been stated?",
+    "What evidence would most change your mind about this?",
+    "If it is true, what follows that you would not otherwise expect?",
+    "What is the strongest case against it?",
+    "Who is affected by this whose view is missing?"
+  ];
+
+  // Questions about a question. Drawn in rotation so no set repeats itself and
+  // every set a user opens is different from the last.
+  var FOLLOW_UPS = [
+    "What would have to be true for this to have a clear answer?",
+    "Is this the real question, or a proxy for a harder one underneath it?",
+    "What is the cheapest evidence that would move it either way?",
+    "Does answering it change a decision, or only the framing?",
+    "What is taken for granted in the way it is posed?",
+    "Who would have to agree on the terms before it could be settled?",
+    "Whose interests are served by leaving it unresolved?",
+    "What would the strongest opposing answer look like?",
+    "How would you know if you had answered it wrongly?",
+    "What precedent, if any, has settled something like it before?"
+  ];
+
+  var followUpCursor = 0;
+
   // --- the inquiry tree ---------------------------------------------------
   // Every node is a seed or a question. childIds is null until it is opened,
   // which is how the mockup shows retention: reopening an explored question
@@ -563,14 +609,25 @@
 
   // Children are numbered from their parent: 2 -> 2.1, 2.3 -> 2.3.1.
   function generateChildren(id) {
-    var parentLabel = nodes[id].label;
+    var node = nodes[id];
+    var texts;
+
+    if (node.kind === "seed") {
+      texts = node.text.trim() === SAMPLE_SEED ? SAMPLE_QUESTIONS : CLAIM_QUESTIONS;
+    } else {
+      texts = [];
+      for (var k = 0; k < CHILDREN_PER_SET; k++) {
+        texts.push(FOLLOW_UPS[(followUpCursor + k) % FOLLOW_UPS.length]);
+      }
+      followUpCursor = (followUpCursor + CHILDREN_PER_SET) % FOLLOW_UPS.length;
+    }
+
     var ids = [];
     for (var i = 1; i <= CHILDREN_PER_SET; i++) {
-      var label = parentLabel ? parentLabel + "." + i : String(i);
-      var text = parentLabel ? "Blank follow-up question" : "Blank question";
-      ids.push(makeNode("question", label, text, id));
+      var label = node.label ? node.label + "." + i : String(i);
+      ids.push(makeNode("question", label, texts[i - 1], id));
     }
-    nodes[id].childIds = ids;
+    node.childIds = ids;
   }
 
   // --- elements ----------------------------------------------------------
@@ -578,7 +635,7 @@
   ["view-home","view-inquiry","seed","count","go","seed-error","trail","focus-kind",
    "focus-text","loading","loading-text","cancel","inquiry-msg","results","list-label",
    "questions","actions","again","restart","confirm","confirm-title","confirm-body",
-   "confirm-no","confirm-yes"].forEach(function (k) {
+   "confirm-no","confirm-yes","example-hint"].forEach(function (k) {
     el[k] = document.getElementById(k);
   });
 
@@ -654,7 +711,7 @@
       num.textContent = node.label + ".)";
 
       var txt = document.createElement("span");
-      txt.className = "q-text q-placeholder";
+      txt.className = "q-text";
       txt.textContent = node.text;
 
       var open = document.createElement("span");
@@ -778,6 +835,7 @@
       el["view-home"].hidden = false;
       el.seed.value = "";
       el["seed-error"].hidden = true;
+      el["example-hint"].hidden = true;
       updateCount();
       el.seed.focus();
     };

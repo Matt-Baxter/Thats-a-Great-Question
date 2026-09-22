@@ -39,9 +39,13 @@ browser, for the length of the session — a page refresh starts you over.
 Specification and mockup stage. No application code yet.
 
 The mockup at [`mockups/inquiry-flow.html`](mockups/inquiry-flow.html) is a single self-contained
-HTML file — open it in any browser. It is clickable end to end: enter a seed, get five numbered
-placeholder questions, open any of them to get its own five, and walk back up the trail. It calls
-no model; every question is a placeholder and the pause before one appears is a fixed timer
+HTML file — open it in any browser. It is clickable end to end: it opens with an example seed
+loaded, returns five numbered questions about it, and any of those can be opened to get its own
+five, numbered from it. The trail across the top walks back to any earlier question, or to the
+seed, in one click.
+
+It calls no model. Every question shown is written by hand as an example of the shape and calibre
+of question the app is meant to return, and the pause before a set appears is a fixed timer
 standing in for a real request.
 
 | Artifact | Location |
