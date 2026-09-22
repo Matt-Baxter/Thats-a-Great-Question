@@ -33,7 +33,24 @@
 
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`
 
-**All 16 items pass.** The specification is ready for `/speckit-clarify`.
+**All 16 items pass.** `/speckit-clarify` has been run; the specification is ready for
+`/speckit-plan`.
+
+### Clarify session 2026-09-22
+
+Five questions asked and answered, all integrated. Each closed a category the ambiguity scan
+marked Missing, and none of them re-asked something already settled:
+
+- **Abuse / rate limiting** — a public page with no login calling a paid API had no protection
+  at all (FR-045 to FR-047, SC-013).
+- **Server-side logging** — FR-040 promised nothing a user types is stored outside their browser,
+  while ordinary error logging would have quietly broken that promise (FR-048 to FR-050, SC-014).
+- **Performance target** — the thirty-second timeout was being read as a speed requirement; ten
+  seconds is now the target and thirty is labelled as abandonment (SC-015).
+- **Declined generation** — a model refusal was being reported as a technical error
+  (FR-051 to FR-053, SC-016).
+- **Concurrent requests** — nothing prevented a second response landing under the wrong question
+  (FR-054 to FR-056, SC-017).
 
 ### Resolved since the first validation pass
 
@@ -77,9 +94,9 @@ that commit's numbering rather than today's.
 - **No implementation details**: the specification names no language, framework, service,
   or storage technology. "Browser session" appears as a boundary on persistence and
   "phone-sized screen" as a constraint on user experience, not as implementation choices.
-- **Success criteria**: SC-001 through SC-006 and SC-009 are objectively checkable.
-  SC-007 and SC-008 are assessed by human review over a defined set of at least twenty
-  seeds, and the specification labels them as such rather than presenting them as
+- **Success criteria**: every criterion is objectively checkable except SC-009, SC-010 and
+  SC-011, which are assessed by human review over a defined set of at least twenty seeds.
+  The specification labels those three as human-reviewed rather than presenting them as
   automated tests. This is deliberate — question quality is context-dependent and cannot
   be scored automatically, and a metric claiming to would be false precision.
 - **Seed and question length limits** (2,000 and 300 characters) were not supplied in the
