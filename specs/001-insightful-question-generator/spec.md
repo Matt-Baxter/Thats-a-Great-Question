@@ -4,6 +4,8 @@
 
 **Created**: 2026-09-21
 
+**Last Updated**: 2026-09-22
+
 **Status**: Draft
 
 **Input**: User description: A web app that takes a seed — a topic, a claim, a half-formed idea, or a question — and returns a small set of insightful questions worth asking about it. Any returned question can be opened to generate further questions about that question, so a user follows one line of inquiry deeper instead of stopping at the first set. The app generates questions only. It never answers them.
@@ -51,7 +53,7 @@ A person is reasoning through a complex claim or decision on their own. They typ
 **Acceptance Scenarios**:
 
 1. **Given** the app is open with an empty text box, **When** the user enters a seed and submits it, **Then** between three and five questions about that seed are displayed.
-2. **Given** a seed has been submitted, **When** the questions are displayed, **Then** each question is non-empty, is phrased as a question, is different from every other question shown, and is different from the seed itself.
+2. **Given** a seed has been submitted, **When** the questions are displayed, **Then** each question is non-empty, is phrased as a question, is not a word-for-word repeat of another question shown, and is different from the seed itself.
 3. **Given** a seed has been submitted, **When** the questions are displayed, **Then** they address different angles on the seed rather than restating one another in different words.
 4. **Given** a seed has been submitted, **When** the response is displayed, **Then** no answer, explanation, or commentary about any question appears.
 5. **Given** the user has submitted a seed, **When** the request is in progress, **Then** a visible loading state is shown from the moment of submission until the result appears.
@@ -169,9 +171,9 @@ The user reads a set of questions and finds them unconvincing — or simply want
 **Staying oriented**
 
 - **FR-017**: System MUST display, above the current set of questions, a trail of every ancestor from the original seed through to the question currently being viewed.
-- **FR-018**: System MUST display the question currently being viewed in full, and MAY abbreviate ancestors in the trail to keep it compact.
+- **FR-018**: System MUST display the seed or question currently being viewed in full, and MAY abbreviate ancestors in the trail to keep it compact.
 - **FR-019**: Users MUST be able to return to any ancestor in the trail, including the original seed, with a single action.
-- **FR-020**: System MUST show only the current question and its direct child questions alongside the trail, rather than the whole accumulated tree.
+- **FR-020**: System MUST show only the current seed or question and its direct child questions alongside the trail, rather than the whole accumulated tree.
 
 **Moving between lines of inquiry**
 
@@ -183,9 +185,9 @@ The user reads a set of questions and finds them unconvincing — or simply want
 
 **Asking again**
 
-- **FR-026**: Users MUST be able to request a freshly generated set of questions for the question currently being viewed, without retyping the seed.
-- **FR-027**: System MUST replace that question's existing questions with the new set, and MUST discard everything previously beneath them.
-- **FR-028**: System MUST warn the user what will be discarded and require confirmation before regenerating a question that has further questions beneath it.
+- **FR-026**: Users MUST be able to request a freshly generated set of questions for the seed or question currently being viewed, without retyping the seed. This includes the first set of questions, generated from the seed itself.
+- **FR-027**: System MUST replace that seed's or question's existing questions with the new set, and MUST discard everything previously beneath them.
+- **FR-028**: System MUST warn the user what will be discarded and require confirmation before regenerating a seed or question that has further questions beneath it.
 - **FR-029**: System MUST leave the existing questions and everything beneath them untouched when a regeneration request fails.
 - **FR-030**: Users MUST be able to begin a new inquiry with a different seed without reloading the page, clearing the previous inquiry.
 
@@ -256,7 +258,7 @@ later clarification appear at the end rather than beside related ones.
 
 - **Seed**: The free text a user submits to begin an inquiry. Bounded in length. The root of the inquiry tree. Not retained beyond the user's browser session.
 - **Question**: A single generated question. Non-empty, phrased as a question, bounded in length, unlabeled, and distinct from its siblings and from its parent. Never accompanied by an answer. May be unexpanded, or expanded and therefore holding children of its own.
-- **Inquiry Tree**: The whole structure built during a session — the seed, every question generated from it, and the parent-child links between them. Retained in full for the session so the user can move freely between branches; discarded entirely on reload or when a new seed is submitted.
+- **Inquiry Tree**: The whole structure built during a session — the seed, every question generated from it, and the parent-child links between them. Retained in full for the session so the user can move freely between branches; discarded entirely on reload, or on a new seed once the user has confirmed the loss.
 - **Trail**: The ordered path from the seed to the question currently being viewed. What the user is shown in order to stay oriented, and the means by which they navigate back up. A view onto the tree rather than a separate structure.
 - **Lines of Inquiry**: The explicit written list of angles a question may take — assumption, evidence, consequence, alternative, stakeholder, definition, framing, precedent, incentive, failure mode, and others. Guides generation; is not exposed as labels on output.
 
@@ -292,7 +294,7 @@ later clarification appear at the end rather than beside related ones.
 - **Ten seconds is the budget any selection design must fit.** Choosing among candidates costs time, and SC-015 is the number that design is measured against rather than the thirty-second abandonment point. If an approach cannot typically deliver questions within ten seconds, it is too slow regardless of how good its output is.
 - **Questions are selected, not merely produced.** A response is the strongest few questions chosen from a wider set of candidates against written criteria, rather than the first few generated. The criteria cover whether answering a question would change the user's conclusion, whether the user would plausibly have asked it themselves, whether it can actually be pursued, whether the chosen set covers genuinely different angles, and whether it is faithful to the seed as given. How selection is performed is a planning decision, not a requirement of this specification.
 - **Generation happens once per question, unless the user asks again.** Opening a question that has never been expanded generates its children; returning to one that already has children displays them. Backtracking is only meaningful if a branch is stable. The user may explicitly request a fresh set, which replaces what was there.
-- **The inquiry tree lives only in the browser, only for the session.** It is retained so the user can move between branches, and discarded on reload or on starting a new inquiry. Nothing is written to a server.
+- **The inquiry tree lives only in the browser, only for the session.** It is retained so the user can move between branches, and discarded on reload, or on starting a new inquiry once the user has confirmed the loss. Nothing is written to a server.
 - **Question quality cannot be scored automatically.** Whether a question is genuinely insightful is context-dependent and assessed by human review (SC-009, SC-010, SC-011). The automated criteria check the *shape* of a response, not its worth. No metric in this specification claims otherwise, because one that did would be false precision.
 - **Repeated requests for the same question will not return identical questions.** Generation is not deterministic. This is why asking again is useful, and why reproducibility is not promised.
 - **A specific bad response cannot be reconstructed after the fact.** Because no seed or question text is recorded server-side (FR-048), a complaint that "the questions were poor" cannot be traced to the exact exchange that produced them. Quality problems are diagnosed by human review against a deliberate review set, not by inspecting telemetry. This is an accepted cost of not holding what users type.
@@ -313,7 +315,7 @@ later clarification appear at the end rather than beside related ones.
 - Suggesting or scoring which question the user should expand next
 - Displaying the whole inquiry tree at once, or any overview map of it
 - Keeping both the old and new question sets after a regeneration
-- Undoing a regeneration once confirmed
+- Undoing a regeneration, or recovering an inquiry cleared by a new seed, once either has been confirmed
 
 ## Specification Format Mapping
 
