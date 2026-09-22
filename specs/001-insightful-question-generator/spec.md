@@ -8,6 +8,26 @@
 
 **Input**: User description: A web app that takes a seed — a topic, a claim, a half-formed idea, or a question — and returns a small set of insightful questions worth asking about it. Any returned question can be opened to generate further questions about that question, so a user follows one line of inquiry deeper instead of stopping at the first set. The app generates questions only. It never answers them.
 
+## Objective
+
+**The failure mode this exists to prevent.** People stop at their first answer. They accept the
+framing a topic arrives in, interrogate it shallowly, and act on conclusions whose assumptions were
+never named. Existing tools make this worse: ask a chatbot about a claim and it hands back an
+answer, which ends inquiry rather than opening it. The failure is not a lack of information — it is
+never asking the right question, the one that would have changed the conclusion.
+
+### Who experiences this failure
+
+- **Primary**: someone reasoning through a complex claim or decision alone, who wants their own
+  thinking stress-tested before committing to it — a student writing on a hard topic, an analyst
+  evaluating a proposal, anyone auditing their own reasoning for what they have missed.
+- **Secondary**: someone preparing for a conversation where the questions matter more than the
+  answers — an interview, a design review, a difficult meeting. Also someone in science,
+  engineering, or philosophy reasoning technically, critically, and deeply about a problem.
+- **Not for**: someone who wants answers. This tool withholds them deliberately and will frustrate
+  anyone looking for a traditional chatbot. This boundary is load-bearing — without it the product
+  drifts into being a general-purpose assistant.
+
 ## Clarifications
 
 ### Session 2026-09-22
@@ -100,7 +120,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **Too few questions**: Generation returns fewer than three questions. This is treated as a failed response, not displayed as a short list.
 - **Too many questions**: Generation returns more than five questions. This is treated as a failed response, not silently truncated to five — a response of the wrong shape is a signal that something went wrong, not something to quietly repair.
 - **Over-length question**: A returned question exceeds the maximum question length. The response is treated as unusable rather than displayed truncated.
-- **Near-duplicate questions**: Two returned questions differ only in wording. The response is treated as unusable rather than displayed with a redundant question in it.
+- **Duplicate questions**: Two returned questions are identical once normalised. The response is rejected rather than displayed with a redundant question in it (FR-007). Two questions that pursue the same underlying goal in *different* wording are not mechanically detectable; that is handled when questions are selected (FR-008) and judged by human review (SC-010), not by rejecting the response.
 - **Clicking while busy**: The user opens a second question while the first is still loading. The second request is ignored rather than queued or raced, and the display makes clear the app is already working.
 - **Generation declines**: The model returns a refusal instead of questions. The user sees a distinct message saying no questions could be generated for that seed and that rephrasing may help — not a technical error, and not the refusal text itself. The inquiry already on screen is untouched.
 - **Request limit reached**: A visitor exceeds the per-visitor request limit. They see a plain-language message asking them to wait and try again, and the inquiry already on screen is untouched.
@@ -110,7 +130,8 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **Asking again below a subtree**: The user asks for a fresh set for a question that has further questions beneath it. They are warned what will be lost and must confirm before anything is discarded.
 - **Failed regeneration**: A request for a fresh set fails. The existing questions are left in place, nothing is discarded, and the user can try again.
 - **Failed expansion, then retry**: An expansion fails. The user sees a message, the tree is unchanged, and the same question can be expanded again.
-- **New seed mid-inquiry**: The user starts a new inquiry while deep in an existing one. The previous inquiry is cleared without a page reload.
+- **New seed mid-inquiry**: The user starts a new inquiry while deep in an existing one. They are warned that the current inquiry will be lost and must confirm; on confirmation it is cleared without a page reload.
+- **Cancelled request**: The user cancels a request before it resolves. The inquiry is unchanged, no partial result is displayed, and the next request is accepted immediately.
 - **Refresh mid-inquiry**: The user reloads the page. They return to an empty starting state, with no part of the inquiry restored.
 - **Narrow screen**: The app is used on a phone. All content, including a deep trail, remains readable and every control remains reachable.
 
@@ -222,6 +243,12 @@ later clarification appear at the end rather than beside related ones.
 - **FR-055**: System MUST make it evident while a request is in flight that further requests will not be accepted, so an ignored click is never silent.
 - **FR-056**: System MUST attach every response to the question it was requested for. A response MUST NEVER be displayed beneath a different question.
 
+**Protecting work in progress**
+
+- **FR-057**: System MUST warn the user that the current inquiry will be lost and require confirmation before a new seed replaces an inquiry already in progress. Discarding a whole inquiry MUST NOT be easier than discarding one question's children (FR-028).
+- **FR-058**: Users MUST be able to cancel a request that is in flight.
+- **FR-059**: System MUST leave the inquiry unchanged when a request is cancelled, and MUST accept new requests immediately afterward.
+
 ### Key Entities
 
 - **Seed**: The free text a user submits to begin an inquiry. Bounded in length. The root of the inquiry tree. Not retained beyond the user's browser session.
@@ -237,7 +264,7 @@ later clarification appear at the end rather than beside related ones.
 - **SC-001**: 100% of submitted requests resolve to either a set of questions or a plain-language message within thirty seconds.
 - **SC-002**: 100% of displayed responses contain between three and five questions, each non-empty, phrased as a question, not a normalised-text duplicate of another question in the same response, distinct from its parent, and within the maximum question length.
 - **SC-003**: 100% of responses containing fewer than three or more than five questions are rejected rather than displayed, truncated, or padded.
-- **SC-004**: 100% of induced failure conditions — unreachable generation, malformed output, empty output, wrong question count, duplicate questions, empty seed, over-length seed — produce a plain-language message with no crash, hang, or blank screen.
+- **SC-004**: 100% of induced failure conditions produce a plain-language message with no crash, hang, or blank screen. The conditions include, and are not limited to: unreachable generation, malformed output, empty output, wrong question count, duplicate questions, an over-length question, an empty seed, an over-length seed, a declined request (SC-016), and a request refused for exceeding the limit (SC-013).
 - **SC-005**: A first-time user, given no instructions, can go from opening the app to reading generated questions in under sixty seconds.
 - **SC-006**: A user at any depth can identify the original seed from the trail and return to it in a single action, on both a desktop and a phone-sized screen.
 - **SC-007**: 100% of returns to a previously expanded question, within a session, display the same questions that were shown before, with no new generation.
@@ -251,6 +278,8 @@ later clarification appear at the end rather than beside related ones.
 - **SC-015**: At least 90% of successful requests complete within ten seconds. The thirty seconds in SC-001 is the point at which a request is abandoned, not a target.
 - **SC-016**: 100% of declined requests produce the distinct no-questions-for-this-seed message rather than a technical error message, and 0% display any refusal text.
 - **SC-017**: 0% of responses are displayed beneath a question other than the one they were requested for, including when a user repeatedly attempts to start requests while one is in flight.
+- **SC-018**: 100% of attempts to start a new inquiry over an inquiry already in progress warn the user and require confirmation before anything is discarded.
+- **SC-019**: 100% of cancelled requests leave the inquiry unchanged, display no partial result, and are followed by a request that is accepted without delay.
 
 ## Assumptions
 
@@ -285,14 +314,16 @@ later clarification appear at the end rather than beside related ones.
 
 ## Specification Format Mapping
 
-This specification is organized around the Spec Kit template. The four-part format used in class maps onto it as follows.
+This specification is organized around the Spec Kit template. The four-part format used in class
+maps onto it as follows. Every functional requirement appears in exactly one row of this table.
 
 | Format element | Where it lives in this document |
 |---|---|
-| **Objective** — the failure mode, not the feature description | The Input statement above, and the premise running through User Story 1: people stop at their first answer, accept the framing a topic arrives in, and act on conclusions whose assumptions were never named. The failure is not missing information — it is never asking the question that would have changed the conclusion. |
-| **Behavior** — observable outcomes only, no tech details | User Stories 1–4 with their acceptance scenarios, and Functional Requirements FR-001 through FR-030. |
-| **Constraints** — non-negotiables regardless of implementation | FR-005 (wrong-shape responses are never repaired), FR-011 (no rhetorical or leading questions), FR-015 (no depth limit), FR-031 and FR-032 (never answers), FR-033 and FR-034 (generated content untrusted), FR-035 through FR-039 (fails safely), FR-040 through FR-042 (no storage beyond the session), FR-043 and FR-044 (keyboard and phone access), plus Assumptions and Out of Scope. |
-| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, the Edge Cases, and Success Criteria SC-001 through SC-012. SC-009, SC-010, and SC-011 are assessed by human review and are labeled as such rather than presented as automated tests. |
+| **Objective** — the failure mode, not the feature description | The **Objective** section at the top of this document, stated as the failure it exists to prevent rather than as a description of the product, together with who experiences that failure and who the product is explicitly not for. |
+| **Behavior** — observable outcomes only, no tech details | User Stories 1–4 and their acceptance scenarios, plus what the user can do and see: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
+| **Constraints** — non-negotiables regardless of implementation | Rules that hold however the app is built: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs, or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work (FR-045, FR-047); no user or model text recorded or sent anywhere else (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). Also the Assumptions and Out of Scope sections. |
+| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, the Edge Cases, and Success Criteria SC-001 through SC-019. SC-009, SC-010, and SC-011 are assessed by human review over a defined review set and are labeled as such rather than presented as automated tests, because question quality cannot be scored automatically and a metric claiming otherwise would be false precision. |
+
 
 ---
 

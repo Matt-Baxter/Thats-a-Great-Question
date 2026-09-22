@@ -52,6 +52,31 @@ marked Missing, and none of them re-asked something already settled:
 - **Concurrent requests** — nothing prevented a second response landing under the wrong question
   (FR-054 to FR-056, SC-017).
 
+### Holistic review 2026-09-22
+
+A full read-through of the spec against itself, the constitution, and the assignment found six
+issues, all now fixed:
+
+- **The Objective was never stated in the document body.** Slide 31 asks for the failure mode
+  rather than a feature description, and the failure-mode framing existed only inside the format
+  mapping table at the foot of the page. It is now the first section, above Clarifications.
+- **Target users were missing entirely.** Agreed during drafting, present in the prompt, absent
+  from the spec — including the anti-user line that keeps the product from drifting into a
+  chatbot. Restored under Objective.
+- **The format mapping table had gone stale**, claiming Behavior covered FR-001–FR-030 and
+  Verification SC-001–SC-012, leaving 26 requirements unmapped. Rebuilt so every functional
+  requirement appears in exactly one row; this is now checked mechanically.
+- **An edge case contradicted its requirements.** "Near-duplicate questions" promised the app
+  rejects responses whose questions differ only in wording. FR-007 rejects only normalised-text
+  duplicates; semantic near-duplication is handled by selection and human review. Narrowed to
+  match what the requirements actually deliver.
+- **The most destructive action had the least protection.** Regenerating one question required
+  confirmation while starting a new seed silently destroyed an entire inquiry (FR-057).
+- **No way out of a slow request.** FR-054 blocks new requests and FR-038 allows thirty seconds,
+  with nothing letting a user abort. Cancelling added (FR-058, FR-059).
+
+Counts after the review: 59 functional requirements, 19 success criteria, 21 edge cases.
+
 ### Resolved since the first validation pass
 
 Three gaps found by reviewing the spec after the clarification above were closed before
