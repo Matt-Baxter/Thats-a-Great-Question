@@ -22,8 +22,9 @@ A person is reasoning through a complex claim or decision on their own. They typ
 
 1. **Given** the app is open with an empty text box, **When** the user enters a seed and submits it, **Then** between three and five questions about that seed are displayed.
 2. **Given** a seed has been submitted, **When** the questions are displayed, **Then** each question is non-empty, is phrased as a question, is different from every other question shown, and is different from the seed itself.
-3. **Given** a seed has been submitted, **When** the response is displayed, **Then** no answer, explanation, or commentary about any question appears.
-4. **Given** the user has submitted a seed, **When** the request is in progress, **Then** a visible loading state is shown from the moment of submission until the result appears.
+3. **Given** a seed has been submitted, **When** the questions are displayed, **Then** they address different angles on the seed rather than restating one another in different words.
+4. **Given** a seed has been submitted, **When** the response is displayed, **Then** no answer, explanation, or commentary about any question appears.
+5. **Given** the user has submitted a seed, **When** the request is in progress, **Then** a visible loading state is shown from the moment of submission until the result appears.
 
 ---
 
@@ -63,6 +64,23 @@ The user has followed one line of questioning several levels down. Above the cur
 
 ---
 
+### User Story 4 - Ask again, or ask something else (Priority: P3)
+
+The user reads a set of questions and finds them unconvincing — or simply wants to see what a second pass turns up. Without retyping anything, they ask for a fresh set for the same question. Separately, when they are finished with one inquiry, they can start a new one with a different seed without reloading the page.
+
+**Why this priority**: Neither is essential to the core value, and a user can get both today by reloading and retyping. But a set of questions is a judgment call made by a system that will sometimes judge poorly, and being stuck with one pass makes that failure permanent. It shares P3 with staying oriented: convenience and recovery rather than core capability.
+
+**Independent Test**: Can be fully tested by requesting a fresh set for a question and confirming new questions replace the old ones, and by starting a new inquiry with a different seed and confirming the previous inquiry is cleared without a page reload.
+
+**Acceptance Scenarios**:
+
+1. **Given** a set of questions is displayed, **When** the user asks for a fresh set for the same question, **Then** a newly generated set replaces the previous one without the seed being retyped.
+2. **Given** a question has further questions beneath it, **When** the user asks for a fresh set for that question, **Then** they are warned that the questions below will be discarded, and it proceeds only if they confirm.
+3. **Given** the user has confirmed a fresh set for a question with descendants, **When** the new questions are displayed, **Then** everything previously beneath that question is gone.
+4. **Given** an inquiry is in progress, **When** the user starts a new inquiry with a different seed, **Then** the previous inquiry is cleared and the new seed's questions are displayed, with no page reload.
+
+---
+
 ### Edge Cases
 
 - **Empty seed**: The user submits nothing, or only whitespace. The submission is rejected with a plain-language message before any generation is attempted.
@@ -70,11 +88,16 @@ The user has followed one line of questioning several levels down. Above the cur
 - **Generation unavailable**: The question source cannot be reached. The user sees a plain-language message and the app remains usable.
 - **Malformed output**: Generation returns something that is not a usable set of questions — empty, unparseable, or structurally wrong. The user sees a plain-language message rather than raw or partial output.
 - **Too few questions**: Generation returns fewer than three questions. This is treated as a failed response, not displayed as a short list.
+- **Too many questions**: Generation returns more than five questions. This is treated as a failed response, not silently truncated to five — a response of the wrong shape is a signal that something went wrong, not something to quietly repair.
 - **Over-length question**: A returned question exceeds the maximum question length. The response is treated as unusable rather than displayed truncated.
+- **Near-duplicate questions**: Two returned questions differ only in wording. The response is treated as unusable rather than displayed with a redundant question in it.
 - **Slow response**: Generation does not complete promptly. The request resolves to either questions or a message within thirty seconds, never hanging indefinitely.
 - **Deep chain**: The user expands many levels. No limit is imposed, and the display continues to function.
 - **Revisiting an expanded question**: The user navigates back to a question they already expanded. Its existing questions are shown; nothing is regenerated and nothing is lost.
+- **Asking again below a subtree**: The user asks for a fresh set for a question that has further questions beneath it. They are warned what will be lost and must confirm before anything is discarded.
+- **Failed regeneration**: A request for a fresh set fails. The existing questions are left in place, nothing is discarded, and the user can try again.
 - **Failed expansion, then retry**: An expansion fails. The user sees a message, the tree is unchanged, and the same question can be expanded again.
+- **New seed mid-inquiry**: The user starts a new inquiry while deep in an existing one. The previous inquiry is cleared without a page reload.
 - **Refresh mid-inquiry**: The user reloads the page. They return to an empty starting state, with no part of the inquiry restored.
 - **Narrow screen**: The app is used on a phone. All content, including a deep trail, remains readable and every control remains reachable.
 
@@ -91,68 +114,79 @@ The user has followed one line of questioning several levels down. Above the cur
 **Generating questions**
 
 - **FR-004**: System MUST return between three and five questions in every successful response.
-- **FR-005**: System MUST ensure every returned question is non-empty and is phrased as a question.
-- **FR-006**: System MUST ensure every returned question is distinct from every other question in the same response.
-- **FR-007**: System MUST ensure every returned question is distinct from the seed or question it was generated from.
-- **FR-008**: System MUST ensure every returned question falls within the maximum question length.
-- **FR-009**: System MUST generate questions by drawing on an explicit, written, human-readable list of lines of inquiry, and MUST return questions without type labels attached.
+- **FR-005**: System MUST treat any response containing fewer than three or more than five questions as unusable, and MUST NOT truncate, pad, or otherwise repair it.
+- **FR-006**: System MUST ensure every returned question is non-empty and is phrased as a question.
+- **FR-007**: System MUST reject a response in which any two questions are duplicates of one another when compared as normalised text.
+- **FR-008**: System MUST ensure the questions in a response address different angles rather than restating one another in different words.
+- **FR-009**: System MUST ensure every returned question is distinct from the seed or question it was generated from.
+- **FR-010**: System MUST ensure every returned question falls within the maximum question length.
+- **FR-011**: System MUST NOT return a question that presupposes its own answer, a rhetorical question, or a statement written with a question mark.
+- **FR-012**: System MUST generate questions by drawing on an explicit, written, human-readable list of lines of inquiry, and MUST return questions without type labels attached.
 
 **Expanding a question**
 
-- **FR-010**: Users MUST be able to open any returned question to generate further questions about it.
-- **FR-011**: System MUST generate expansion questions about the question being expanded, not about the original seed.
-- **FR-012**: System MUST NOT impose any limit on how many times a user may expand.
-- **FR-013**: System MUST apply FR-004 through FR-009 to expansion responses identically to first-level responses.
+- **FR-013**: Users MUST be able to open any returned question to generate further questions about it.
+- **FR-014**: System MUST generate expansion questions about the question being expanded, not about the original seed.
+- **FR-015**: System MUST NOT impose any limit on how many times a user may expand.
+- **FR-016**: System MUST apply FR-004 through FR-012 to expansion responses identically to first-level responses.
 
 **Staying oriented**
 
-- **FR-014**: System MUST display, above the current set of questions, a trail of every ancestor from the original seed through to the question currently being viewed.
-- **FR-015**: System MUST display the question currently being viewed in full, and MAY abbreviate ancestors in the trail to keep it compact.
-- **FR-016**: Users MUST be able to return to any ancestor in the trail, including the original seed, with a single action.
-- **FR-017**: System MUST show only the current question and its direct child questions alongside the trail, rather than the whole accumulated tree.
+- **FR-017**: System MUST display, above the current set of questions, a trail of every ancestor from the original seed through to the question currently being viewed.
+- **FR-018**: System MUST display the question currently being viewed in full, and MAY abbreviate ancestors in the trail to keep it compact.
+- **FR-019**: Users MUST be able to return to any ancestor in the trail, including the original seed, with a single action.
+- **FR-020**: System MUST show only the current question and its direct child questions alongside the trail, rather than the whole accumulated tree.
 
 **Moving between lines of inquiry**
 
-- **FR-018**: System MUST retain, for the duration of the browser session, every question generated and the parent-child structure connecting them.
-- **FR-019**: System MUST display the questions already generated for a question when the user returns to it, without generating new ones.
-- **FR-020**: System MUST generate questions when the user opens a question that has not been expanded before.
-- **FR-021**: Users MUST be able to open any sibling of a question they have already expanded, and MUST NOT be confined to a single line of inquiry.
-- **FR-022**: System MUST leave a previously explored branch unchanged when the user explores a different one.
+- **FR-021**: System MUST retain, for the duration of the browser session, every question generated and the parent-child structure connecting them.
+- **FR-022**: System MUST display the questions already generated for a question when the user returns to it, without generating new ones.
+- **FR-023**: System MUST generate questions when the user opens a question that has not been expanded before.
+- **FR-024**: Users MUST be able to open any sibling of a question they have already expanded, and MUST NOT be confined to a single line of inquiry.
+- **FR-025**: System MUST leave a previously explored branch unchanged when the user explores a different one.
+
+**Asking again**
+
+- **FR-026**: Users MUST be able to request a freshly generated set of questions for the question currently being viewed, without retyping the seed.
+- **FR-027**: System MUST replace that question's existing questions with the new set, and MUST discard everything previously beneath them.
+- **FR-028**: System MUST warn the user what will be discarded and require confirmation before regenerating a question that has further questions beneath it.
+- **FR-029**: System MUST leave the existing questions and everything beneath them untouched when a regeneration request fails.
+- **FR-030**: Users MUST be able to begin a new inquiry with a different seed without reloading the page, clearing the previous inquiry.
 
 **Never answering**
 
-- **FR-023**: System MUST NOT provide answers, explanations, or commentary on any question it generates.
-- **FR-024**: System MUST present generated questions as suggestions, never as authoritative or complete.
+- **FR-031**: System MUST NOT provide answers, explanations, or commentary on any question it generates.
+- **FR-032**: System MUST present generated questions as suggestions, never as authoritative or complete.
 
 **Treating generated content as untrusted**
 
-- **FR-025**: System MUST validate every generated response — shape, count, and non-emptiness — before any part of it is displayed.
-- **FR-026**: System MUST display generated text exactly as text, never interpreting it as markup, formatting, or instructions.
+- **FR-033**: System MUST validate every generated response — shape, count, and non-emptiness — before any part of it is displayed.
+- **FR-034**: System MUST display generated text exactly as text, never interpreting it as markup, formatting, or instructions.
 
 **Failing safely**
 
-- **FR-027**: System MUST show a plain-language message when generation fails, is unavailable, or returns unusable output, and MUST remain usable afterward.
-- **FR-028**: System MUST leave the existing tree of questions unchanged when an expansion fails, and MUST allow the same question to be opened again.
-- **FR-029**: System MUST display a visible loading state from the moment a request begins until it resolves.
-- **FR-030**: System MUST resolve every request to either questions or a message within thirty seconds.
-- **FR-031**: System MUST NOT crash, hang, or present a blank screen under any failure condition.
+- **FR-035**: System MUST show a plain-language message when generation fails, is unavailable, or returns unusable output, and MUST remain usable afterward.
+- **FR-036**: System MUST leave the existing tree of questions unchanged when an expansion fails, and MUST allow the same question to be opened again.
+- **FR-037**: System MUST display a visible loading state from the moment a request begins until it resolves.
+- **FR-038**: System MUST resolve every request to either questions or a message within thirty seconds.
+- **FR-039**: System MUST NOT crash, hang, or present a blank screen under any failure condition.
 
 **Privacy and persistence**
 
-- **FR-032**: System MUST NOT store anything a user types anywhere other than the user's own browser session.
-- **FR-033**: System MUST NOT require an account, login, or any user identification.
-- **FR-034**: System MUST return the user to an empty starting state when the page is reloaded, retaining no part of the previous inquiry.
+- **FR-040**: System MUST NOT store anything a user types anywhere other than the user's own browser session.
+- **FR-041**: System MUST NOT require an account, login, or any user identification.
+- **FR-042**: System MUST return the user to an empty starting state when the page is reloaded, retaining no part of the previous inquiry.
 
 **Access**
 
-- **FR-035**: System MUST make every interactive element reachable and operable using a keyboard alone.
-- **FR-036**: System MUST remain usable on a phone-sized screen, with no horizontal scrolling required to read content.
+- **FR-043**: System MUST make every interactive element reachable and operable using a keyboard alone.
+- **FR-044**: System MUST remain usable on a phone-sized screen, with no horizontal scrolling required to read content.
 
 ### Key Entities
 
 - **Seed**: The free text a user submits to begin an inquiry. Bounded in length. The root of the inquiry tree. Not retained beyond the user's browser session.
 - **Question**: A single generated question. Non-empty, phrased as a question, bounded in length, unlabeled, and distinct from its siblings and from its parent. Never accompanied by an answer. May be unexpanded, or expanded and therefore holding children of its own.
-- **Inquiry Tree**: The whole structure built during a session — the seed, every question generated from it, and the parent-child links between them. Retained in full for the session so the user can move freely between branches; discarded entirely on reload.
+- **Inquiry Tree**: The whole structure built during a session — the seed, every question generated from it, and the parent-child links between them. Retained in full for the session so the user can move freely between branches; discarded entirely on reload or when a new seed is submitted.
 - **Trail**: The ordered path from the seed to the question currently being viewed. What the user is shown in order to stay oriented, and the means by which they navigate back up. A view onto the tree rather than a separate structure.
 - **Lines of Inquiry**: The explicit written list of angles a question may take — assumption, evidence, consequence, alternative, stakeholder, definition, framing, precedent, incentive, failure mode, and others. Guides generation; is not exposed as labels on output.
 
@@ -161,22 +195,28 @@ The user has followed one line of questioning several levels down. Above the cur
 ### Measurable Outcomes
 
 - **SC-001**: 100% of submitted requests resolve to either a set of questions or a plain-language message within thirty seconds.
-- **SC-002**: 100% of successful responses contain between three and five questions, each non-empty, phrased as a question, distinct from its siblings, distinct from its parent, and within the maximum question length.
-- **SC-003**: 100% of induced failure conditions — unreachable generation, malformed output, empty output, too few questions, empty seed, over-length seed — produce a plain-language message with no crash, hang, or blank screen.
-- **SC-004**: A first-time user, given no instructions, can go from opening the app to reading generated questions in under sixty seconds.
-- **SC-005**: A user at any depth can identify the original seed from the trail and return to it in a single action, on both a desktop and a phone-sized screen.
-- **SC-006**: 100% of returns to a previously expanded question, within a session, display the same questions that were shown before, with no new generation.
-- **SC-007**: Across a review set of at least twenty varied seeds spanning technical, social, and philosophical subjects, a human reviewer judges that at least 80% of responses contain at least one question the reviewer had not already considered.
-- **SC-008**: Across the same review set, 100% of responses contain no answers, no commentary, and no question that merely restates the seed.
-- **SC-009**: 100% of interactive elements can be reached and operated using a keyboard alone.
+- **SC-002**: 100% of displayed responses contain between three and five questions, each non-empty, phrased as a question, not a normalised-text duplicate of another question in the same response, distinct from its parent, and within the maximum question length.
+- **SC-003**: 100% of responses containing fewer than three or more than five questions are rejected rather than displayed, truncated, or padded.
+- **SC-004**: 100% of induced failure conditions — unreachable generation, malformed output, empty output, wrong question count, duplicate questions, empty seed, over-length seed — produce a plain-language message with no crash, hang, or blank screen.
+- **SC-005**: A first-time user, given no instructions, can go from opening the app to reading generated questions in under sixty seconds.
+- **SC-006**: A user at any depth can identify the original seed from the trail and return to it in a single action, on both a desktop and a phone-sized screen.
+- **SC-007**: 100% of returns to a previously expanded question, within a session, display the same questions that were shown before, with no new generation.
+- **SC-008**: 100% of regeneration requests on a question with descendants warn the user and require confirmation before anything is discarded.
+- **SC-009**: Across a review set of at least twenty varied seeds spanning technical, social, and philosophical subjects, a human reviewer judges that at least 80% of responses contain at least one question the reviewer had not already considered.
+- **SC-010**: Across the same review set, a human reviewer judges that at least 80% of responses contain no two questions pursuing the same underlying goal in different words.
+- **SC-011**: Across the same review set, 100% of responses contain no answers, no commentary, and no question that merely restates the seed.
+- **SC-012**: 100% of interactive elements can be reached and operated using a keyboard alone.
 
 ## Assumptions
 
 - **Maximum seed length is 2,000 characters.** The input description required a cap and a message naming it, but did not fix a value. Two thousand characters comfortably holds a topic, a claim, or a paragraph-long idea while rejecting a pasted document. Adjustable without affecting any other requirement.
 - **Maximum question length is 300 characters.** Chosen so a question stays readable at a glance on a phone, including within a trail. Also adjustable in isolation.
-- **Generation happens once per question.** Opening a question that has never been expanded generates its children; returning to one that already has children displays them. Backtracking is only meaningful if a branch is stable, so results are not regenerated on revisit.
-- **The inquiry tree lives only in the browser, only for the session.** It is retained so the user can move between branches, and discarded on reload. Nothing is written to a server.
-- **Question quality cannot be scored automatically.** Whether a question is genuinely insightful is context-dependent and assessed by human review (SC-007, SC-008). The automated criteria in SC-002 check the *shape* of a response, not its worth. No metric in this specification claims otherwise, because one that did would be false precision.
+- **Distinctness is enforced at two levels, and only one of them is automatable.** Duplicate or near-identical wording is rejected mechanically (FR-007, SC-002). Whether two differently-worded questions pursue the same underlying goal — "What drives you?" and "What are you passionate about?" point at one goal; "What are you best at?" points at another — is a judgment call, delivered by how questions are selected (FR-008) and verified by human review (SC-010). Claiming the second is machine-checkable would be false precision.
+- **Questions are selected, not merely produced.** A response is the strongest few questions chosen from a wider set of candidates against written criteria, rather than the first few generated. The criteria cover whether answering a question would change the user's conclusion, whether the user would plausibly have asked it themselves, whether it can actually be pursued, whether the chosen set covers genuinely different angles, and whether it is faithful to the seed as given. How selection is performed is a planning decision, not a requirement of this specification.
+- **Generation happens once per question, unless the user asks again.** Opening a question that has never been expanded generates its children; returning to one that already has children displays them. Backtracking is only meaningful if a branch is stable. The user may explicitly request a fresh set, which replaces what was there.
+- **The inquiry tree lives only in the browser, only for the session.** It is retained so the user can move between branches, and discarded on reload or on starting a new inquiry. Nothing is written to a server.
+- **Question quality cannot be scored automatically.** Whether a question is genuinely insightful is context-dependent and assessed by human review (SC-009, SC-010, SC-011). The automated criteria check the *shape* of a response, not its worth. No metric in this specification claims otherwise, because one that did would be false precision.
+- **Repeated requests for the same question will not return identical questions.** Generation is not deterministic. This is why asking again is useful, and why reproducibility is not promised.
 - **Users have an internet connection and a current browser.**
 - **Users want questions, not answers.** Someone seeking answers is explicitly not a target user and will find the product frustrating by design.
 - **A single user, in a single browser session, with no collaboration.** Nothing is shared, synced, or visible to anyone else.
@@ -193,7 +233,8 @@ The user has followed one line of questioning several levels down. Above the cur
 - Editing a generated question
 - Suggesting or scoring which question the user should expand next
 - Displaying the whole inquiry tree at once, or any overview map of it
-- Regenerating or refreshing the questions under an already-expanded question
+- Keeping both the old and new question sets after a regeneration
+- Undoing a regeneration once confirmed
 
 ## Specification Format Mapping
 
@@ -202,9 +243,9 @@ This specification is organized around the Spec Kit template. The four-part form
 | Format element | Where it lives in this document |
 |---|---|
 | **Objective** — the failure mode, not the feature description | The Input statement above, and the premise running through User Story 1: people stop at their first answer, accept the framing a topic arrives in, and act on conclusions whose assumptions were never named. The failure is not missing information — it is never asking the question that would have changed the conclusion. |
-| **Behavior** — observable outcomes only, no tech details | User Stories 1–3 with their acceptance scenarios, and Functional Requirements FR-001 through FR-022. |
-| **Constraints** — non-negotiables regardless of implementation | FR-012 (no depth limit), FR-023 and FR-024 (never answers), FR-025 and FR-026 (generated content untrusted), FR-027 through FR-031 (fails safely), FR-032 through FR-034 (no storage beyond the session), FR-035 and FR-036 (keyboard and phone access), plus Assumptions and Out of Scope. |
-| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, the Edge Cases, and Success Criteria SC-001 through SC-009. SC-007 and SC-008 are assessed by human review and are labeled as such rather than presented as automated tests. |
+| **Behavior** — observable outcomes only, no tech details | User Stories 1–4 with their acceptance scenarios, and Functional Requirements FR-001 through FR-030. |
+| **Constraints** — non-negotiables regardless of implementation | FR-005 (wrong-shape responses are never repaired), FR-011 (no rhetorical or leading questions), FR-015 (no depth limit), FR-031 and FR-032 (never answers), FR-033 and FR-034 (generated content untrusted), FR-035 through FR-039 (fails safely), FR-040 through FR-042 (no storage beyond the session), FR-043 and FR-044 (keyboard and phone access), plus Assumptions and Out of Scope. |
+| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, the Edge Cases, and Success Criteria SC-001 through SC-012. SC-009, SC-010, and SC-011 are assessed by human review and are labeled as such rather than presented as automated tests. |
 
 ---
 

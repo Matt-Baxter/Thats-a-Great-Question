@@ -37,19 +37,40 @@
 
 ### Resolved since the first validation pass
 
+Three gaps found by reviewing the spec after the clarification above were closed before
+running `/speckit-clarify`, so its question quota is not spent re-asking settled questions:
+
+- **Wrong question count.** The spec covered "fewer than three" but was silent on "more than
+  five". A response of the wrong shape is now rejected outright rather than truncated or padded
+  (FR-005, SC-003) — the wrong count signals something went wrong, and quietly repairing it hides
+  the signal.
+- **What "distinct" means.** Split into two levels, only one automatable. Duplicate wording is
+  rejected mechanically (FR-007); whether two differently-worded questions pursue the same
+  underlying goal is a judgment delivered by selection (FR-008) and verified by human review
+  (SC-010).
+- **Starting over without a reload.** Added as User Story 4: a user can request a fresh set for
+  the current question without retyping the seed (FR-026), and can begin a new inquiry with a
+  different seed without reloading (FR-030). Regeneration replaces what was there and discards
+  anything beneath it, with a confirmation first (FR-027, FR-028, SC-008).
+
+Counts after these changes: 44 functional requirements, 12 success criteria, 4 user stories.
+
+### The clarification resolved during the specify phase
+
 The single `[NEEDS CLARIFICATION]` marker at the former FR-015 asked whether expanding a
 question keeps sibling lines open or replaces the current set. Resolved deliberately, and
 the answer separates structure from display:
 
-- The **inquiry tree is retained in full** for the session (FR-018), so a user is never
-  confined to whichever branch they opened first (FR-021, FR-022).
+- The **inquiry tree is retained in full** for the session (FR-021), so a user is never
+  confined to whichever branch they opened first (FR-024, FR-025).
 - The **display shows one level at a time** — the current question and its direct children
-  (FR-017) — so the interface stays readable at depth and on a phone.
+  (FR-020) — so the interface stays readable at depth and on a phone.
 - A **trail of every ancestor from the seed onward** sits above the current questions
-  (FR-014), each entry navigable in a single action (FR-016).
+  (FR-017), each entry navigable in a single action (FR-019).
 
-This added requirements for retention and navigation, so functional requirements were
-renumbered; the count went from 28 to 36 and success criteria from 8 to 9.
+Requirement numbers in this section are the current ones; the spec has been renumbered twice
+as requirements were added, so any FR number quoted in an earlier commit message refers to
+that commit's numbering rather than today's.
 
 ### Validation notes
 

@@ -45,9 +45,9 @@ Specification stage. No application code yet.
 | Specification quality checklist | [`specs/001-insightful-question-generator/checklists/requirements.md`](specs/001-insightful-question-generator/checklists/requirements.md) |
 | Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) |
 
-The specification defines 3 prioritized user stories with Given/When/Then acceptance scenarios,
-36 functional requirements (`FR-001`–`FR-036`), and 9 measurable success criteria
-(`SC-001`–`SC-009`).
+The specification defines 4 prioritized user stories with Given/When/Then acceptance scenarios,
+44 functional requirements (`FR-001`–`FR-044`), and 12 measurable success criteria
+(`SC-001`–`SC-012`).
 
 ## How this is being built
 
