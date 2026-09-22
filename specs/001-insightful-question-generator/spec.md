@@ -13,6 +13,7 @@
 ### Session 2026-09-22
 
 - Q: Should the app limit how many question requests one visitor can make, and what should a visitor see when they hit that limit? → A: Cap requests per visitor over a rolling window; when exceeded, show a plain-language message saying to wait and try again.
+- Q: Is the app allowed to record what a user types into a server-side log? → A: Log request metadata and failure reasons only — never seed or question text.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -198,6 +199,12 @@ later clarification appear at the end rather than beside related ones.
 - **FR-046**: System MUST show a plain-language message asking the visitor to wait and try again when that limit is exceeded.
 - **FR-047**: System MUST leave the inquiry already on screen intact when a request is refused for exceeding the limit. Hitting a limit MUST NOT cost the user their work.
 
+**What may be recorded**
+
+- **FR-048**: System MUST NOT write any seed text or generated question text to a server-side log, an error trace, or any other server-side record.
+- **FR-049**: System MUST record enough about each request to diagnose failures — that a request occurred, which failure occurred, and at what depth — without recording any content the user typed or the model produced.
+- **FR-050**: System MUST NOT include seed text or generated question text in any message it sends to an external service other than the request that generates questions.
+
 ### Key Entities
 
 - **Seed**: The free text a user submits to begin an inquiry. Bounded in length. The root of the inquiry tree. Not retained beyond the user's browser session.
@@ -223,6 +230,7 @@ later clarification appear at the end rather than beside related ones.
 - **SC-011**: Across the same review set, 100% of responses contain no answers, no commentary, and no question that merely restates the seed.
 - **SC-012**: 100% of interactive elements can be reached and operated using a keyboard alone.
 - **SC-013**: 100% of requests beyond the per-visitor limit produce a plain-language wait-and-retry message, with the inquiry already on screen left intact.
+- **SC-014**: Across every induced failure condition, 100% of server-side log output contains no seed text and no generated question text.
 
 ## Assumptions
 
@@ -234,6 +242,7 @@ later clarification appear at the end rather than beside related ones.
 - **The inquiry tree lives only in the browser, only for the session.** It is retained so the user can move between branches, and discarded on reload or on starting a new inquiry. Nothing is written to a server.
 - **Question quality cannot be scored automatically.** Whether a question is genuinely insightful is context-dependent and assessed by human review (SC-009, SC-010, SC-011). The automated criteria check the *shape* of a response, not its worth. No metric in this specification claims otherwise, because one that did would be false precision.
 - **Repeated requests for the same question will not return identical questions.** Generation is not deterministic. This is why asking again is useful, and why reproducibility is not promised.
+- **A specific bad response cannot be reconstructed after the fact.** Because no seed or question text is recorded server-side (FR-048), a complaint that "the questions were poor" cannot be traced to the exact exchange that produced them. Quality problems are diagnosed by human review against a deliberate review set, not by inspecting telemetry. This is an accepted cost of not holding what users type.
 - **Users have an internet connection and a current browser.**
 - **Users want questions, not answers.** Someone seeking answers is explicitly not a target user and will find the product frustrating by design.
 - **A single user, in a single browser session, with no collaboration.** Nothing is shared, synced, or visible to anyone else.
