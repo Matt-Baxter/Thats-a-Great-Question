@@ -46,7 +46,7 @@ Specification stage. No application code yet.
 | Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) |
 
 The specification defines 4 prioritized user stories with Given/When/Then acceptance scenarios,
-59 functional requirements (`FR-001`–`FR-059`), and 19 measurable success criteria
+60 functional requirements (`FR-001`–`FR-060`), and 19 measurable success criteria
 (`SC-001`–`SC-019`), with five clarifications recorded from the clarify phase.
 
 ## How this is being built

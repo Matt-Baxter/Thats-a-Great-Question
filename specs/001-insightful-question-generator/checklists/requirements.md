@@ -75,7 +75,36 @@ issues, all now fixed:
 - **No way out of a slow request.** FR-054 blocks new requests and FR-038 allows thirty seconds,
   with nothing letting a user abort. Cancelling added (FR-058, FR-059).
 
-Counts after the review: 59 functional requirements, 19 success criteria, 21 edge cases.
+Counts after that review: 59 functional requirements, 19 success criteria, 21 edge cases.
+
+### Second review pass 2026-09-22
+
+A second front-to-back read found five more issues, all fixed. Most were consequences of the
+first pass rather than anything older: adding requirements updated some parts of the document
+and left others describing the previous behaviour.
+
+- **User Story 4 contradicted FR-057.** Its acceptance scenario still had a new seed clearing the
+  inquiry with no confirmation, while FR-057 required one. The edge case and SC-018 had been
+  updated; the scenario, the narrative and the independent test had not — and the scenario is the
+  artifact a test gets written from.
+- **FR-052 used seed-specific wording for a case that is not seed-specific.** A refusal can occur
+  at any depth, where the request concerns a question rather than a seed, so the required message
+  would have been wrong. FR-052 and SC-016 now name whichever the request concerned.
+- **Cancelling had no acceptance scenario.** It existed only as an edge case and a success
+  criterion, so the checklist's claim that every requirement has acceptance criteria was false for
+  two of them. Now covered by a Given/When/Then in User Story 4.
+- **The "clicking while busy" edge case was stale**, written before cancelling existed and
+  implying a user must wait it out.
+- **Nothing said whether a cancelled request counts against the rate limit.** It does not
+  (FR-060): the limit bounds cost and protects availability, and a user who changes their mind
+  has threatened neither.
+
+Also corrected the header, which named a feature branch that does not exist — this project
+commits directly to `main`.
+
+Counts after the second pass: 60 functional requirements, 19 success criteria, 21 edge cases,
+6 acceptance scenarios in User Story 4. Every functional requirement appears in exactly one row
+of the format mapping table, verified mechanically.
 
 ### Resolved since the first validation pass
 

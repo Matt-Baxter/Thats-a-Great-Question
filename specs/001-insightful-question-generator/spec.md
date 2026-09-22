@@ -1,6 +1,6 @@
 # Feature Specification: That's a Great Question — Insightful Question Generation
 
-**Feature Branch**: `001-insightful-question-generator`
+**Feature Directory**: `specs/001-insightful-question-generator` (this project commits to `main`; no feature branch is used)
 
 **Created**: 2026-09-21
 
@@ -96,18 +96,20 @@ The user has followed one line of questioning several levels down. Above the cur
 
 ### User Story 4 - Ask again, or ask something else (Priority: P3)
 
-The user reads a set of questions and finds them unconvincing — or simply wants to see what a second pass turns up. Without retyping anything, they ask for a fresh set for the same question. Separately, when they are finished with one inquiry, they can start a new one with a different seed without reloading the page.
+The user reads a set of questions and finds them unconvincing — or simply wants to see what a second pass turns up. Without retyping anything, they ask for a fresh set for the same question. If a request is taking longer than they are willing to wait, they can cancel it and carry on. And when they are finished with one inquiry, they can start a new one with a different seed without reloading the page — after confirming, since that discards everything they have built.
 
-**Why this priority**: Neither is essential to the core value, and a user can get both today by reloading and retyping. But a set of questions is a judgment call made by a system that will sometimes judge poorly, and being stuck with one pass makes that failure permanent. It shares P3 with staying oriented: convenience and recovery rather than core capability.
+**Why this priority**: None of it is essential to the core value, and a user can get most of it today by reloading and retyping. But a set of questions is a judgment call made by a system that will sometimes judge poorly, and being stuck with one pass makes that failure permanent. Cancelling matters for the same reason in the other direction: a user who has changed their mind should not have to wait out a request. It shares P3 with staying oriented: recovery and control rather than core capability.
 
-**Independent Test**: Can be fully tested by requesting a fresh set for a question and confirming new questions replace the old ones, and by starting a new inquiry with a different seed and confirming the previous inquiry is cleared without a page reload.
+**Independent Test**: Can be fully tested by requesting a fresh set for a question and confirming new questions replace the old ones, by cancelling a request in flight and confirming the inquiry is untouched and the next request is accepted, and by starting a new inquiry with a different seed and confirming that it warns first and then clears the previous inquiry without a page reload.
 
 **Acceptance Scenarios**:
 
 1. **Given** a set of questions is displayed, **When** the user asks for a fresh set for the same question, **Then** a newly generated set replaces the previous one without the seed being retyped.
 2. **Given** a question has further questions beneath it, **When** the user asks for a fresh set for that question, **Then** they are warned that the questions below will be discarded, and it proceeds only if they confirm.
 3. **Given** the user has confirmed a fresh set for a question with descendants, **When** the new questions are displayed, **Then** everything previously beneath that question is gone.
-4. **Given** an inquiry is in progress, **When** the user starts a new inquiry with a different seed, **Then** the previous inquiry is cleared and the new seed's questions are displayed, with no page reload.
+4. **Given** an inquiry is in progress, **When** the user starts a new inquiry with a different seed, **Then** they are warned that the current inquiry will be lost and it proceeds only if they confirm.
+5. **Given** the user has confirmed a new seed, **When** the new questions are displayed, **Then** the previous inquiry is gone and no page reload has occurred.
+6. **Given** a request is in flight, **When** the user cancels it, **Then** no partial result is displayed, the inquiry is exactly as it was before the request, and the next request the user makes is accepted.
 
 ---
 
@@ -121,7 +123,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **Too many questions**: Generation returns more than five questions. This is treated as a failed response, not silently truncated to five — a response of the wrong shape is a signal that something went wrong, not something to quietly repair.
 - **Over-length question**: A returned question exceeds the maximum question length. The response is treated as unusable rather than displayed truncated.
 - **Duplicate questions**: Two returned questions are identical once normalised. The response is rejected rather than displayed with a redundant question in it (FR-007). Two questions that pursue the same underlying goal in *different* wording are not mechanically detectable; that is handled when questions are selected (FR-008) and judged by human review (SC-010), not by rejecting the response.
-- **Clicking while busy**: The user opens a second question while the first is still loading. The second request is ignored rather than queued or raced, and the display makes clear the app is already working.
+- **Clicking while busy**: The user opens a second question while the first is still loading. The second request is ignored rather than queued or raced, and the display makes clear the app is already working. The user is not stuck: they may cancel the request in flight and then make the request they wanted.
 - **Generation declines**: The model returns a refusal instead of questions. The user sees a distinct message saying no questions could be generated for that seed and that rephrasing may help — not a technical error, and not the refusal text itself. The inquiry already on screen is untouched.
 - **Request limit reached**: A visitor exceeds the per-visitor request limit. They see a plain-language message asking them to wait and try again, and the inquiry already on screen is untouched.
 - **Slow response**: Generation does not complete promptly. The request resolves to either questions or a message within thirty seconds, never hanging indefinitely.
@@ -131,7 +133,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **Failed regeneration**: A request for a fresh set fails. The existing questions are left in place, nothing is discarded, and the user can try again.
 - **Failed expansion, then retry**: An expansion fails. The user sees a message, the tree is unchanged, and the same question can be expanded again.
 - **New seed mid-inquiry**: The user starts a new inquiry while deep in an existing one. They are warned that the current inquiry will be lost and must confirm; on confirmation it is cleared without a page reload.
-- **Cancelled request**: The user cancels a request before it resolves. The inquiry is unchanged, no partial result is displayed, and the next request is accepted immediately.
+- **Cancelled request**: The user cancels a request before it resolves. The inquiry is unchanged, no partial result is displayed, the next request is accepted immediately, and the cancelled request does not count against their request limit.
 - **Refresh mid-inquiry**: The user reloads the page. They return to an empty starting state, with no part of the inquiry restored.
 - **Narrow screen**: The app is used on a phone. All content, including a deep trail, remains readable and every control remains reachable.
 
@@ -234,7 +236,7 @@ later clarification appear at the end rather than beside related ones.
 **When generation declines**
 
 - **FR-051**: System MUST distinguish a declined request — one where generation returns a refusal rather than questions — from a technical failure.
-- **FR-052**: System MUST show, for a declined request, a plain-language message stating that no questions could be generated for that seed and that rephrasing may help. It MUST NOT describe the outcome as an error or fault, and MUST NOT suggest the user did something wrong.
+- **FR-052**: System MUST show, for a declined request, a plain-language message stating that no questions could be generated for the seed or question the request was made about, and that rephrasing may help. The message MUST refer to whichever of the two the request concerned, since a request may be declined at any depth. It MUST NOT describe the outcome as an error or fault, and MUST NOT suggest the user did something wrong.
 - **FR-053**: System MUST NOT display the text of a refusal. A refusal is commentary, and FR-031 forbids commentary reaching the user.
 
 **One request at a time**
@@ -248,6 +250,7 @@ later clarification appear at the end rather than beside related ones.
 - **FR-057**: System MUST warn the user that the current inquiry will be lost and require confirmation before a new seed replaces an inquiry already in progress. Discarding a whole inquiry MUST NOT be easier than discarding one question's children (FR-028).
 - **FR-058**: Users MUST be able to cancel a request that is in flight.
 - **FR-059**: System MUST leave the inquiry unchanged when a request is cancelled, and MUST accept new requests immediately afterward.
+- **FR-060**: System MUST NOT count a cancelled request against the per-visitor request limit of FR-045. The limit exists to bound cost and protect availability, and a user who changes their mind has not threatened either.
 
 ### Key Entities
 
@@ -276,10 +279,10 @@ later clarification appear at the end rather than beside related ones.
 - **SC-013**: 100% of requests beyond the per-visitor limit produce a plain-language wait-and-retry message, with the inquiry already on screen left intact.
 - **SC-014**: Across every induced failure condition, 100% of server-side log output contains no seed text and no generated question text.
 - **SC-015**: At least 90% of successful requests complete within ten seconds. The thirty seconds in SC-001 is the point at which a request is abandoned, not a target.
-- **SC-016**: 100% of declined requests produce the distinct no-questions-for-this-seed message rather than a technical error message, and 0% display any refusal text.
+- **SC-016**: 100% of declined requests produce the distinct could-not-generate message rather than a technical error message, and 0% display any refusal text. The message names the seed when the request concerned a seed and the question when it concerned a question, at every depth.
 - **SC-017**: 0% of responses are displayed beneath a question other than the one they were requested for, including when a user repeatedly attempts to start requests while one is in flight.
 - **SC-018**: 100% of attempts to start a new inquiry over an inquiry already in progress warn the user and require confirmation before anything is discarded.
-- **SC-019**: 100% of cancelled requests leave the inquiry unchanged, display no partial result, and are followed by a request that is accepted without delay.
+- **SC-019**: 100% of cancelled requests leave the inquiry unchanged, display no partial result, are followed by a request that is accepted without delay, and are not counted against the per-visitor request limit.
 
 ## Assumptions
 
@@ -321,7 +324,7 @@ maps onto it as follows. Every functional requirement appears in exactly one row
 |---|---|
 | **Objective** — the failure mode, not the feature description | The **Objective** section at the top of this document, stated as the failure it exists to prevent rather than as a description of the product, together with who experiences that failure and who the product is explicitly not for. |
 | **Behavior** — observable outcomes only, no tech details | User Stories 1–4 and their acceptance scenarios, plus what the user can do and see: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
-| **Constraints** — non-negotiables regardless of implementation | Rules that hold however the app is built: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs, or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work (FR-045, FR-047); no user or model text recorded or sent anywhere else (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). Also the Assumptions and Out of Scope sections. |
+| **Constraints** — non-negotiables regardless of implementation | Rules that hold however the app is built: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs, or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and never charges them for a request they cancelled (FR-045, FR-047, FR-060); no user or model text recorded or sent anywhere else (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). Also the Assumptions and Out of Scope sections. |
 | **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, the Edge Cases, and Success Criteria SC-001 through SC-019. SC-009, SC-010, and SC-011 are assessed by human review over a defined review set and are labeled as such rather than presented as automated tests, because question quality cannot be scored automatically and a metric claiming otherwise would be false precision. |
 
 
