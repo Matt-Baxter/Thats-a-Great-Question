@@ -82,6 +82,13 @@
 
   * { box-sizing: border-box; }
 
+  /* Must come before any rule that sets `display`. An element given the
+     `hidden` attribute is hidden by the browser's own default styling, but
+     that default is weak: any author rule setting `display` beats it. Three
+     elements here are flex containers and are toggled with `hidden`, so
+     without this they would stay on screen when hidden. */
+  [hidden] { display: none !important; }
+
   body {
     margin: 0;
     background: var(--paper);
