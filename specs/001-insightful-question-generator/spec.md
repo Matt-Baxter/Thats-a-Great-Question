@@ -15,6 +15,7 @@
 - Q: Should the app limit how many question requests one visitor can make, and what should a visitor see when they hit that limit? → A: Cap requests per visitor over a rolling window; when exceeded, show a plain-language message saying to wait and try again.
 - Q: Is the app allowed to record what a user types into a server-side log? → A: Log request metadata and failure reasons only — never seed or question text.
 - Q: How quickly should a normal request finish, as distinct from the thirty seconds at which it gives up? → A: Under 10 seconds typical, 30 seconds hard stop.
+- Q: What should a user see when the model declines to generate questions about their seed? → A: A distinct message saying no questions could be generated for this seed and suggesting a rephrase, claiming no fault either way.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -99,6 +100,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **Too many questions**: Generation returns more than five questions. This is treated as a failed response, not silently truncated to five — a response of the wrong shape is a signal that something went wrong, not something to quietly repair.
 - **Over-length question**: A returned question exceeds the maximum question length. The response is treated as unusable rather than displayed truncated.
 - **Near-duplicate questions**: Two returned questions differ only in wording. The response is treated as unusable rather than displayed with a redundant question in it.
+- **Generation declines**: The model returns a refusal instead of questions. The user sees a distinct message saying no questions could be generated for that seed and that rephrasing may help — not a technical error, and not the refusal text itself. The inquiry already on screen is untouched.
 - **Request limit reached**: A visitor exceeds the per-visitor request limit. They see a plain-language message asking them to wait and try again, and the inquiry already on screen is untouched.
 - **Slow response**: Generation does not complete promptly. The request resolves to either questions or a message within thirty seconds, never hanging indefinitely.
 - **Deep chain**: The user expands many levels. No limit is imposed, and the display continues to function.
@@ -206,6 +208,12 @@ later clarification appear at the end rather than beside related ones.
 - **FR-049**: System MUST record enough about each request to diagnose failures — that a request occurred, which failure occurred, and at what depth — without recording any content the user typed or the model produced.
 - **FR-050**: System MUST NOT include seed text or generated question text in any message it sends to an external service other than the request that generates questions.
 
+**When generation declines**
+
+- **FR-051**: System MUST distinguish a declined request — one where generation returns a refusal rather than questions — from a technical failure.
+- **FR-052**: System MUST show, for a declined request, a plain-language message stating that no questions could be generated for that seed and that rephrasing may help. It MUST NOT describe the outcome as an error or fault, and MUST NOT suggest the user did something wrong.
+- **FR-053**: System MUST NOT display the text of a refusal. A refusal is commentary, and FR-031 forbids commentary reaching the user.
+
 ### Key Entities
 
 - **Seed**: The free text a user submits to begin an inquiry. Bounded in length. The root of the inquiry tree. Not retained beyond the user's browser session.
@@ -233,6 +241,7 @@ later clarification appear at the end rather than beside related ones.
 - **SC-013**: 100% of requests beyond the per-visitor limit produce a plain-language wait-and-retry message, with the inquiry already on screen left intact.
 - **SC-014**: Across every induced failure condition, 100% of server-side log output contains no seed text and no generated question text.
 - **SC-015**: At least 90% of successful requests complete within ten seconds. The thirty seconds in SC-001 is the point at which a request is abandoned, not a target.
+- **SC-016**: 100% of declined requests produce the distinct no-questions-for-this-seed message rather than a technical error message, and 0% display any refusal text.
 
 ## Assumptions
 
