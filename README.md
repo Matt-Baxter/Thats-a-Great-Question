@@ -36,13 +36,20 @@ browser, for the length of the session — a page refresh starts you over.
 
 ## Project status
 
-Specification stage. No application code yet.
+Specification and mockup stage. No application code yet.
+
+The mockup at [`mockups/inquiry-flow.html`](mockups/inquiry-flow.html) is a single self-contained
+HTML file — open it in any browser. It is clickable end to end: enter a seed, get five numbered
+placeholder questions, open any of them to get its own five, and walk back up the trail. It calls
+no model; every question is a placeholder and the pause before one appears is a fixed timer
+standing in for a real request.
 
 | Artifact | Location |
 |---|---|
 | Constitution — the project's governing principles | [`.specify/memory/constitution.md`](.specify/memory/constitution.md) |
 | Specification — user stories, requirements, success criteria | [`specs/001-insightful-question-generator/spec.md`](specs/001-insightful-question-generator/spec.md) |
 | Specification quality checklist | [`specs/001-insightful-question-generator/checklists/requirements.md`](specs/001-insightful-question-generator/checklists/requirements.md) |
+| UI mockup — clickable walkthrough of the inquiry flow | [`mockups/inquiry-flow.html`](mockups/inquiry-flow.html) |
 | Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) |
 
 The specification defines 4 prioritized user stories with Given/When/Then acceptance scenarios,

@@ -1,0 +1,810 @@
+<title>That's a Great Question</title>
+
+<!--
+  UI mockup for "That's a Great Question" — SEIS 606 Project 1, Homework 2.
+
+  What this is:   a clickable mockup of the inquiry flow. Seed entry, question
+                  expansion, the ancestor trail, asking again, and the failure
+                  and loading states.
+  What this isn't: the application. No model is called. Every question shown is
+                  a numbered placeholder, and the delay before one appears is a
+                  fixed timer standing in for a real request.
+
+  Requirements demonstrated: FR-002, FR-003, FR-013, FR-017 to FR-020,
+  FR-022, FR-024 to FR-028, FR-030, FR-031, FR-032, FR-037, FR-043, FR-044,
+  FR-054, FR-055, FR-057, FR-058.
+
+  Plain HTML, CSS and JavaScript with no framework and no build step, per the
+  project constitution.
+-->
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  /* Complete light palette. Dark themes below redefine only these tokens. */
+  :root {
+    --paper:      #f4f6f6;
+    --surface:    #ffffff;
+    --surface-2:  #eef2f2;
+    --ink:        #1a2327;
+    --ink-soft:   #3d4d53;
+    --muted:      #5d6b70;
+    --line:       #dde3e3;
+    --line-firm:  #c6d0d0;
+    --accent:     #1f6a6f;
+    --accent-ink: #12464a;
+    --accent-bg:  #e4efef;
+    --warn:       #8a4b1f;
+    --warn-bg:    #f6ebe1;
+    --shadow:     0 1px 2px rgba(26, 35, 39, .06), 0 8px 24px -16px rgba(26, 35, 39, .28);
+
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #14191b;
+      --surface:    #1c2325;
+      --surface-2:  #232b2e;
+      --ink:        #e8edee;
+      --ink-soft:   #c4cfd1;
+      --muted:      #94a3a6;
+      --line:       #2c3538;
+      --line-firm:  #3c4749;
+      --accent:     #5fb3b8;
+      --accent-ink: #8fd0d3;
+      --accent-bg:  #1e2d2f;
+      --warn:       #d99a6c;
+      --warn-bg:    #2b2220;
+      --shadow:     0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #14191b;
+    --surface:    #1c2325;
+    --surface-2:  #232b2e;
+    --ink:        #e8edee;
+    --ink-soft:   #c4cfd1;
+    --muted:      #94a3a6;
+    --line:       #2c3538;
+    --line-firm:  #3c4749;
+    --accent:     #5fb3b8;
+    --accent-ink: #8fd0d3;
+    --accent-bg:  #1e2d2f;
+    --warn:       #d99a6c;
+    --warn-bg:    #2b2220;
+    --shadow:     0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- mockup notice, so this is never mistaken for the working app --- */
+  .notice {
+    background: var(--warn-bg);
+    color: var(--warn);
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    font-weight: 600;
+    text-align: center;
+    padding-block: 7px;
+    padding-inline: 16px;
+  }
+
+  .wrap {
+    max-width: 660px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 0 64px;
+  }
+
+  /* ---------------------------------------------------------- home view --- */
+  .home {
+    min-height: 62vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 22px;
+    padding-block: 56px 0;
+  }
+
+  .greeting {
+    font-family: var(--serif);
+    font-size: clamp(30px, 7.5vw, 44px);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .greeting em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .sub {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 46ch;
+    margin: -10px 0 0;
+  }
+
+  .composer {
+    background: var(--surface);
+    border: 1px solid var(--line-firm);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 14px 14px 10px;
+    transition: border-color .15s ease;
+  }
+  .composer:focus-within { border-color: var(--accent); }
+
+  textarea#seed {
+    width: 100%;
+    border: 0;
+    resize: vertical;
+    min-height: 82px;
+    background: transparent;
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 18px;
+    line-height: 1.5;
+    padding: 0;
+  }
+  textarea#seed:focus { outline: none; }
+  textarea#seed::placeholder { color: var(--muted); opacity: .8; }
+
+  .composer-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .count {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .count.over { color: var(--warn); font-weight: 500; }
+
+  /* ------------------------------------------------------------ buttons --- */
+  button {
+    font-family: var(--sans);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+    border-radius: 9px;
+    padding: 8px 16px;
+    font-weight: 500;
+  }
+  :root[data-theme="dark"] .btn,
+  .btn { color: #fff; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .btn { color: #0f1618; }
+  }
+  :root[data-theme="dark"] .btn { color: #0f1618; }
+  .btn:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+
+  .btn-quiet {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line-firm);
+    border-radius: 9px;
+    padding: 7px 13px;
+  }
+  .btn-quiet:hover { background: var(--surface-2); color: var(--ink); }
+
+  .btn-link {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--accent);
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  :where(button, [tabindex], textarea):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* ------------------------------------------------------- inquiry view --- */
+  .inquiry { padding-block: 26px 0; }
+
+  /* Ancestor trail. Mono, because it reads as a coordinate, not prose. */
+  .trail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 4px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    margin-bottom: 22px;
+  }
+  .trail-sep { color: var(--line-firm); padding-inline: 1px; }
+  .crumb {
+    background: none;
+    border: 0;
+    padding: 3px 6px;
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    max-width: 22ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .crumb:hover { background: var(--surface-2); color: var(--accent); }
+  .crumb[aria-current="true"] {
+    color: var(--ink);
+    font-weight: 500;
+    background: var(--accent-bg);
+  }
+
+  /* The seed or question currently being viewed, shown in full. */
+  .focus-block {
+    border-left: 2px solid var(--accent);
+    padding: 2px 0 2px 16px;
+    margin-bottom: 26px;
+  }
+  .focus-kind {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .focus-text {
+    font-family: var(--serif);
+    font-size: clamp(19px, 4.6vw, 24px);
+    line-height: 1.36;
+    margin: 0;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+
+  .list-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  ol.questions {
+    list-style: none;
+    margin: 0 0 18px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Each question is a button: the whole row is the target, keyboard included. */
+  .q {
+    width: 100%;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 14px;
+    color: var(--ink);
+    transition: border-color .13s ease, transform .13s ease;
+  }
+  .q:hover {
+    border-color: var(--accent);
+    transform: translateX(2px);
+  }
+  .q-num {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--accent);
+    padding-top: 3px;
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .q-text {
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  .q-placeholder { color: var(--muted); font-style: italic; }
+  .q-open {
+    margin-left: auto;
+    flex: none;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    padding-top: 4px;
+    opacity: 0;
+    transition: opacity .13s ease;
+  }
+  .q:hover .q-open, .q:focus-visible .q-open { opacity: 1; }
+  .q.seen .q-num::after {
+    content: " ·";
+    color: var(--line-firm);
+  }
+
+  .suggestion-note {
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+    margin-bottom: 20px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* ------------------------------------------------- loading and errors --- */
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 18px;
+  }
+  .loading-text {
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .dots { display: inline-flex; gap: 4px; }
+  .dots i {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.05s ease-in-out infinite;
+  }
+  .dots i:nth-child(2) { animation-delay: .16s; }
+  .dots i:nth-child(3) { animation-delay: .32s; }
+  @keyframes pulse {
+    0%, 100% { opacity: .25; transform: translateY(0); }
+    50%      { opacity: 1;   transform: translateY(-3px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dots i { animation: none; opacity: .7; }
+    .q:hover { transform: none; }
+  }
+
+  .msg {
+    border-radius: 10px;
+    padding: 13px 14px;
+    font-size: 14px;
+    margin-bottom: 18px;
+    border: 1px solid var(--line-firm);
+    background: var(--surface-2);
+    color: var(--ink-soft);
+  }
+  .msg.warn {
+    background: var(--warn-bg);
+    border-color: var(--warn);
+    color: var(--warn);
+  }
+  .msg strong { font-weight: 600; }
+
+  /* -------------------------------------------------------------- modal --- */
+  dialog {
+    border: 1px solid var(--line-firm);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--ink);
+    padding: 20px;
+    max-width: 420px;
+    width: calc(100% - 32px);
+    box-shadow: var(--shadow);
+  }
+  dialog::backdrop { background: rgba(10, 16, 18, .45); }
+  dialog h2 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+  dialog p { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
+  dialog .actions { justify-content: flex-end; }
+
+  .sr {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+</style>
+
+<p class="notice">Mockup — no model connected, all questions are placeholders</p>
+
+<div class="wrap">
+
+  <!-- ===================================================== home view === -->
+  <section class="home" id="view-home">
+    <h1 class="greeting">Let's investigate.<br><em>What are you turning over?</em></h1>
+    <p class="sub">
+      Give it a topic, a claim, a half-formed idea, or a question. It returns the questions
+      worth asking about it — and never the answers.
+    </p>
+
+    <div class="composer">
+      <label class="sr" for="seed">Your seed — a topic, claim, idea, or question</label>
+      <textarea id="seed" placeholder="Superintelligence will arrive before governance is ready for it."></textarea>
+      <div class="composer-foot">
+        <span class="count" id="count">0 / 2,000</span>
+        <button class="btn" id="go">Find the questions</button>
+      </div>
+    </div>
+
+    <div class="msg warn" id="seed-error" hidden></div>
+  </section>
+
+  <!-- ================================================== inquiry view === -->
+  <section class="inquiry" id="view-inquiry" hidden>
+    <nav class="trail" id="trail" aria-label="Path from your seed to here"></nav>
+
+    <div class="focus-block">
+      <span class="focus-kind" id="focus-kind">Seed</span>
+      <p class="focus-text" id="focus-text"></p>
+    </div>
+
+    <div class="loading" id="loading" hidden>
+      <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="loading-text" id="loading-text">Looking for the questions worth asking…</span>
+      <button class="btn-quiet" id="cancel" style="margin-left:auto">Cancel</button>
+    </div>
+
+    <div class="msg" id="inquiry-msg" hidden></div>
+
+    <div id="results" hidden>
+      <p class="list-label" id="list-label">Questions worth asking</p>
+      <ol class="questions" id="questions"></ol>
+      <p class="suggestion-note">
+        Suggestions, not a complete set. The app does not answer these — that part is yours.
+      </p>
+    </div>
+
+    <div class="actions" id="actions" hidden>
+      <button class="btn-quiet" id="again">Ask again</button>
+      <button class="btn-quiet" id="restart">New inquiry</button>
+    </div>
+  </section>
+</div>
+
+<dialog id="confirm">
+  <h2 id="confirm-title">Discard what's below?</h2>
+  <p id="confirm-body"></p>
+  <div class="actions">
+    <button class="btn-quiet" id="confirm-no">Keep it</button>
+    <button class="btn" id="confirm-yes">Discard</button>
+  </div>
+</dialog>
+
+<script>
+  "use strict";
+
+  // Mockup constants. In the real app these live in Python, named and commented.
+  var MAX_SEED = 2000;
+  var CHILDREN_PER_SET = 5;
+  var FAKE_DELAY_MS = 900;
+
+  // --- the inquiry tree ---------------------------------------------------
+  // Every node is a seed or a question. childIds is null until it is opened,
+  // which is how the mockup shows retention: reopening an explored question
+  // displays what is already there instead of generating again.
+  var nodes = {};
+  var currentId = null;
+  var nextId = 1;
+  var pendingTimer = null;
+
+  function makeNode(kind, label, text, parentId) {
+    var id = "n" + nextId++;
+    nodes[id] = { id: id, kind: kind, label: label, text: text, parentId: parentId, childIds: null };
+    return id;
+  }
+
+  function pathTo(id) {
+    var path = [];
+    for (var cur = id; cur; cur = nodes[cur].parentId) path.unshift(cur);
+    return path;
+  }
+
+  function descendantCount(id) {
+    var kids = nodes[id].childIds;
+    if (!kids) return 0;
+    var total = kids.length;
+    for (var i = 0; i < kids.length; i++) total += descendantCount(kids[i]);
+    return total;
+  }
+
+  function discardBelow(id) {
+    var kids = nodes[id].childIds || [];
+    for (var i = 0; i < kids.length; i++) {
+      discardBelow(kids[i]);
+      delete nodes[kids[i]];
+    }
+    nodes[id].childIds = null;
+  }
+
+  // Children are numbered from their parent: 2 -> 2.1, 2.3 -> 2.3.1.
+  function generateChildren(id) {
+    var parentLabel = nodes[id].label;
+    var ids = [];
+    for (var i = 1; i <= CHILDREN_PER_SET; i++) {
+      var label = parentLabel ? parentLabel + "." + i : String(i);
+      var text = parentLabel ? "Blank follow-up question" : "Blank question";
+      ids.push(makeNode("question", label, text, id));
+    }
+    nodes[id].childIds = ids;
+  }
+
+  // --- elements ----------------------------------------------------------
+  var el = {};
+  ["view-home","view-inquiry","seed","count","go","seed-error","trail","focus-kind",
+   "focus-text","loading","loading-text","cancel","inquiry-msg","results","list-label",
+   "questions","actions","again","restart","confirm","confirm-title","confirm-body",
+   "confirm-no","confirm-yes"].forEach(function (k) {
+    el[k] = document.getElementById(k);
+  });
+
+  // --- home view ---------------------------------------------------------
+  function updateCount() {
+    var n = el.seed.value.length;
+    el.count.textContent = n.toLocaleString() + " / " + MAX_SEED.toLocaleString();
+    el.count.classList.toggle("over", n > MAX_SEED);
+  }
+
+  function submitSeed() {
+    var text = el.seed.value.trim();
+
+    if (!text) {                                   // FR-002
+      el["seed-error"].textContent = "Enter something first — a topic, a claim, or a question.";
+      el["seed-error"].hidden = false;
+      el.seed.focus();
+      return;
+    }
+    if (text.length > MAX_SEED) {                  // FR-003
+      el["seed-error"].textContent =
+        "That is " + text.length.toLocaleString() + " characters. A seed can be up to " +
+        MAX_SEED.toLocaleString() + " — try the claim on its own rather than the whole document.";
+      el["seed-error"].hidden = false;
+      el.seed.focus();
+      return;
+    }
+
+    el["seed-error"].hidden = true;
+    nodes = {};
+    nextId = 1;
+    currentId = makeNode("seed", "", text, null);
+    el["view-home"].hidden = true;
+    el["view-inquiry"].hidden = false;
+    focusOn(currentId, true);
+  }
+
+  // --- inquiry view ------------------------------------------------------
+  function renderTrail() {
+    var path = pathTo(currentId);
+    el.trail.textContent = "";
+    path.forEach(function (id, i) {
+      if (i > 0) {
+        var sep = document.createElement("span");
+        sep.className = "trail-sep";
+        sep.textContent = "›";
+        sep.setAttribute("aria-hidden", "true");
+        el.trail.appendChild(sep);
+      }
+      var node = nodes[id];
+      var b = document.createElement("button");
+      b.className = "crumb";
+      b.textContent = node.kind === "seed" ? "Seed" : node.label;
+      b.title = node.text;
+      if (id === currentId) b.setAttribute("aria-current", "true");
+      b.addEventListener("click", function () { focusOn(id, false); });   // FR-019
+      el.trail.appendChild(b);
+    });
+  }
+
+  function renderQuestions() {
+    var kids = nodes[currentId].childIds || [];
+    el.questions.textContent = "";
+    kids.forEach(function (kid) {
+      var node = nodes[kid];
+      var li = document.createElement("li");
+      var b = document.createElement("button");
+      b.className = "q" + (node.childIds ? " seen" : "");
+      b.setAttribute("aria-label", "Open question " + node.label + " and generate further questions about it");
+
+      var num = document.createElement("span");
+      num.className = "q-num";
+      num.textContent = node.label + ".)";
+
+      var txt = document.createElement("span");
+      txt.className = "q-text q-placeholder";
+      txt.textContent = node.text;
+
+      var open = document.createElement("span");
+      open.className = "q-open";
+      open.textContent = node.childIds ? "explored" : "open →";
+
+      b.append(num, txt, open);
+      b.addEventListener("click", function () { focusOn(kid, !node.childIds); });
+      li.appendChild(b);
+      el.questions.appendChild(li);
+    });
+  }
+
+  // Move to a seed or question. `generate` is true only when it has never
+  // been opened; otherwise the existing set appears with no request. FR-022.
+  function focusOn(id, generate) {
+    clearPending();
+    currentId = id;
+    var node = nodes[id];
+
+    el["focus-kind"].textContent = node.kind === "seed" ? "Seed" : "Question " + node.label;
+    el["focus-text"].textContent = node.text;
+    el["inquiry-msg"].hidden = true;
+    renderTrail();
+
+    if (generate || !node.childIds) {
+      el.results.hidden = true;
+      el.actions.hidden = true;
+      el.loading.hidden = false;                                     // FR-037
+      el["loading-text"].textContent = node.kind === "seed"
+        ? "Looking for the questions worth asking…"
+        : "Looking for questions about question " + node.label + "…";
+      el.cancel.focus();
+      pendingTimer = setTimeout(function () {
+        pendingTimer = null;
+        el.loading.hidden = true;
+        generateChildren(id);
+        showResults();
+      }, FAKE_DELAY_MS);
+      return;
+    }
+
+    el.loading.hidden = true;
+    showResults();
+  }
+
+  function showResults() {
+    var node = nodes[currentId];
+    el["list-label"].textContent = node.kind === "seed"
+      ? "Questions worth asking"
+      : "Questions about question " + node.label;
+    renderQuestions();
+    el.results.hidden = false;
+    el.actions.hidden = false;
+  }
+
+  function clearPending() {
+    if (pendingTimer) { clearTimeout(pendingTimer); pendingTimer = null; }
+    el.loading.hidden = true;
+  }
+
+  // Cancel an in-flight request. The inquiry is left exactly as it was. FR-058.
+  function cancelRequest() {
+    clearPending();
+    var node = nodes[currentId];
+    if (node.childIds) {
+      showResults();
+    } else {
+      el.results.hidden = true;
+      el.actions.hidden = false;
+      el["inquiry-msg"].textContent = "Cancelled. Nothing was changed — open this again whenever you want.";
+      el["inquiry-msg"].hidden = false;
+    }
+  }
+
+  // --- confirmation ------------------------------------------------------
+  var confirmAction = null;
+
+  function askConfirm(title, body, onYes) {
+    el["confirm-title"].textContent = title;
+    el["confirm-body"].textContent = body;
+    confirmAction = onYes;
+    el.confirm.showModal();
+  }
+
+  el["confirm-yes"].addEventListener("click", function () {
+    el.confirm.close();
+    var run = confirmAction;
+    confirmAction = null;
+    if (run) run();
+  });
+  el["confirm-no"].addEventListener("click", function () { el.confirm.close(); });
+
+  // Ask again for the current seed or question. FR-026 to FR-028.
+  function askAgain() {
+    var below = descendantCount(currentId);
+    var run = function () {
+      discardBelow(currentId);
+      focusOn(currentId, true);
+    };
+    if (below > 0) {
+      askConfirm(
+        "Discard what's below?",
+        "A fresh set replaces these questions, and the " + below +
+        " question" + (below === 1 ? "" : "s") + " you opened beneath them will be gone. This cannot be undone.",
+        run
+      );
+    } else {
+      run();
+    }
+  }
+
+  // Start over with a different seed. FR-030, FR-057.
+  function newInquiry() {
+    var total = Object.keys(nodes).length - 1;
+    var run = function () {
+      clearPending();
+      nodes = {};
+      currentId = null;
+      el["view-inquiry"].hidden = true;
+      el["view-home"].hidden = false;
+      el.seed.value = "";
+      el["seed-error"].hidden = true;
+      updateCount();
+      el.seed.focus();
+    };
+    if (total > 0) {
+      askConfirm(
+        "Lose this inquiry?",
+        "A new seed clears everything here — " + total + " question" + (total === 1 ? "" : "s") +
+        " across this inquiry. Nothing is saved, so this cannot be recovered.",
+        run
+      );
+    } else {
+      run();
+    }
+  }
+
+  // --- wiring ------------------------------------------------------------
+  el.seed.addEventListener("input", function () {
+    updateCount();
+    el["seed-error"].hidden = true;
+  });
+  el.seed.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitSeed(); }
+  });
+  el.go.addEventListener("click", submitSeed);
+  el.cancel.addEventListener("click", cancelRequest);
+  el.again.addEventListener("click", askAgain);
+  el.restart.addEventListener("click", newInquiry);
+
+  updateCount();
+</script>
