@@ -296,6 +296,17 @@ later clarification appear at the end rather than beside related ones.
 - **Generation happens once per question, unless the user asks again.** Opening a question that has never been expanded generates its children; returning to one that already has children displays them. Backtracking is only meaningful if a branch is stable. The user may explicitly request a fresh set, which replaces what was there.
 - **The inquiry tree lives only in the browser, only for the session.** It is retained so the user can move between branches, and discarded on reload, or on starting a new inquiry once the user has confirmed the loss. Nothing is written to a server.
 - **Question quality cannot be scored automatically.** Whether a question is genuinely insightful is context-dependent and assessed by human review (SC-009, SC-010, SC-011). The automated criteria check the *shape* of a response, not its worth. No metric in this specification claims otherwise, because one that did would be false precision.
+- **A seed whose answer is settled still gets questions.** A factual lookup — "Who was the first
+  president of the United States?" — is treated no differently from a contested claim: the app
+  returns three to five questions about it and never the answer. Answering such seeds was
+  considered and rejected. It would require a classifier deciding which seeds are "merely factual",
+  and that judgment fails worst on the seeds that matter most — "Is nuclear power safe?" and "What
+  causes inflation?" look factual and are not — so the app would hand over an answer in precisely
+  the cases that deserved interrogation. It would also put an answer in the response, which ends
+  the questions-only boundary that the rest of this specification rests on. Whether the questions
+  returned for a settled seed are actually worth reading is a matter of how well generation
+  interrogates framing and definition rather than subject matter, and is to be confirmed in testing
+  against deliberately factual seeds.
 - **Repeated requests for the same question will not return identical questions.** Generation is not deterministic. This is why asking again is useful, and why reproducibility is not promised.
 - **A specific bad response cannot be reconstructed after the fact.** Because no seed or question text is recorded server-side (FR-048), a complaint that "the questions were poor" cannot be traced to the exact exchange that produced them. Quality problems are diagnosed by human review against a deliberate review set, not by inspecting telemetry. This is an accepted cost of not holding what users type.
 - **Users have an internet connection and a current browser.**
