@@ -38,8 +38,11 @@ browser, for the length of the session — a page refresh starts you over.
 
 Specification and mockup stage. No application code yet.
 
-The mockup at [`mockups/inquiry-flow.html`](mockups/inquiry-flow.html) is a single self-contained
-HTML file — open it in any browser. It is clickable end to end: it opens with an example seed
+### ▶ Open the UI mockup
+
+**[Run the mockup in your browser →](https://matt-baxter.github.io/Thats-a-Great-Question/mockups/inquiry-flow.html)**
+
+That link opens the working page. It is clickable end to end: it starts with an example seed
 loaded, returns five numbered questions about it, and any of those can be opened to get its own
 five, numbered from it. The trail across the top walks back to any earlier question, or to the
 seed, in one click.
@@ -48,13 +51,22 @@ It calls no model. Every question shown is written by hand as an example of the 
 of question the app is meant to return, and the pause before a set appears is a fixed timer
 standing in for a real request.
 
-| Artifact | Location |
-|---|---|
-| Constitution — the project's governing principles | [`.specify/memory/constitution.md`](.specify/memory/constitution.md) |
-| Specification — user stories, requirements, success criteria | [`specs/001-insightful-question-generator/spec.md`](specs/001-insightful-question-generator/spec.md) |
-| Specification quality checklist | [`specs/001-insightful-question-generator/checklists/requirements.md`](specs/001-insightful-question-generator/checklists/requirements.md) |
-| UI mockup — clickable walkthrough of the inquiry flow | [`mockups/inquiry-flow.html`](mockups/inquiry-flow.html) |
-| Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) |
+> **Note on the two kinds of link below.** GitHub never renders HTML files — clicking an `.html`
+> file here shows its source code, not the page. Use the green link above to *run* the mockup, and
+> the file link below to *read* how it is built. If the link above does not load, the file can also
+> be downloaded from the repository and opened directly; it is self-contained and needs nothing
+> installed.
+
+### Where everything lives
+
+| What | Link | Opens as |
+|---|---|---|
+| **UI mockup — run it** | [live page](https://matt-baxter.github.io/Thats-a-Great-Question/mockups/inquiry-flow.html) | a working web page |
+| UI mockup — read the source | [`mockups/inquiry-flow.html`](mockups/inquiry-flow.html) | HTML source on GitHub |
+| Constitution — the project's governing principles | [`.specify/memory/constitution.md`](.specify/memory/constitution.md) | rendered document |
+| Specification — user stories, requirements, success criteria | [`specs/001-insightful-question-generator/spec.md`](specs/001-insightful-question-generator/spec.md) | rendered document |
+| Specification quality checklist | [`specs/001-insightful-question-generator/checklists/requirements.md`](specs/001-insightful-question-generator/checklists/requirements.md) | rendered document |
+| Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) | rendered document |
 
 The specification defines 4 prioritized user stories with Given/When/Then acceptance scenarios,
 60 functional requirements (`FR-001`–`FR-060`), and 19 measurable success criteria
