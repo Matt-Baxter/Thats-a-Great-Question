@@ -66,6 +66,7 @@ standing in for a real request.
 | Constitution — the project's governing principles | [`.specify/memory/constitution.md`](.specify/memory/constitution.md) | rendered document |
 | Specification — user stories, requirements, success criteria | [`specs/001-insightful-question-generator/spec.md`](specs/001-insightful-question-generator/spec.md) | rendered document |
 | Specification quality checklist | [`specs/001-insightful-question-generator/checklists/requirements.md`](specs/001-insightful-question-generator/checklists/requirements.md) | rendered document |
+| Review history — every question asked of the spec, and every defect found | [`specs/001-insightful-question-generator/checklists/reviews.md`](specs/001-insightful-question-generator/checklists/reviews.md) | rendered document |
 | Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) | rendered document |
 
 The specification defines 4 prioritized user stories with Given/When/Then acceptance scenarios,
