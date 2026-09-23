@@ -10,18 +10,19 @@
 
 **Input**: User description: A web app that takes a seed — a topic, a claim, a half-formed idea, or a question — and returns a small set of insightful questions worth asking about it. Any returned question can be opened to generate further questions about that question, so a user follows one line of inquiry deeper instead of stopping at the first set. The app generates questions only. It never answers them.
 
-## Objective
+## Specification Format Mapping
 
-> **Where the four parts of the class format live.** This specification follows the Spec Kit
-> template, and each of its sections is labelled below with which part of the
-> Objective / Behavior / Constraints / Verification format it carries.
->
-> | Format element | Section |
-> |---|---|
-> | **Objective** | this section |
-> | **Behavior** | User Scenarios & Testing · Requirements (the groups marked *Behavior*) |
-> | **Constraints** | Requirements (the groups marked *Constraints*) · Assumptions · Out of Scope |
-> | **Verification** | Acceptance Scenarios · Edge Cases · Success Criteria |
+Every section of this document is labelled inline with the part of the class format it carries;
+this table is the same mapping gathered in one place, down to the individual requirement.
+
+| Format element | Where it lives |
+|---|---|
+| **Objective** — the failure mode, not the feature description | The **Objective** section at the top, stated as the failure it exists to prevent rather than a description of the product, with who suffers that failure and who the product is explicitly not for. |
+| **Behavior** — observable outcomes only, no tech details | User Stories 1–4, and the requirement groups labelled *Behavior*: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
+| **Constraints** — non-negotiables regardless of implementation | The requirement groups labelled *Constraints*, plus Assumptions and Out of Scope: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and never charges them for a request they cancelled (FR-045, FR-047, FR-060); no user or model text recorded or sent elsewhere (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). |
+| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, written as Given / When / Then; the Edge Cases, which are the boundary conditions; and Success Criteria SC-001 through SC-019. SC-009, SC-010 and SC-011 are assessed by human review and are labelled as such rather than presented as automated tests. |
+
+## Objective
 
 **The failure mode this exists to prevent.** People stop at their first answer. They accept the
 framing a topic arrives in, interrogate it shallowly, and act on conclusions whose assumptions were
@@ -354,19 +355,6 @@ metric claiming otherwise would be false precision.
 - Displaying the whole inquiry tree at once, or any overview map of it
 - Keeping both the old and new question sets after a regeneration
 - Undoing a regeneration, or recovering an inquiry cleared by a new seed, once either has been confirmed
-
-## Specification Format Mapping
-
-Every section of this document is labelled inline with the part of the class format it carries;
-this table is the same mapping gathered in one place, down to the individual requirement.
-
-| Format element | Where it lives |
-|---|---|
-| **Objective** — the failure mode, not the feature description | The **Objective** section at the top, stated as the failure it exists to prevent rather than a description of the product, with who suffers that failure and who the product is explicitly not for. |
-| **Behavior** — observable outcomes only, no tech details | User Stories 1–4, and the requirement groups labelled *Behavior*: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
-| **Constraints** — non-negotiables regardless of implementation | The requirement groups labelled *Constraints*, plus Assumptions and Out of Scope: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and never charges them for a request they cancelled (FR-045, FR-047, FR-060); no user or model text recorded or sent elsewhere (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). |
-| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, written as Given / When / Then; the Edge Cases, which are the boundary conditions; and Success Criteria SC-001 through SC-019. SC-009, SC-010 and SC-011 are assessed by human review and are labelled as such rather than presented as automated tests. |
-
 
 ---
 
