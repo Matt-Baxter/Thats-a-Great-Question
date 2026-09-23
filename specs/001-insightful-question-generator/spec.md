@@ -12,6 +12,17 @@
 
 ## Objective
 
+> **Where the four parts of the class format live.** This specification follows the Spec Kit
+> template, and each of its sections is labelled below with which part of the
+> Objective / Behavior / Constraints / Verification format it carries.
+>
+> | Format element | Section |
+> |---|---|
+> | **Objective** | this section |
+> | **Behavior** | User Scenarios & Testing · Requirements (the groups marked *Behavior*) |
+> | **Constraints** | Requirements (the groups marked *Constraints*) · Assumptions · Out of Scope |
+> | **Verification** | Acceptance Scenarios · Edge Cases · Success Criteria |
+
 **The failure mode this exists to prevent.** People stop at their first answer. They accept the
 framing a topic arrives in, interrogate it shallowly, and act on conclusions whose assumptions were
 never named. Existing tools make this worse: ask a chatbot about a claim and it hands back an
@@ -41,6 +52,10 @@ never asking the right question, the one that would have changed the conclusion.
 - Q: What should happen if a user clicks to expand a second question while the first expansion is still loading? → A: Ignore new expansion requests while one is in flight; the loading state shows the app is busy.
 
 ## User Scenarios & Testing *(mandatory)*
+
+***Behavior*** — each user story describes observable outcomes, with no technology in it.
+***Verification*** — the Acceptance Scenarios under each story, and the Edge Cases that follow
+them, are the testable criteria, written as Given / When / Then.
 
 ### User Story 1 - Get questions about a seed (Priority: P1)
 
@@ -115,7 +130,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 
 ---
 
-### Edge Cases
+### Edge Cases — ***Verification*** (boundary conditions)
 
 - **Empty seed**: The user submits nothing, or only whitespace. The submission is rejected with a plain-language message before any generation is attempted.
 - **Over-length seed**: The user pastes a document instead of a seed. The submission is rejected with a message that names the length limit.
@@ -143,13 +158,19 @@ The user reads a set of questions and finds them unconvincing — or simply want
 
 ### Functional Requirements
 
-**Accepting a seed**
+***Behavior*** and ***Constraints***, as numbered requirements. Each group below is labelled with
+which one it carries: *Behavior* for what a user does and sees, *Constraints* for rules that hold
+regardless of how the app is built. Requirement ids are assigned once and never reused or
+reordered, so requirements added by later clarification appear at the end rather than beside
+related ones.
+
+**Accepting a seed** — *Behavior*
 
 - **FR-001**: System MUST accept a free-text seed, which may be a topic, a claim, a half-formed idea, or a question.
 - **FR-002**: System MUST reject an empty or whitespace-only seed with a plain-language message, before any generation is attempted.
 - **FR-003**: System MUST reject a seed longer than the maximum seed length with a message that names the limit.
 
-**Generating questions**
+**Generating questions** — *Behavior, with Constraints at FR-005 and FR-011*
 
 - **FR-004**: System MUST return between three and five questions in every successful response.
 - **FR-005**: System MUST treat any response containing fewer than three or more than five questions as unusable, and MUST NOT truncate, pad, or otherwise repair it.
@@ -161,21 +182,21 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **FR-011**: System MUST NOT return a question that presupposes its own answer, a rhetorical question, or a statement written with a question mark.
 - **FR-012**: System MUST generate questions by drawing on an explicit, written, human-readable list of lines of inquiry, and MUST return questions without type labels attached.
 
-**Expanding a question**
+**Expanding a question** — *Behavior, with a Constraint at FR-015*
 
 - **FR-013**: Users MUST be able to open any returned question to generate further questions about it.
 - **FR-014**: System MUST generate expansion questions about the question being expanded, not about the original seed.
 - **FR-015**: System MUST NOT impose any limit on how many times a user may expand.
 - **FR-016**: System MUST apply FR-004 through FR-012 to expansion responses identically to first-level responses.
 
-**Staying oriented**
+**Staying oriented** — *Behavior*
 
 - **FR-017**: System MUST display, above the current set of questions, a trail of every ancestor from the original seed through to the question currently being viewed.
 - **FR-018**: System MUST display the seed or question currently being viewed in full, and MAY abbreviate ancestors in the trail to keep it compact.
 - **FR-019**: Users MUST be able to return to any ancestor in the trail, including the original seed, with a single action.
 - **FR-020**: System MUST show only the current seed or question and its direct child questions alongside the trail, rather than the whole accumulated tree.
 
-**Moving between lines of inquiry**
+**Moving between lines of inquiry** — *Behavior*
 
 - **FR-021**: System MUST retain, for the duration of the browser session, every question generated and the parent-child structure connecting them.
 - **FR-022**: System MUST display the questions already generated for a question when the user returns to it, without generating new ones.
@@ -183,7 +204,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **FR-024**: Users MUST be able to open any sibling of a question they have already expanded, and MUST NOT be confined to a single line of inquiry.
 - **FR-025**: System MUST leave a previously explored branch unchanged when the user explores a different one.
 
-**Asking again**
+**Asking again** — *Behavior, with a Constraint at FR-028*
 
 - **FR-026**: Users MUST be able to request a freshly generated set of questions for the seed or question currently being viewed, without retyping the seed. This includes the first set of questions, generated from the seed itself.
 - **FR-027**: System MUST replace that seed's or question's existing questions with the new set, and MUST discard everything previously beneath them.
@@ -191,17 +212,17 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **FR-029**: System MUST leave the existing questions and everything beneath them untouched when a regeneration request fails.
 - **FR-030**: Users MUST be able to begin a new inquiry with a different seed without reloading the page, clearing the previous inquiry.
 
-**Never answering**
+**Never answering** — *Constraints*
 
 - **FR-031**: System MUST NOT provide answers, explanations, or commentary on any question it generates.
 - **FR-032**: System MUST present generated questions as suggestions, never as authoritative or complete.
 
-**Treating generated content as untrusted**
+**Treating generated content as untrusted** — *Constraints*
 
 - **FR-033**: System MUST validate every generated response — shape, count, and non-emptiness — before any part of it is displayed.
 - **FR-034**: System MUST display generated text exactly as text, never interpreting it as markup, formatting, or instructions.
 
-**Failing safely**
+**Failing safely** — *Behavior and Constraints*
 
 - **FR-035**: System MUST show a plain-language message when generation fails, is unavailable, or returns unusable output, and MUST remain usable afterward.
 - **FR-036**: System MUST leave the existing tree of questions unchanged when an expansion fails, and MUST allow the same question to be opened again.
@@ -209,45 +230,42 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **FR-038**: System MUST resolve every request to either questions or a message within thirty seconds.
 - **FR-039**: System MUST NOT crash, hang, or present a blank screen under any failure condition.
 
-**Privacy and persistence**
+**Privacy and persistence** — *Constraints*
 
 - **FR-040**: System MUST NOT store anything a user types anywhere other than the user's own browser session.
 - **FR-041**: System MUST NOT require an account, login, or any user identification.
 - **FR-042**: System MUST return the user to an empty starting state when the page is reloaded, retaining no part of the previous inquiry.
 
-**Access**
+**Access** — *Constraints*
 
 - **FR-043**: System MUST make every interactive element reachable and operable using a keyboard alone.
 - **FR-044**: System MUST remain usable on a phone-sized screen, with no horizontal scrolling required to read content.
 
-**Protecting against abuse**
-
-Requirement numbers are assigned once and never reused or reordered, so requirements added by
-later clarification appear at the end rather than beside related ones.
+**Protecting against abuse** — *Behavior and Constraints*
 
 - **FR-045**: System MUST limit the number of question requests a single visitor may make within a rolling time window.
 - **FR-046**: System MUST show a plain-language message asking the visitor to wait and try again when that limit is exceeded.
 - **FR-047**: System MUST leave the inquiry already on screen intact when a request is refused for exceeding the limit. Hitting a limit MUST NOT cost the user their work.
 
-**What may be recorded**
+**What may be recorded** — *Constraints*
 
 - **FR-048**: System MUST NOT write any seed text or generated question text to a server-side log, an error trace, or any other server-side record.
 - **FR-049**: System MUST record enough about each request to diagnose failures — that a request occurred, which failure occurred, and at what depth — without recording any content the user typed or the model produced.
 - **FR-050**: System MUST NOT include seed text or generated question text in any message it sends to an external service other than the request that generates questions.
 
-**When generation declines**
+**When generation declines** — *Behavior and Constraints*
 
 - **FR-051**: System MUST distinguish a declined request — one where generation returns a refusal rather than questions — from a technical failure.
 - **FR-052**: System MUST show, for a declined request, a plain-language message stating that no questions could be generated for the seed or question the request was made about, and that rephrasing may help. The message MUST refer to whichever of the two the request concerned, since a request may be declined at any depth. It MUST NOT describe the outcome as an error or fault, and MUST NOT suggest the user did something wrong.
 - **FR-053**: System MUST NOT display the text of a refusal. A refusal is commentary, and FR-031 forbids commentary reaching the user.
 
-**One request at a time**
+**One request at a time** — *Constraints*
 
 - **FR-054**: System MUST ignore any request to generate or regenerate questions while another such request is in flight.
 - **FR-055**: System MUST make it evident while a request is in flight that further requests will not be accepted, so an ignored click is never silent.
 - **FR-056**: System MUST attach every response to the question it was requested for. A response MUST NEVER be displayed beneath a different question.
 
-**Protecting work in progress**
+**Protecting work in progress** — *Behavior and Constraints*
 
 - **FR-057**: System MUST warn the user that the current inquiry will be lost and require confirmation before a new seed replaces an inquiry already in progress. Discarding a whole inquiry MUST NOT be easier than discarding one question's children (FR-028).
 - **FR-058**: Users MUST be able to cancel a request that is in flight.
@@ -263,6 +281,11 @@ later clarification appear at the end rather than beside related ones.
 - **Lines of Inquiry**: The explicit written list of angles a question may take — assumption, evidence, consequence, alternative, stakeholder, definition, framing, precedent, incentive, failure mode, and others. Guides generation; is not exposed as labels on output.
 
 ## Success Criteria *(mandatory)*
+
+***Verification*** — testable criteria, not subjective ones. Every criterion below is objectively
+checkable except SC-009, SC-010 and SC-011, which are assessed by human review over a defined
+review set and are labelled as such, because question quality cannot be scored automatically and a
+metric claiming otherwise would be false precision.
 
 ### Measurable Outcomes
 
@@ -287,6 +310,8 @@ later clarification appear at the end rather than beside related ones.
 - **SC-019**: 100% of cancelled requests leave the inquiry unchanged, display no partial result, are followed by a request that is accepted without delay, and are not counted against the per-visitor request limit.
 
 ## Assumptions
+
+***Constraints*** — what is taken as given, and the decisions behind each.
 
 - **Maximum seed length is 2,000 characters.** The input description required a cap and a message naming it, but did not fix a value. Two thousand characters comfortably holds a topic, a claim, or a paragraph-long idea while rejecting a pasted document. Adjustable without affecting any other requirement.
 - **Maximum question length is 300 characters.** Chosen so a question stays readable at a glance on a phone, including within a trail. Also adjustable in isolation.
@@ -316,6 +341,8 @@ later clarification appear at the end rather than beside related ones.
 
 ## Out of Scope
 
+***Constraints*** — the boundaries of this version.
+
 - Answering questions, or offering explanation or commentary on them
 - Accounts, login, or syncing across devices
 - Any database or server-side storage of user input
@@ -330,15 +357,15 @@ later clarification appear at the end rather than beside related ones.
 
 ## Specification Format Mapping
 
-This specification is organized around the Spec Kit template. The four-part format used in class
-maps onto it as follows. Every functional requirement appears in exactly one row of this table.
+Every section of this document is labelled inline with the part of the class format it carries;
+this table is the same mapping gathered in one place, down to the individual requirement.
 
-| Format element | Where it lives in this document |
+| Format element | Where it lives |
 |---|---|
-| **Objective** — the failure mode, not the feature description | The **Objective** section at the top of this document, stated as the failure it exists to prevent rather than as a description of the product, together with who experiences that failure and who the product is explicitly not for. |
-| **Behavior** — observable outcomes only, no tech details | User Stories 1–4 and their acceptance scenarios, plus what the user can do and see: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
-| **Constraints** — non-negotiables regardless of implementation | Rules that hold however the app is built: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs, or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and never charges them for a request they cancelled (FR-045, FR-047, FR-060); no user or model text recorded or sent anywhere else (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). Also the Assumptions and Out of Scope sections. |
-| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, the Edge Cases, and Success Criteria SC-001 through SC-019. SC-009, SC-010, and SC-011 are assessed by human review over a defined review set and are labeled as such rather than presented as automated tests, because question quality cannot be scored automatically and a metric claiming otherwise would be false precision. |
+| **Objective** — the failure mode, not the feature description | The **Objective** section at the top, stated as the failure it exists to prevent rather than a description of the product, with who suffers that failure and who the product is explicitly not for. |
+| **Behavior** — observable outcomes only, no tech details | User Stories 1–4, and the requirement groups labelled *Behavior*: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
+| **Constraints** — non-negotiables regardless of implementation | The requirement groups labelled *Constraints*, plus Assumptions and Out of Scope: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and never charges them for a request they cancelled (FR-045, FR-047, FR-060); no user or model text recorded or sent elsewhere (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). |
+| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, written as Given / When / Then; the Edge Cases, which are the boundary conditions; and Success Criteria SC-001 through SC-019. SC-009, SC-010 and SC-011 are assessed by human review and are labelled as such rather than presented as automated tests. |
 
 
 ---
