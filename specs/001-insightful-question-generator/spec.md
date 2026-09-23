@@ -42,16 +42,6 @@ never asking the right question, the one that would have changed the conclusion.
   anyone looking for a traditional chatbot. This boundary is load-bearing — without it the product
   drifts into being a general-purpose assistant.
 
-## Clarifications
-
-### Session 2026-09-22
-
-- Q: Should the app limit how many question requests one visitor can make, and what should a visitor see when they hit that limit? → A: Cap requests per visitor over a rolling window; when exceeded, show a plain-language message saying to wait and try again.
-- Q: Is the app allowed to record what a user types into a server-side log? → A: Log request metadata and failure reasons only — never seed or question text.
-- Q: How quickly should a normal request finish, as distinct from the thirty seconds at which it gives up? → A: Under 10 seconds typical, 30 seconds hard stop.
-- Q: What should a user see when the model declines to generate questions about their seed? → A: A distinct message saying no questions could be generated for this seed and suggesting a rephrase, claiming no fault either way.
-- Q: What should happen if a user clicks to expand a second question while the first expansion is still loading? → A: Ignore new expansion requests while one is in flight; the loading state shows the app is busy.
-
 ## User Scenarios & Testing *(mandatory)*
 
 ***Behavior*** — each user story describes observable outcomes, with no technology in it.
@@ -355,6 +345,20 @@ metric claiming otherwise would be false precision.
 - Displaying the whole inquiry tree at once, or any overview map of it
 - Keeping both the old and new question sets after a regeneration
 - Undoing a regeneration, or recovering an inquiry cleared by a new seed, once either has been confirmed
+
+## Clarifications
+
+Questions raised against a complete draft and answered deliberately, recorded here in the order
+they were asked. Each one is already integrated into the sections above; this is the record of
+what was decided and when, not a list of anything outstanding.
+
+### Session 2026-09-22
+
+- Q: Should the app limit how many question requests one visitor can make, and what should a visitor see when they hit that limit? → A: Cap requests per visitor over a rolling window; when exceeded, show a plain-language message saying to wait and try again.
+- Q: Is the app allowed to record what a user types into a server-side log? → A: Log request metadata and failure reasons only — never seed or question text.
+- Q: How quickly should a normal request finish, as distinct from the thirty seconds at which it gives up? → A: Under 10 seconds typical, 30 seconds hard stop.
+- Q: What should a user see when the model declines to generate questions about their seed? → A: A distinct message saying no questions could be generated for this seed and suggesting a rephrase, claiming no fault either way.
+- Q: What should happen if a user clicks to expand a second question while the first expansion is still loading? → A: Ignore new expansion requests while one is in flight; the loading state shows the app is busy.
 
 ---
 
