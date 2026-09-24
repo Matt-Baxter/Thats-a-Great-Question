@@ -85,9 +85,12 @@ Each scenario maps to the specification. Run them on a desktop browser and again
 
 ## Measure against the numbers
 
-- **Speed (SC-015)** — time twenty consecutive requests across varied seeds. At least eighteen must
-  finish within ten seconds. If fewer do, lower effort first; then bring the numbers to the
-  maintainer (research.md R1).
+- **Speed (SC-015)** — time twenty consecutive requests across varied seeds and record the time
+  within which eighteen of them finished. That number becomes SC-015's target; effort is not
+  lowered to meet the old ten seconds (research.md R1). Any request over thirty seconds is a defect
+  (FR-038).
+- **Effort** — run the review set at `medium`, then at `high`. Adopt `high` only if its questions
+  are clearly better and every request still ends within thirty seconds.
 - **Quality (SC-009, SC-010, SC-011)** — run the review set of at least twenty seeds spanning
   technical, social and philosophical subjects. Include deliberately factual seeds (spec,
   Assumptions) and adversarial seeds that try to make the app answer (research.md R9). Score by

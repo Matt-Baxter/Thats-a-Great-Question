@@ -6,8 +6,14 @@ checked while planning; each names what to confirm and what changes if it turns 
 
 ## R1. Which model, and how hard it thinks
 
-**Decision**: `claude-opus-5-5`, chosen by the maintainer. Effort is set explicitly to `low` to
-start and raised to `medium` only if the human review set (SC-009) shows a real improvement.
+**Decision**: `claude-opus-5-5`, chosen by the maintainer. Effort is set explicitly to `medium`.
+`high` is tried on the human review set (SC-009) and adopted if it produces clearly better
+questions within the thirty-second hard stop.
+
+**Quality comes before speed.** The maintainer decided on 2026-09-24 that better questions are worth
+a slower answer. Effort is never lowered to meet SC-015; if `medium` or `high` is slower than ten
+seconds, SC-015 is re-set from real measurements instead. The thirty-second hard stop (FR-038) is a
+different kind of promise — that the app never appears to hang — and is not traded away.
 
 **Rationale**: question quality is the only thing this app is judged on, and Opus 5.5 is the current
 Opus model at a lower price than Opus 5 ($4 / $20 per million input / output tokens, against $5 /
@@ -23,16 +29,21 @@ $25). Three things about it shape the code:
 
 **Alternatives considered**: `claude-opus-5`, the previous default — more expensive and superseded.
 A faster, cheaper model — choosing one to save time or money is the maintainer's decision, not the
-plan's. If `low` effort still misses SC-015 on real measurements, that decision comes back to the
-maintainer with the numbers.
+plan's.
+
+`low` effort was the first plan, chosen for speed, and was replaced when the maintainer put quality
+first. `medium` over `high` as the starting point for two reasons. It is Opus 5.5's own default,
+the level it is tuned around. And extra effort pays off most on long, many-step work; whether it
+improves a five-question list is an open question the review set can answer, whereas its cost —
+longer waits, closer to the thirty-second hard stop — is certain.
 
 ## R2. One model call or two
 
 **Decision**: one call. Its structured response contains both the candidates (10–15) and the
 model's selection of the strongest 3–5, given as positions in the candidate list.
 
-**Rationale**: two sequential calls roughly double the waiting, and ten seconds is the budget
-(SC-015). One call still separates generating from choosing — the response shows both, so tests
+**Rationale**: two sequential calls roughly double the waiting, and even with speed second to
+quality, every request must end within thirty seconds (FR-038). One call still separates generating from choosing — the response shows both, so tests
 can check that the selection really came from the candidates, and a reviewer running the app
 locally can see what was passed over. The model does the choosing against the written criteria;
 Python then checks the choice against the specification's hard rules.

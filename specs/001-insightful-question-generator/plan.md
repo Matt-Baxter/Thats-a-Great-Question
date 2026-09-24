@@ -34,9 +34,9 @@ Node's built-in `node --test`, no packages (see Complexity Tracking).
 
 **Project Type**: Web application — static frontend and one API endpoint
 
-**Model**: `claude-opus-5-5`, effort set explicitly to `low` to start; thinking is always on for this model ([research.md](research.md) R1)
+**Model**: `claude-opus-5-5`, effort `medium`, with `high` tried on the review set; thinking is always on for this model ([research.md](research.md) R1)
 
-**Performance Goals**: 90% of successful requests within 10 seconds (SC-015)
+**Performance Goals**: question quality first. SC-015's ten-second target will be re-set from real measurements rather than met by lowering effort; the thirty-second hard stop (FR-038) holds
 
 **Constraints**: every request resolves within 30 seconds (FR-038); no user or model text in any
 server-side record (FR-048); keyboard-operable and phone-sized (FR-043, FR-044)
