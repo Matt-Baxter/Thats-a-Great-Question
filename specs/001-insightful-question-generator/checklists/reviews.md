@@ -138,6 +138,26 @@ would probably have read correctly anyway.
 Also added a Last Updated field, since the specification was created on the 21st and revised
 substantially through the 22nd with no way for a reader to tell.
 
+## 7. Plan phase — two findings decided
+
+Planning found two things the specification and constitution could not deliver as written. Both
+were decided by the maintainer on 2026-09-24.
+
+- **FR-060 rested on a false premise.** It said a cancelled request should not count against the
+  request limit because cancelling threatens neither cost nor availability. But cancelling in the
+  browser does not stop the model call already running on the server — it finishes and is billed —
+  and a limit enforced at the hosting platform's edge counts requests on arrival without ever
+  learning that the browser gave up. FR-060 now requires the limit to be high enough that ordinary
+  use, including occasional cancelling, never reaches it, and allows cancelled requests to count.
+  SC-019, the matching edge case, and the format mapping table were updated to match.
+- **The constitution said nothing is stored server-side**, but the only workable per-visitor limit
+  keeps request counts at the platform edge. Amended to 1.1.1: no user content is stored
+  server-side, and platform request counters are permitted because they hold no content.
+
+Also recorded: the model moved from `claude-opus-5` to `claude-opus-5-5` at the maintainer's
+request. That is a planning decision rather than a specification change — the specification names
+no model — and is reasoned in `research.md` R1.
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The

@@ -6,18 +6,25 @@ checked while planning; each names what to confirm and what changes if it turns 
 
 ## R1. Which model, and how hard it thinks
 
-**Decision**: `claude-opus-5`. Effort starts at `low`, raised to `medium` only if the human review
-set (SC-009) shows a real improvement. Adaptive thinking stays on — it is on by default for this
-model — and is never switched off.
+**Decision**: `claude-opus-5-5`, chosen by the maintainer. Effort is set explicitly to `low` to
+start and raised to `medium` only if the human review set (SC-009) shows a real improvement.
 
-**Rationale**: `claude-opus-5` is the project default for question quality, which is the only thing
-this app is judged on. Effort is the lever that trades depth for speed within one model, and it is
-the first thing to tune against the ten-second target. Switching thinking off has two known failure
-modes on this model; lowering effort gets the speed without them.
+**Rationale**: question quality is the only thing this app is judged on, and Opus 5.5 is the current
+Opus model at a lower price than Opus 5 ($4 / $20 per million input / output tokens, against $5 /
+$25). Three things about it shape the code:
 
-**Alternatives considered**: a faster, cheaper model. Not chosen here — choosing a smaller model to
-save time or money is the maintainer's decision, not the plan's. If `low` effort still misses
-SC-015 on real measurements, that decision comes back to the maintainer with the numbers.
+- **Thinking is always on and cannot be switched off**; effort is the only control, and so the
+  first lever against the ten-second target.
+- **Its default effort is `medium`**, not `high` as on Opus 5, so effort must be set explicitly
+  rather than relied on.
+- **Thinking counts toward the output-token limit** even though its text is not returned, so the
+  limit is sized for thinking plus the reply, and the reply is read by block type rather than by
+  position, since thinking blocks can come first.
+
+**Alternatives considered**: `claude-opus-5`, the previous default — more expensive and superseded.
+A faster, cheaper model — choosing one to save time or money is the maintainer's decision, not the
+plan's. If `low` effort still misses SC-015 on real measurements, that decision comes back to the
+maintainer with the numbers.
 
 ## R2. One model call or two
 
@@ -61,8 +68,9 @@ declines — `stop_reason` is `"refusal"` on the final response — and then as 
 FR-052 describes. The refusal text itself is never shown (FR-053).
 
 **Rationale**: this app's target users ask about uncomfortable social and philosophical subjects,
-where a cautious classifier is most likely to decline something legitimate. A fallback turns many
-of those into questions instead of a dead end.
+where a cautious classifier is most likely to decline something legitimate. Opus 5.5 screens more
+categories than Opus 5 did, so this matters more, not less. A fallback turns many of those declines
+into questions instead of a dead end.
 
 **Also**: `stop_reason` of `"max_tokens"`, or a reply that will not parse, is a malformed response
 (FR-035), not a decline.
@@ -115,9 +123,10 @@ here. The spend limit covers what an address-based rule cannot — many addresse
   instance, so it would appear to protect while not doing so. Rejected as misleading.
 - *A limit in the browser.* Anyone can bypass it; it is a courtesy, not a limit.
 
-**Consequences**:
-- FR-060 cannot be met as written, and its premise is wrong. See [plan.md](plan.md), Findings.
-- The platform keeps per-address counts. See [plan.md](plan.md), Findings.
+**Consequences**, both resolved 2026-09-24:
+- FR-060 as first written could not be met and rested on a false premise. It now requires a limit
+  high enough that ordinary use never reaches it, and allows cancelled requests to count.
+- The platform keeps per-address counts. Constitution 1.1.1 permits them, since they hold no content.
 
 **Verify**: that Vercel's firewall rate limiting is available on the Hobby plan, and how it is
 configured. If it is not available, the spend limit alone bounds cost, and FR-045 is not met until

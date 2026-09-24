@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-21
 
-**Last Updated**: 2026-09-22
+**Last Updated**: 2026-09-24
 
 **Status**: Draft
 
@@ -19,7 +19,7 @@ this table is the same mapping gathered in one place, down to the individual req
 |---|---|
 | **Objective** — the failure mode, not the feature description | The **Objective** section at the top, stated as the failure it exists to prevent rather than a description of the product, with who suffers that failure and who the product is explicitly not for. |
 | **Behavior** — observable outcomes only, no tech details | User Stories 1–4, and the requirement groups labelled *Behavior*: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
-| **Constraints** — non-negotiables regardless of implementation | The requirement groups labelled *Constraints*, plus Assumptions and Out of Scope: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and never charges them for a request they cancelled (FR-045, FR-047, FR-060); no user or model text recorded or sent elsewhere (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). |
+| **Constraints** — non-negotiables regardless of implementation | The requirement groups labelled *Constraints*, plus Assumptions and Out of Scope: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and that ordinary use never reaches (FR-045, FR-047, FR-060); no user or model text recorded or sent elsewhere (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). |
 | **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, written as Given / When / Then; the Edge Cases, which are the boundary conditions; and Success Criteria SC-001 through SC-019. SC-009, SC-010 and SC-011 are assessed by human review and are labelled as such rather than presented as automated tests. |
 
 ## Objective
@@ -141,7 +141,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **Failed regeneration**: A request for a fresh set fails. The existing questions are left in place, nothing is discarded, and the user can try again.
 - **Failed expansion, then retry**: An expansion fails. The user sees a message, the tree is unchanged, and the same question can be expanded again.
 - **New seed mid-inquiry**: The user starts a new inquiry while deep in an existing one. They are warned that the current inquiry will be lost and must confirm; on confirmation it is cleared without a page reload.
-- **Cancelled request**: The user cancels a request before it resolves. The inquiry is unchanged, no partial result is displayed, the next request is accepted immediately, and the cancelled request does not count against their request limit.
+- **Cancelled request**: The user cancels a request before it resolves. The inquiry is unchanged, no partial result is displayed, and the next request is accepted immediately.
 - **Refresh mid-inquiry**: The user reloads the page. They return to an empty starting state, with no part of the inquiry restored.
 - **Narrow screen**: The app is used on a phone. All content, including a deep trail, remains readable and every control remains reachable.
 
@@ -261,7 +261,7 @@ related ones.
 - **FR-057**: System MUST warn the user that the current inquiry will be lost and require confirmation before a new seed replaces an inquiry already in progress. Discarding a whole inquiry MUST NOT be easier than discarding one question's children (FR-028).
 - **FR-058**: Users MUST be able to cancel a request that is in flight.
 - **FR-059**: System MUST leave the inquiry unchanged when a request is cancelled, and MUST accept new requests immediately afterward.
-- **FR-060**: System MUST NOT count a cancelled request against the per-visitor request limit of FR-045. The limit exists to bound cost and protect availability, and a user who changes their mind has not threatened either.
+- **FR-060**: System MUST set the per-visitor request limit of FR-045 high enough that ordinary use — including cancelling a request now and then — never reaches it. The limit exists to stop runaway or automated use, not to ration a person exploring an idea. Cancelled requests may count toward it: cancelling in the browser does not stop work already under way, which still costs.
 
 ### Key Entities
 
@@ -298,7 +298,7 @@ metric claiming otherwise would be false precision.
 - **SC-016**: 100% of declined requests produce the distinct could-not-generate message rather than a technical error message, and 0% display any refusal text. The message names the seed when the request concerned a seed and the question when it concerned a question, at every depth.
 - **SC-017**: 0% of responses are displayed beneath a question other than the one they were requested for, including when a user repeatedly attempts to start requests while one is in flight.
 - **SC-018**: 100% of attempts to start a new inquiry over an inquiry already in progress warn the user and require confirmation before anything is discarded.
-- **SC-019**: 100% of cancelled requests leave the inquiry unchanged, display no partial result, are followed by a request that is accepted without delay, and are not counted against the per-visitor request limit.
+- **SC-019**: 100% of cancelled requests leave the inquiry unchanged, display no partial result, and are followed by a request that is accepted without delay.
 
 ## Assumptions
 

@@ -78,8 +78,10 @@ broad one that half-works.
   lives in Python.
 - Hosting: Vercel.
 - Question generation: the Anthropic Claude API.
-- Nothing is stored server-side. There is no database and no user account. Anything the app
-  remembers lives in the browser only.
+- No user content is stored server-side: nothing a user types, and nothing generated for them.
+  There is no database and no user account. Anything the app remembers about an inquiry lives in
+  the browser only. Request counters kept by the hosting platform to enforce a rate limit are
+  permitted, because they hold no content.
 
 **User experience**
 
@@ -135,4 +137,4 @@ broad one that half-works.
   happen, so ordinary work is governed by these principles as much as `/speckit-*` work is. A
   constitution that only applies to four commands is not a standing brief.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-21
+**Version**: 1.1.1 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-24

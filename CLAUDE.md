@@ -77,8 +77,8 @@ Working notes, scope decisions, and course artifacts live in a separate reposito
 ## Stack
 
 Python serverless backend on Vercel, plain HTML/CSS/JS frontend with no framework and no build
-step, question generation via the Anthropic Claude API. Nothing is stored server-side; anything the
-app remembers lives in the browser only, for the session.
+step, question generation via the Anthropic Claude API. No user content is stored server-side; anything
+the app remembers about an inquiry lives in the browser only, for the session.
 
 Note the division of labour: **all logic involving judgment lives in Python.** JavaScript is
 limited to sending requests and displaying results. The maintainer reads Python comfortably and is
