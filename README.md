@@ -36,7 +36,7 @@ browser, for the length of the session — a page refresh starts you over.
 
 ## Project status
 
-Specification and mockup stage. No application code yet.
+Planning stage. Constitution, specification, mockup and implementation plan are done; no application code yet.
 
 ### ▶ Open the UI mockup
 
@@ -65,6 +65,7 @@ standing in for a real request.
 | UI mockup — read the source | [`mockups/inquiry-flow.html`](mockups/inquiry-flow.html) | HTML source on GitHub |
 | Constitution — the project's governing principles | [`.specify/memory/constitution.md`](.specify/memory/constitution.md) | rendered document |
 | Specification — user stories, requirements, success criteria | [`specs/001-insightful-question-generator/spec.md`](specs/001-insightful-question-generator/spec.md) | rendered document |
+| Implementation plan — how it will be built, and why | [`specs/001-insightful-question-generator/plan.md`](specs/001-insightful-question-generator/plan.md) | rendered document |
 | Specification quality checklist | [`specs/001-insightful-question-generator/checklists/requirements.md`](specs/001-insightful-question-generator/checklists/requirements.md) | rendered document |
 | Review history — every question asked of the spec, and every defect found | [`specs/001-insightful-question-generator/checklists/reviews.md`](specs/001-insightful-question-generator/checklists/reviews.md) | rendered document |
 | Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) | rendered document |
