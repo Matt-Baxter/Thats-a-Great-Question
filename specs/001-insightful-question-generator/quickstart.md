@@ -30,7 +30,7 @@ git check-ignore .env              # must print ".env"; if it prints nothing, st
 
 ```bash
 pytest                             # every Python check, against a fake model client
-node --test tests/                 # browser tree logic
+node --test tests/tree.test.mjs    # browser tree logic
 ```
 
 Both must pass before any commit is pushed (constitution, Development Workflow). Neither calls the
