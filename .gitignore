@@ -1,0 +1,15 @@
+# Files that must never be committed. This file is committed first, before any
+# key exists anywhere (constitution Principle III; research.md R11).
+
+# Real keys live in .env locally. Only the example, which holds no value, is tracked.
+.env
+.env.*
+!.env.example
+
+# Vercel's local project link and build output
+.vercel/
+
+# Python virtual environment and caches
+.venv/
+__pycache__/
+.pytest_cache/
