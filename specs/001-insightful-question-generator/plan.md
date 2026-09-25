@@ -108,6 +108,7 @@ tests/
 ├── test_prompts.py
 ├── test_generate.py
 ├── test_http_response.py
+├── test_handler.py         # api/questions.py run as a local server; never reaches the model
 └── tree.test.mjs           # browser tree logic, run with `node --test`
 
 requirements.txt            # anthropic
