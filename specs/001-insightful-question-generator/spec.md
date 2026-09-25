@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-21
 
-**Last Updated**: 2026-09-24
+**Last Updated**: 2026-09-25
 
 **Status**: Draft
 
@@ -294,7 +294,7 @@ metric claiming otherwise would be false precision.
 - **SC-012**: 100% of interactive elements can be reached and operated using a keyboard alone.
 - **SC-013**: 100% of requests beyond the per-visitor limit produce a plain-language wait-and-retry message, with the inquiry already on screen left intact.
 - **SC-014**: Across every induced failure condition, 100% of server-side log output contains no seed text and no generated question text.
-- **SC-015**: At least 90% of successful requests complete within ten seconds. The thirty seconds in SC-001 is the point at which a request is abandoned, not a target.
+- **SC-015**: At least 90% of successful requests complete within ten seconds. *Provisional: this figure predates the decision to put question quality before speed, and is to be re-set from the first real measurements (see Assumptions).* The thirty seconds in SC-001 is the point at which a request is abandoned, not a target.
 - **SC-016**: 100% of declined requests produce the distinct could-not-generate message rather than a technical error message, and 0% display any refusal text. The message names the seed when the request concerned a seed and the question when it concerned a question, at every depth.
 - **SC-017**: 0% of responses are displayed beneath a question other than the one they were requested for, including when a user repeatedly attempts to start requests while one is in flight.
 - **SC-018**: 100% of attempts to start a new inquiry over an inquiry already in progress warn the user and require confirmation before anything is discarded.
@@ -307,7 +307,7 @@ metric claiming otherwise would be false precision.
 - **Maximum seed length is 2,000 characters.** The input description required a cap and a message naming it, but did not fix a value. Two thousand characters comfortably holds a topic, a claim, or a paragraph-long idea while rejecting a pasted document. Adjustable without affecting any other requirement.
 - **Maximum question length is 300 characters.** Chosen so a question stays readable at a glance on a phone, including within a trail. Also adjustable in isolation.
 - **Distinctness is enforced at two levels, and only one of them is automatable.** Duplicate or near-identical wording is rejected mechanically (FR-007, SC-002). Whether two differently-worded questions pursue the same underlying goal — "What drives you?" and "What are you passionate about?" point at one goal; "What are you best at?" points at another — is a judgment call, delivered by how questions are selected (FR-008) and verified by human review (SC-010). Claiming the second is machine-checkable would be false precision.
-- **Ten seconds is the budget any selection design must fit.** Choosing among candidates costs time, and SC-015 is the number that design is measured against rather than the thirty-second abandonment point. If an approach cannot typically deliver questions within ten seconds, it is too slow regardless of how good its output is.
+- **Question quality comes before speed.** Better questions are worth a slower answer. SC-015's speed target is set from real measurements of the app at the effort its question quality requires; the app is never made less thoughtful to meet a speed target. The thirty-second limit in FR-038 is a different kind of promise — that the app never appears to hang — and holds regardless.
 - **Questions are selected, not merely produced.** A response is the strongest few questions chosen from a wider set of candidates against written criteria, rather than the first few generated. The criteria cover whether answering a question would change the user's conclusion, whether the user would plausibly have asked it themselves, whether it can actually be pursued, whether the chosen set covers genuinely different angles, and whether it is faithful to the seed as given. How selection is performed is a planning decision, not a requirement of this specification.
 - **Generation happens once per question, unless the user asks again.** Opening a question that has never been expanded generates its children; returning to one that already has children displays them. Backtracking is only meaningful if a branch is stable. The user may explicitly request a fresh set, which replaces what was there.
 - **The inquiry tree lives only in the browser, only for the session.** It is retained so the user can move between branches, and discarded on reload, or on starting a new inquiry once the user has confirmed the loss. Nothing is written to a server.

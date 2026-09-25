@@ -158,6 +158,26 @@ Also recorded: the model moved from `claude-opus-5` to `claude-opus-5-5` at the 
 request. That is a planning decision rather than a specification change — the specification names
 no model — and is reasoned in `research.md` R1.
 
+## 8. Cross-artifact analysis — seven issues fixed
+
+`/speckit-analyze` checked the specification, plan and task list against each other and against the
+constitution. Seven issues were fixed on 2026-09-25; four minor ones were left, as recorded in the
+analysis.
+
+- **Two constitution conflicts.** The constitution limited JavaScript to "sending requests and
+  displaying results", but browser-only retention (FR-021) means JavaScript must keep the inquiry
+  tree. The plan had called this "justified", which is not something a plan can do to a MUST. The
+  constitution was amended to 1.2.0 to say what JavaScript may do — keep the session's tree, in its
+  own unit-tested module — and what it may not: judge question content. Separately, the HTTP handler
+  decided which status code each outcome got, with no test; that mapping now lives in a tested
+  function, and the handler only passes values between tested functions.
+- **The specification contradicted a decision already made.** An assumption said an approach slower
+  than ten seconds was too slow "regardless of how good its output is", after the maintainer had put
+  quality first. Rewritten, and SC-015 marked provisional until it is set from measurement.
+- **Three smaller gaps in the task list.** Only one task mentioned the docstring every module must
+  open with; the page's 2,000-character limit was a second, unnamed copy of a server value; and
+  three success criteria (SC-001, SC-005, SC-013) had no task that verified them.
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The

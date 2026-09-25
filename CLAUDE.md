@@ -80,9 +80,10 @@ Python serverless backend on Vercel, plain HTML/CSS/JS frontend with no framewor
 step, question generation via the Anthropic Claude API. No user content is stored server-side; anything
 the app remembers about an inquiry lives in the browser only, for the session.
 
-Note the division of labour: **all logic involving judgment lives in Python.** JavaScript is
-limited to sending requests and displaying results. The maintainer reads Python comfortably and is
-newer to JavaScript, so keep judgment out of the frontend.
+Note the division of labour: **all logic involving judgment lives in Python.** JavaScript sends
+requests, displays results, and keeps the session's inquiry tree — its structure and navigation —
+in a separate, unit-tested module (`public/tree.mjs`). It never judges question content. The
+maintainer reads Python comfortably and is newer to JavaScript, so keep judgment out of the frontend.
 
 ## One thing to get right
 

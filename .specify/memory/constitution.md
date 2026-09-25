@@ -74,8 +74,11 @@ broad one that half-works.
 
 - Backend: Python 3.11+, deployed as serverless functions.
 - Frontend: plain HTML, CSS, and JavaScript. No frontend framework and no build step.
-- JavaScript is limited to sending requests and displaying results. All logic involving judgment
-  lives in Python.
+- JavaScript sends requests, displays results, and keeps the session's inquiry tree in the
+  browser — its structure, navigation, and counts of what an action would discard. It makes no
+  judgment about question content: what to ask, whether a question is good enough, or what a user
+  sees when something fails. All of that lives in Python. The tree logic is kept in its own
+  module, separate from the page code, and is unit-tested like any other decision.
 - Hosting: Vercel.
 - Question generation: the Anthropic Claude API.
 - No user content is stored server-side: nothing a user types, and nothing generated for them.
@@ -137,4 +140,4 @@ broad one that half-works.
   happen, so ordinary work is governed by these principles as much as `/speckit-*` work is. A
   constitution that only applies to four commands is not a standing brief.
 
-**Version**: 1.1.1 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-24
+**Version**: 1.2.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-25
