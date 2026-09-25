@@ -51,7 +51,7 @@ server-side record (FR-048); keyboard-operable and phone-sized (FR-043, FR-044)
 |---|---|---|
 | I. Explainable code | ✅ Pass | No web framework — a standard-library handler. The model's reply is checked by one readable Python function rather than a schema library. Every value that shapes behaviour is a named, commented constant in one file. |
 | II. Tests cover decisions | ✅ Pass | Every Python function that transforms or decides has unit tests against a fake client, covering the failure cases the constitution names — including the mapping from outcome to HTTP status. Browser tree logic in `public/tree.mjs` is tested with `node --test`, as constitution 1.2.0 requires. |
-| III. Secrets | ✅ Pass | Key read from `ANTHROPIC_API_KEY` in server code only. `.gitignore` covering `.env*` and `.vercel/` is the first file committed, before any key exists. |
+| III. Secrets | ✅ Pass | Key read from `QUESTION_APP_API_KEY` — its name a constant in `inquiry/config.py` — in server code only, and passed to the client explicitly along with a fixed `base_url`, so no other `ANTHROPIC_*` variable can supply a different key or redirect the call (research.md R11). `.gitignore` covering `.env*` and `.vercel/` is the first file committed, before any key exists. |
 | IV. Untrusted model output | ✅ Pass | Structured output, then validation in Python, before anything reaches the browser. The browser inserts text with `textContent`, never as markup. Every failure maps to a written message. |
 | V. Small and finished | ✅ Pass | One endpoint, one Python package, three frontend files, one runtime dependency. |
 | Stack constraints | ✅ Pass | Python serverless on Vercel; plain HTML/CSS/JS, no framework, no build step; Claude API. |
@@ -86,12 +86,12 @@ api/
 └── questions.py            # Vercel entry point: reads the request, calls inquiry/, writes JSON. No judgment.
 
 inquiry/                    # every judgment the app makes
-├── config.py               # named, commented constants: limits, counts, model, effort, timeout
+├── config.py               # named, commented constants: limits, counts, model, effort, timeout, key variable, API address
 ├── lines_of_inquiry.py     # the written list of angles a question may take, each commented
 ├── prompts.py              # builds the model prompt from a seed and its ancestor chain
 ├── request_checks.py       # validates what the browser sent (FR-002, FR-003, chain lengths)
 ├── response_checks.py      # validates what the model returned (FR-004 to FR-011)
-├── generate.py             # one call to the model; maps every outcome to a result
+├── generate.py             # builds the model client; one call to the model; maps every outcome to a result
 ├── http_response.py        # turns a result into a status code and JSON body; the only place outcomes become HTTP
 └── messages.py             # every plain-language message a user can see, in one place
 
@@ -114,7 +114,7 @@ requirements.txt            # anthropic
 requirements-dev.txt        # pytest
 vercel.json                 # function duration; no rewrites needed
 .gitignore                  # first commit: .env*, .vercel/, __pycache__/
-.env.example                # the variable name only, never a value
+.env.example                # the variable name (QUESTION_APP_API_KEY) only, never a value
 ```
 
 **Structure decision**: a web application with one endpoint, split by responsibility rather than by

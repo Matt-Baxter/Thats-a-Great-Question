@@ -186,13 +186,27 @@ vocabulary for a newer developer to learn. Development only; never deployed.
 
 ## R11. The key, and the first commit
 
-**Decision**: the key is set as `ANTHROPIC_API_KEY` in Vercel's environment settings and in an
-untracked `.env` file locally. The first implementation commit is `.gitignore` — covering `.env*`,
-`.vercel/` and `__pycache__/` — before any key exists anywhere. `.env.example` records the
-variable's name and never a value.
+**Decision**: the key is set as `QUESTION_APP_API_KEY` in Vercel's environment settings and in an
+untracked `.env` file locally. The variable's name is a named constant in `inquiry/config.py`; the
+server reads that one variable and passes its value to the Anthropic client as `api_key`. The client
+is also given `base_url` explicitly — `https://api.anthropic.com`, another named constant — rather
+than left to the SDK's default lookup. If the variable is missing or blank, the request fails with
+the ordinary failure message and no client is built. The first implementation commit is
+`.gitignore` — covering `.env*`, `.vercel/` and `__pycache__/` — before any key exists anywhere.
+`.env.example` records the variable's name and never a value.
 
 **Rationale**: Principle III — a committed key is compromised the moment it is pushed, and deleting
 it later does not remove it from history.
+
+Why not the SDK's default `ANTHROPIC_API_KEY`: given no arguments, the SDK looks through several
+environment variables and files for a key (`ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, a login
+profile on disk) and for an address (`ANTHROPIC_BASE_URL`). On a developer's machine or in a cloud
+container those can belong to other tools — a coding assistant's own key, or a proxy address — and
+the app would silently use them. Checked against `anthropic` 1.8.0: an explicit `api_key` stops the
+SDK consulting any other credential source, and an explicit `base_url` takes precedence over
+`ANTHROPIC_BASE_URL` and any profile. A key under the app's own name, passed explicitly, means the
+app spends only the key meant for it and sends it only to Anthropic. The missing-key check matters
+for the same reason: passing `api_key=None` would put the SDK's own lookup back in charge.
 
 **Also verify**: where the monthly spend limit (R7) is set in the Anthropic Console, and set it
 before the site is public.
@@ -201,9 +215,13 @@ before the site is public.
 
 Collected from the entries above. Each was unreachable while planning.
 
-| Item | Entry | If it turns out otherwise |
-|---|---|---|
-| Maximum function duration on Vercel Hobby | R5 | Lower the client timeout below the platform limit |
-| Firewall rate limiting on Vercel Hobby, and its configuration | R7 | FR-045 unmet until the maintainer chooses a store or a paid plan |
-| Python handler shape and bundling of a root-level package | R8 | Move `inquiry/` under `api/_inquiry/` |
-| Where the Anthropic spend limit is set | R11 | — set it before the site is public |
+**Status, 2026-09-25**: none of the four has been verified. The maintainer chose to implement
+Phases 1–3 on the default assumption for each, shown in the third column, and to check them before
+deploying (T004 stays open). Nothing built so far depends on the last two.
+
+| Item | Entry | Default assumed for now | If it turns out otherwise |
+|---|---|---|---|
+| Maximum function duration on Vercel Hobby | R5 | At least 30 seconds; `vercel.json` sets 30 | Lower the client timeout below the platform limit |
+| Firewall rate limiting on Vercel Hobby, and its configuration | R7 | Available (needed only at deploy, T047) | FR-045 unmet until the maintainer chooses a store or a paid plan |
+| Python handler shape and bundling of a root-level package | R8 | Both work; the package stays at `inquiry/` | Move `inquiry/` under `api/_inquiry/` |
+| Where the Anthropic spend limit is set | R11 | — (needed only before going public, T046) | — set it before the site is public |

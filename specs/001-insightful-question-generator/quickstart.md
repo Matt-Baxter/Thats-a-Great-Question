@@ -20,6 +20,10 @@ pip install -r requirements.txt -r requirements-dev.txt
 cp .env.example .env               # then put your key in .env — never commit it
 ```
 
+The app reads its key from `QUESTION_APP_API_KEY`, not the SDK's usual `ANTHROPIC_API_KEY`, and
+always sends it to `https://api.anthropic.com`, ignoring `ANTHROPIC_BASE_URL`. A key or proxy address
+set for some other tool on the same machine is never picked up (research.md R11).
+
 Confirm `.env` is ignored before going further:
 
 ```bash
@@ -78,8 +82,10 @@ Each scenario maps to the specification. Run them on a desktop browser and again
    it is busy. (FR-054, FR-055; SC-017)
 9. **Empty and over-length seeds** — both rejected with a message naming the problem; the second
    names the limit. (FR-002, FR-003)
-10. **Failure** — set an invalid key in `.env` and restart. Submitting shows a plain-language failure
-    and the page stays usable. Restore the key. (FR-035, FR-039)
+10. **Failure** — set `QUESTION_APP_API_KEY` in `.env` to an invalid value and restart. Submitting
+    shows a plain-language failure and the page stays usable. Then remove the line entirely and
+    restart: the same failure message, not a call made with some other key. Restore the key.
+    (FR-035, FR-039)
 11. **Keyboard only** — repeat scenarios 1–5 without a mouse. (FR-043; SC-012)
 12. **Reload** — mid-inquiry, reload the page. It returns empty. (FR-042)
 
@@ -98,7 +104,7 @@ Each scenario maps to the specification. Run them on a desktop browser and again
 
 ## Deploy
 
-1. Set `ANTHROPIC_API_KEY` in the Vercel project's environment settings.
+1. Set `QUESTION_APP_API_KEY` in the Vercel project's environment settings.
 2. Configure the firewall rate-limit rule on `/api/questions` (research.md R7 — verify it is
    available first).
 3. Confirm the Anthropic spend limit is set.
