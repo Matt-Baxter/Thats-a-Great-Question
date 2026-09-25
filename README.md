@@ -36,7 +36,9 @@ browser, for the length of the session — a page refresh starts you over.
 
 ## Project status
 
-Ready to build. Constitution, specification, mockup, implementation plan and task list are done; no application code yet.
+Being built. The first user story works: a seed goes in and three to five checked questions, or a
+plain-language message, come back. Opening a question for more questions, the trail, and asking
+again are still to come (tasks.md, Phases 4–6). Not yet deployed.
 
 ### ▶ Open the UI mockup
 
@@ -92,12 +94,27 @@ would be false precision.
 
 ## Running it locally
 
-Not yet applicable — there is no application code. When there is:
+You need Python 3.11 or newer, the [Vercel CLI](https://vercel.com/docs/cli) for `vercel dev`, and
+an Anthropic API key.
 
-The app will need an Anthropic API key, supplied through an environment variable and read
-server-side only. The key will never appear in frontend code, in any response sent to the browser,
-in logs, or in the repository. Setup instructions will be added here alongside the first working
-version.
+```bash
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt -r requirements-dev.txt
+cp .env.example .env               # then put your key after QUESTION_APP_API_KEY=
+git check-ignore .env              # must print ".env"; if it prints nothing, stop
+pytest                             # needs no key, and never calls the live model
+vercel dev                         # serves the page and the API together
+```
+
+**The key.** The app reads its Anthropic API key from `QUESTION_APP_API_KEY` — deliberately not
+the SDK's usual `ANTHROPIC_API_KEY`, so a key set for another tool on the same machine is never
+used — and always sends it to `https://api.anthropic.com`, whatever `ANTHROPIC_BASE_URL` says. The
+key is read in server-side Python only. It never appears in frontend code, in any response sent to
+the browser, in logs, or in the repository; `.env` is git-ignored. When deploying, set the same
+variable in the Vercel project's environment settings.
+
+The full validation guide is [quickstart.md](specs/001-insightful-question-generator/quickstart.md).
 
 ## Stack
 

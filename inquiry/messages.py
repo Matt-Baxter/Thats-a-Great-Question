@@ -2,9 +2,11 @@
 
 Keeping them together means anyone can read, in a single file, everything the app
 might say when it cannot return questions. The browser shows these exactly as text
-and never writes its own, except for two fixed messages it must supply itself: the
-wait-and-try-again message for the platform's rate limit, and the timed-out message
-when it gives up waiting (contracts/questions-api.md).
+and never writes its own, except for three fixed messages it must supply itself
+because no reply from this server exists to carry one: the wait-and-try-again message
+for the platform's rate limit, the timed-out message when it gives up waiting, and a
+failure message when the network fails or the reply is unreadable
+(contracts/questions-api.md).
 """
 
 from inquiry import config

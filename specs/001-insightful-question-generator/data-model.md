@@ -90,8 +90,9 @@ What the server returns. Exactly one of these outcomes.
 | `failed` | a message | Timeout, unreachable model, or a reply that failed validation (FR-035) |
 
 Every message is written in `inquiry/messages.py`. The browser displays it as text and never
-composes one — except for the platform's own rate-limit response, which carries no body from this
-application.
+composes one — except when no reply from this application exists to carry one: the platform's
+rate-limit response, the browser giving up at 30 seconds, and a network failure or unreadable
+reply ([contracts/questions-api.md](contracts/questions-api.md)).
 
 ## Inside the server
 

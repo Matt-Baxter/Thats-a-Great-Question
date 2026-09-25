@@ -107,9 +107,11 @@ Any method other than POST. No body is promised.
 Returned by the hosting platform's rate limit (FR-045). The body is the platform's, not this
 contract's, so the browser shows its own fixed wait-and-try-again message for any 429 (FR-046).
 
-That is one of exactly two user-facing messages not written in `inquiry/messages.py`. The other is
-the browser's own message when it abandons a request at 30 seconds, since by then no response has
-arrived to carry one. Both are fixed strings, not judgments.
+That is one of exactly three user-facing messages not written in `inquiry/messages.py`. The second
+is the browser's own message when it abandons a request at 30 seconds, since by then no response has
+arrived to carry one. The third is for when a reply arrives but is not this application's JSON, or
+the network fails outright: no message from the server exists to show (FR-039). All three are fixed
+strings, not judgments; the last two reuse the server's wording for a timeout and a failure.
 
 ### Guarantees
 

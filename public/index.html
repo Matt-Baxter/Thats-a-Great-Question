@@ -1,0 +1,55 @@
+<!doctype html>
+<!--
+  The app's only page. A seed goes in; three to five questions about it, or a
+  plain-language message, come back.
+
+  Structure only: styles.css holds every style and app.js every behaviour. No
+  third-party scripts, fonts or trackers are loaded, so nothing a user types is
+  sent anywhere except this app's own server (FR-050).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>That's a Great Question</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="wrap">
+
+    <section class="home">
+      <h1 class="greeting">Let's investigate.<br><em>What are you turning over?</em></h1>
+      <p class="sub">
+        Give a topic, a claim, a half-formed idea, or a question. You get back the questions
+        worth asking about it — never the answers.
+      </p>
+
+      <form class="composer" id="seed-form">
+        <label class="sr" for="seed">Your seed — a topic, claim, idea, or question</label>
+        <textarea id="seed" name="seed" placeholder="A topic, a claim, or something you are turning over…"></textarea>
+        <div class="composer-foot">
+          <span class="count" id="count" aria-live="polite">0 / 2,000</span>
+          <button class="btn" id="submit" type="submit">Find the questions</button>
+        </div>
+      </form>
+    </section>
+
+    <div class="loading" id="loading" hidden>
+      <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="loading-text">Looking for the questions worth asking…</span>
+    </div>
+
+    <div class="msg" id="message" aria-live="polite" hidden></div>
+
+    <section id="results" aria-live="polite" hidden>
+      <h2 class="list-label">Questions worth asking</h2>
+      <ol class="questions" id="questions"></ol>
+      <p class="suggestion-note">
+        Suggestions, not a complete set. The app does not answer these — that part is yours.
+      </p>
+    </section>
+
+  </main>
+</body>
+</html>
