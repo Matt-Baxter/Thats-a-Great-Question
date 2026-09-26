@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-21
 
-**Last Updated**: 2026-09-25
+**Last Updated**: 2026-09-26
 
 **Status**: Draft
 
@@ -18,9 +18,9 @@ this table is the same mapping gathered in one place, down to the individual req
 | Format element | Where it lives |
 |---|---|
 | **Objective** — the failure mode, not the feature description | The **Objective** section at the top, stated as the failure it exists to prevent rather than a description of the product, with who suffers that failure and who the product is explicitly not for. |
-| **Behavior** — observable outcomes only, no tech details | User Stories 1–4, and the requirement groups labelled *Behavior*: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
+| **Behavior** — observable outcomes only, no tech details | User Stories 1–4, and the requirement groups labelled *Behavior*: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012, FR-061), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
 | **Constraints** — non-negotiables regardless of implementation | The requirement groups labelled *Constraints*, plus Assumptions and Out of Scope: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and that ordinary use never reaches (FR-045, FR-047, FR-060); no user or model text recorded or sent elsewhere (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). |
-| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, written as Given / When / Then; the Edge Cases, which are the boundary conditions; and Success Criteria SC-001 through SC-019. SC-009, SC-010 and SC-011 are assessed by human review and are labelled as such rather than presented as automated tests. |
+| **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, written as Given / When / Then; the Edge Cases, which are the boundary conditions; and Success Criteria SC-001 through SC-020. SC-009, SC-010, SC-011 and SC-020 are assessed by human review and are labelled as such rather than presented as automated tests. |
 
 ## Objective
 
@@ -263,6 +263,10 @@ related ones.
 - **FR-059**: System MUST leave the inquiry unchanged when a request is cancelled, and MUST accept new requests immediately afterward.
 - **FR-060**: System MUST set the per-visitor request limit of FR-045 high enough that ordinary use — including cancelling a request now and then — never reaches it. The limit exists to stop runaway or automated use, not to ration a person exploring an idea. Cancelled requests may count toward it: cancelling in the browser does not stop work already under way, which still costs.
 
+**Keeping questions short** — *Behavior*
+
+- **FR-061**: System MUST ask for questions that each pursue one idea, in plain words, and aim for twenty words or fewer. The target is guidance, not a rejection rule: only the maximum length of FR-010 causes a response to be rejected. Whether questions meet it is judged by human review (SC-020). *Added 2026-09-26, after the first live questions were often long enough to blur their point, and were often two questions joined into one.*
+
 ### Key Entities
 
 - **Seed**: The free text a user submits to begin an inquiry. Bounded in length. The root of the inquiry tree. Not retained beyond the user's browser session.
@@ -274,7 +278,7 @@ related ones.
 ## Success Criteria *(mandatory)*
 
 ***Verification*** — testable criteria, not subjective ones. Every criterion below is objectively
-checkable except SC-009, SC-010 and SC-011, which are assessed by human review over a defined
+checkable except SC-009, SC-010, SC-011 and SC-020, which are assessed by human review over a defined
 review set and are labelled as such, because question quality cannot be scored automatically and a
 metric claiming otherwise would be false precision.
 
@@ -299,6 +303,7 @@ metric claiming otherwise would be false precision.
 - **SC-017**: 0% of responses are displayed beneath a question other than the one they were requested for, including when a user repeatedly attempts to start requests while one is in flight.
 - **SC-018**: 100% of attempts to start a new inquiry over an inquiry already in progress warn the user and require confirmation before anything is discarded.
 - **SC-019**: 100% of cancelled requests leave the inquiry unchanged, display no partial result, and are followed by a request that is accepted without delay.
+- **SC-020**: Across the same review set as SC-009, a human reviewer judges that at least 80% of responses contain no question that joins two questions into one, or that could be asked in noticeably fewer words without losing its point (FR-061).
 
 ## Assumptions
 
@@ -308,10 +313,10 @@ metric claiming otherwise would be false precision.
 - **Maximum question length is 300 characters.** Chosen so a question stays readable at a glance on a phone, including within a trail. Also adjustable in isolation.
 - **Distinctness is enforced at two levels, and only one of them is automatable.** Duplicate or near-identical wording is rejected mechanically (FR-007, SC-002). Whether two differently-worded questions pursue the same underlying goal — "What drives you?" and "What are you passionate about?" point at one goal; "What are you best at?" points at another — is a judgment call, delivered by how questions are selected (FR-008) and verified by human review (SC-010). Claiming the second is machine-checkable would be false precision.
 - **Question quality comes before speed.** Better questions are worth a slower answer. SC-015's speed target is set from real measurements of the app at the effort its question quality requires; the app is never made less thoughtful to meet a speed target. The thirty-second limit in FR-038 is a different kind of promise — that the app never appears to hang — and holds regardless.
-- **Questions are selected, not merely produced.** A response is the strongest few questions chosen from a wider set of candidates against written criteria, rather than the first few generated. The criteria cover whether answering a question would change the user's conclusion, whether the user would plausibly have asked it themselves, whether it can actually be pursued, whether the chosen set covers genuinely different angles, and whether it is faithful to the seed as given. How selection is performed is a planning decision, not a requirement of this specification.
+- **Questions are selected, not merely produced.** A response is the strongest few questions chosen from a wider set of candidates against written criteria, rather than the first few generated. The criteria cover whether answering a question would change the user's conclusion, whether the user would plausibly have asked it themselves, whether it can actually be pursued, whether the chosen set covers genuinely different angles, whether it is faithful to the seed as given, and — between two questions otherwise as good — which is shorter. How selection is performed is a planning decision, not a requirement of this specification.
 - **Generation happens once per question, unless the user asks again.** Opening a question that has never been expanded generates its children; returning to one that already has children displays them. Backtracking is only meaningful if a branch is stable. The user may explicitly request a fresh set, which replaces what was there.
 - **The inquiry tree lives only in the browser, only for the session.** It is retained so the user can move between branches, and discarded on reload, or on starting a new inquiry once the user has confirmed the loss. Nothing is written to a server.
-- **Question quality cannot be scored automatically.** Whether a question is genuinely insightful is context-dependent and assessed by human review (SC-009, SC-010, SC-011). The automated criteria check the *shape* of a response, not its worth. No metric in this specification claims otherwise, because one that did would be false precision.
+- **Question quality cannot be scored automatically.** Whether a question is genuinely insightful is context-dependent and assessed by human review (SC-009, SC-010, SC-011, SC-020). The automated criteria check the *shape* of a response, not its worth. No metric in this specification claims otherwise, because one that did would be false precision.
 - **A seed whose answer is settled still gets questions.** A factual lookup — "Who was the first
   president of the United States?" — is treated no differently from a contested claim: the app
   returns three to five questions about it and never the answer. Answering such seeds was

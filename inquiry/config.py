@@ -28,7 +28,16 @@ MAX_QUESTIONS = 5
 
 # The longest question accepted, in characters (FR-010). Also the longest ancestor
 # question the browser may send back, since ancestors are questions this app returned.
+# A safety net, not a style guide: it is deliberately not quoted to the model, which
+# read "at most 300 characters" as room to fill. TARGET_QUESTION_WORDS sets the length
+# the model is asked for.
 MAX_QUESTION_CHARS = 300
+
+# The length the model is asked to aim for, in words (FR-061). Short questions are
+# easier to take in and to act on, and long ones were often two questions joined into
+# one. A target, not a rule: a longer question is not rejected unless it breaks
+# MAX_QUESTION_CHARS. Whether questions meet it is judged by human review (SC-020).
+TARGET_QUESTION_WORDS = 20
 
 # How many candidate questions the model is asked to write before choosing the
 # strongest few. A wider pool gives the choice something to choose between

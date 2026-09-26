@@ -215,13 +215,16 @@ before the site is public.
 
 Collected from the entries above. Each was unreachable while planning.
 
-**Status, 2026-09-25**: none of the four has been verified. The maintainer chose to implement
-Phases 1–3 on the default assumption for each, shown in the third column, and to check them before
-deploying (T004 stays open). Nothing built so far depends on the last two.
+**Status, 2026-09-26**: three of the four are settled by the first deploy. The project deployed
+to Vercel Hobby with the "Other" preset, `vercel.json`'s 30-second duration was accepted, and a live
+request through `api/questions.py` returned questions — so the `BaseHTTPRequestHandler` shape works
+and the root-level `inquiry/` package is bundled. The maintainer has set a monthly spend limit in the
+Anthropic Console. One caveat: the 30-second cap was accepted, but no request has yet run long
+enough to test it. Firewall rate limiting on Hobby is still unverified and is checked in T047.
 
 | Item | Entry | Default assumed for now | If it turns out otherwise |
 |---|---|---|---|
-| Maximum function duration on Vercel Hobby | R5 | At least 30 seconds; `vercel.json` sets 30 | Lower the client timeout below the platform limit |
+| Maximum function duration on Vercel Hobby | R5 | At least 30 seconds; `vercel.json` sets 30 | **Settled 2026-09-26:** the deploy accepted 30 |
 | Firewall rate limiting on Vercel Hobby, and its configuration | R7 | Available (needed only at deploy, T047) | FR-045 unmet until the maintainer chooses a store or a paid plan |
-| Python handler shape and bundling of a root-level package | R8 | Both work; the package stays at `inquiry/` | Move `inquiry/` under `api/_inquiry/` |
-| Where the Anthropic spend limit is set | R11 | — (needed only before going public, T046) | — set it before the site is public |
+| Python handler shape and bundling of a root-level package | R8 | Both work; the package stays at `inquiry/` | **Settled 2026-09-26:** both work on the live deploy |
+| Where the Anthropic spend limit is set | R11 | — (needed only before going public, T046) | **Settled 2026-09-26:** a monthly spend limit, set in the Anthropic Console |

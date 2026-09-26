@@ -178,6 +178,22 @@ analysis.
   open with; the page's 2,000-character limit was a second, unnamed copy of a server value; and
   three success criteria (SC-001, SC-005, SC-013) had no task that verified them.
 
+## 9. First live questions — too long
+
+The first deployed questions were often long enough to blur their point, and the build session had
+already noticed that many were two questions joined into one. The cause was in the prompt: it told
+the model each question could be "at most 300 characters", about fifty words, and the model used
+the room.
+
+The fix separates a target from a ceiling. FR-061 asks for one idea per question, in plain words,
+aiming for twenty words or fewer (`TARGET_QUESTION_WORDS`), and a sixth selection criterion prefers
+the shorter of two otherwise equal questions. The 300-character limit stays as a safety net but is
+no longer quoted to the model. The target is not enforced by rejection, because a single long
+question would then fail the whole response; SC-020 has it judged by human review instead, in the
+same review set as SC-009 to SC-011 (T049).
+
+Counts after this change: 61 functional requirements, 20 success criteria.
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The

@@ -31,9 +31,9 @@ def test_every_line_of_inquiry_appears_with_its_description():
         assert f"{line['name']}: {line['description']}" in prompt
 
 
-def test_all_five_selection_criteria_appear():
+def test_all_six_selection_criteria_appear():
     prompt = build_system_prompt()
-    assert len(SELECTION_CRITERIA) == 5
+    assert len(SELECTION_CRITERIA) == 6
     for criterion in SELECTION_CRITERIA:
         assert criterion in prompt
 
@@ -56,8 +56,25 @@ def test_the_prompt_asks_for_the_positions_of_the_strongest_three_to_five():
     assert "counting from 0" in prompt
 
 
-def test_the_prompt_states_the_maximum_question_length():
-    assert f"at most {config.MAX_QUESTION_CHARS} characters" in build_system_prompt()
+def test_the_prompt_asks_for_the_target_length_in_words():
+    # FR-061
+    prompt = build_system_prompt()
+    assert f"{config.TARGET_QUESTION_WORDS} words or fewer" in prompt
+
+
+def test_the_prompt_does_not_quote_the_character_ceiling():
+    # FR-061: quoting the 300-character safety net invited questions that filled it.
+    assert str(config.MAX_QUESTION_CHARS) not in build_system_prompt()
+
+
+def test_the_prompt_asks_for_one_idea_per_question():
+    # FR-061: long questions were often two questions joined into one.
+    assert "never two questions joined into one" in build_system_prompt()
+
+
+def test_the_criteria_prefer_the_shorter_of_two_equal_questions():
+    # FR-061
+    assert "choose the shorter" in " ".join(SELECTION_CRITERIA)
 
 
 def test_the_prompt_says_never_to_answer_or_comment():

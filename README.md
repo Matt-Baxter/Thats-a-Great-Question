@@ -38,7 +38,8 @@ browser, for the length of the session — a page refresh starts you over.
 
 Being built. The first user story works: a seed goes in and three to five checked questions, or a
 plain-language message, come back. Opening a question for more questions, the trail, and asking
-again are still to come (tasks.md, Phases 4–6). Not yet deployed.
+again are still to come (tasks.md, Phases 4–6). Deployed to Vercel on 2026-09-26; every push to
+`main` redeploys it.
 
 ### ▶ Open the UI mockup
 
@@ -67,15 +68,15 @@ standing in for a real request.
 | UI mockup — read the source | [`mockups/inquiry-flow.html`](mockups/inquiry-flow.html) | HTML source on GitHub |
 | Constitution — the project's governing principles | [`.specify/memory/constitution.md`](.specify/memory/constitution.md) | rendered document |
 | Specification — user stories, requirements, success criteria | [`specs/001-insightful-question-generator/spec.md`](specs/001-insightful-question-generator/spec.md) | rendered document |
-| Task list — the 49 build steps, in order |  [`specs/001-insightful-question-generator/tasks.md`](specs/001-insightful-question-generator/tasks.md) | rendered document |
+| Task list — the 50 build steps, in order |  [`specs/001-insightful-question-generator/tasks.md`](specs/001-insightful-question-generator/tasks.md) | rendered document |
 | Implementation plan — how it will be built, and why | [`specs/001-insightful-question-generator/plan.md`](specs/001-insightful-question-generator/plan.md) | rendered document |
 | Specification quality checklist | [`specs/001-insightful-question-generator/checklists/requirements.md`](specs/001-insightful-question-generator/checklists/requirements.md) | rendered document |
 | Review history — every question asked of the spec, and every defect found | [`specs/001-insightful-question-generator/checklists/reviews.md`](specs/001-insightful-question-generator/checklists/reviews.md) | rendered document |
 | Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) | rendered document |
 
 The specification defines 4 prioritized user stories with Given/When/Then acceptance scenarios,
-60 functional requirements (`FR-001`–`FR-060`), and 19 measurable success criteria
-(`SC-001`–`SC-019`), with five clarifications recorded from the clarify phase.
+61 functional requirements (`FR-001`–`FR-061`), and 20 measurable success criteria
+(`SC-001`–`SC-020`), with five clarifications recorded from the clarify phase.
 
 ## How this is being built
 

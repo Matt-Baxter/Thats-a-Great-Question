@@ -13,13 +13,15 @@ from inquiry.lines_of_inquiry import LINES_OF_INQUIRY
 # What makes one candidate stronger than another. These come from the specification's
 # Assumptions, "Questions are selected, not merely produced". The fourth also carries
 # the two rules no automated check can enforce: different angles (FR-008) and no
-# leading or rhetorical questions (FR-011).
+# leading or rhetorical questions (FR-011). The sixth prefers the shorter of two
+# questions that are otherwise as good (FR-061).
 SELECTION_CRITERIA = [
     "Answering it could change what the person concludes or decides.",
     "The person would probably not have thought to ask it themselves.",
     "It can actually be pursued: someone could go and find out, or reason their way to an answer.",
     "Together, the chosen questions cover genuinely different angles, and none is leading or rhetorical.",
     "It is faithful to the seed as given, not to a different topic the seed reminds you of.",
+    "It is short and asks one thing: between two questions that are otherwise as good, choose the shorter.",
 ]
 
 # The JSON the model must reply with. `candidates` is every question it wrote;
@@ -57,7 +59,8 @@ Then choose the strongest {config.MIN_QUESTIONS} to {config.MAX_QUESTIONS} of yo
 
 Every chosen question must:
 - be a single question that ends with a question mark
-- be at most {config.MAX_QUESTION_CHARS} characters
+- ask about one idea, never two questions joined into one
+- be in plain words, and {config.TARGET_QUESTION_WORDS} words or fewer unless the idea truly needs more
 - not presuppose its own answer, and not be a statement with a question mark added
 - not simply restate the seed
 - be a different question from every other chosen one, not the same question reworded
