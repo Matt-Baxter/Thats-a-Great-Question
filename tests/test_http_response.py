@@ -4,10 +4,12 @@ The status codes and bodies are the ones contracts/questions-api.md specifies. N
 may carry a field the contract does not list.
 """
 
+import logging
+
 import pytest
 
 from inquiry import messages
-from inquiry.http_response import to_http_response
+from inquiry.http_response import to_http_response, unexpected_error_response
 
 QUESTIONS = ["What is assumed?", "What is the evidence?", "Who is affected?"]
 
@@ -60,3 +62,18 @@ def test_no_body_carries_a_field_the_contract_does_not_list(result):
         assert set(body) == {"status", "questions"}
     else:
         assert set(body) == {"status", "message"}
+
+
+def test_an_unexpected_error_becomes_502_failed_with_the_failure_message():
+    # FR-039: even an unforeseen error ends in this app's JSON.
+    status, body = unexpected_error_response(ValueError("anything"))
+    assert status == 502
+    assert body == {"status": "failed", "message": messages.GENERATION_FAILED}
+
+
+def test_an_unexpected_error_logs_its_type_but_never_its_message(caplog):
+    # FR-048: an error's message could quote the seed.
+    caplog.set_level(logging.DEBUG, logger="inquiry")
+    unexpected_error_response(ValueError("Remote work makes teams less innovative."))
+    assert "type=ValueError" in caplog.text
+    assert "Remote work" not in caplog.text

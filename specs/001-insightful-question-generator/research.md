@@ -84,7 +84,9 @@ categories than Opus 5 did, so this matters more, not less. A fallback turns man
 into questions instead of a dead end.
 
 **Also**: `stop_reason` of `"max_tokens"`, or a reply that will not parse, is a malformed response
-(FR-035), not a decline.
+(FR-035), not a decline. And a refusal whose `stop_details.recommended_model` is set is a failure,
+not a decline: the API sets that field only when it could not try the fallback (it was overloaded or
+out of capacity), so the seed may be fine and asking again may work. Found in code review, 2026-09-29.
 
 ## R5. Staying inside thirty seconds
 
@@ -207,6 +209,13 @@ SDK consulting any other credential source, and an explicit `base_url` takes pre
 `ANTHROPIC_BASE_URL` and any profile. A key under the app's own name, passed explicitly, means the
 app spends only the key meant for it and sends it only to Anthropic. The missing-key check matters
 for the same reason: passing `api_key=None` would put the SDK's own lookup back in charge.
+
+One more route, found in code review on 2026-09-29: the SDK also adds every header listed in
+`ANTHROPIC_CUSTOM_HEADERS`, and an `x-api-key` or `Authorization` header there would replace or join
+the app's key. The client is therefore also given `default_headers` that set `X-Api-Key` to the
+app's key and remove `Authorization`; headers given this way win. A test captures the request the
+real SDK builds, with that variable set, and checks its headers. Other custom headers still pass
+through; none of them can authenticate a call.
 
 **Also verify**: where the monthly spend limit (R7) is set in the Anthropic Console, and set it
 before the site is public.

@@ -35,11 +35,12 @@ FALLBACK_BETA = "server-side-fallback-2026-07-01"
 FALLBACK_MODE = "default"
 
 
-def build_client(environ):
+def build_client(environ, http_client=None):
     """Build the Anthropic client from the app's own key, or return None if the key is not set.
 
-    Both the key and the address are passed explicitly so the SDK never looks for them
-    elsewhere, such as in ANTHROPIC_API_KEY or ANTHROPIC_BASE_URL (research.md R11).
+    The key, the address and the authentication headers are all set explicitly, so
+    nothing another tool put in the environment can change them (research.md R11).
+    Only tests pass `http_client`, to capture what would be sent without sending it.
     """
     api_key = environ.get(config.API_KEY_ENV_VAR, "").strip()
     if api_key == "":
@@ -49,8 +50,13 @@ def build_client(environ):
     return anthropic.Anthropic(
         api_key=api_key,
         base_url=config.API_BASE_URL,
+        # The SDK also adds every header listed in ANTHROPIC_CUSTOM_HEADERS, and one of
+        # those could carry another tool's key or token. Headers given here win, so the
+        # key header is always the app's own and no bearer token is ever sent.
+        default_headers={"X-Api-Key": api_key, "Authorization": anthropic.omit},
         timeout=config.API_TIMEOUT_SECONDS,
         max_retries=config.API_MAX_RETRIES,
+        http_client=http_client,
     )
 
 
@@ -99,6 +105,13 @@ def call_model(client, request):
 
 def result_from_response(response, request, depth):
     """Turn the model's response into a result, checking why it stopped before reading it."""
+    # A decline for which the fallback could not be tried, because it was overloaded or
+    # out of capacity. The seed may be fine, so this is a failure worth retrying, not a
+    # decline (research.md R4).
+    if response.stop_reason == "refusal" and fallback_was_skipped(response):
+        log_outcome("failed", "fallback_unavailable", depth, refusal_category(response))
+        return {"outcome": "failed", "message": messages.GENERATION_FAILED}
+
     # A decline by the model and its fallback. The refusal's own wording is never shown
     # or logged (FR-053); only its category is logged.
     if response.stop_reason == "refusal":
@@ -136,6 +149,16 @@ def read_reply(response):
             except json.JSONDecodeError:
                 return None
     return None
+
+
+def fallback_was_skipped(response):
+    """True if the API says it could not try the fallback model for this refusal.
+
+    The API sets `recommended_model` only in that case, naming the model it would have tried.
+    """
+    if response.stop_details is None:
+        return False
+    return response.stop_details.recommended_model is not None
 
 
 def refusal_category(response):

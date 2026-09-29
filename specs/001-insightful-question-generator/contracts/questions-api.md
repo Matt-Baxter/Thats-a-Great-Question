@@ -85,7 +85,9 @@ For an empty seed, an over-length seed, or a malformed request (FR-002, FR-003).
 ```
 
 For an unreachable model, or a reply that failed validation — wrong count, duplicates, a
-non-question, over-length, cut off, or unparseable (FR-005, FR-035).
+non-question, over-length, cut off, or unparseable (FR-005, FR-035). Also for a refusal the API
+could not pass to its fallback model because that model was overloaded (research.md R4), for a
+missing API key, and for any error nothing else anticipated (FR-039).
 
 **504 — timed out**
 
@@ -100,7 +102,8 @@ When the model call exceeds its timeout (FR-038).
 
 **405 — method not allowed**
 
-Any method other than POST. No body is promised.
+Any standard method other than POST: GET, HEAD, OPTIONS, PUT, PATCH and DELETE. No body is promised.
+A non-standard method name gets the standard library's own 501 instead.
 
 **429 — too many requests** *(written by the platform, not this application)*
 

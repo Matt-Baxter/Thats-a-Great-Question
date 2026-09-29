@@ -6,7 +6,7 @@ implementation guide; the build steps come from `tasks.md`.
 ## Prerequisites
 
 - Python 3.11 or newer
-- Node.js — for the Vercel CLI (local running and deploying) and `node --test` (browser tree tests)
+- Node.js — for the Vercel CLI (local running and deploying) and `node --test` (browser logic tests)
 - A Vercel account with this repository connected
 - An Anthropic API key, with a **monthly spend limit set on the account before the site is public**
   (research.md R7, R11)
@@ -34,7 +34,7 @@ git check-ignore .env              # must print ".env"; if it prints nothing, st
 
 ```bash
 pytest                             # every Python check, against a fake model client
-node --test tests/tree.test.mjs    # browser tree logic
+node --test "tests/*.test.mjs"     # browser logic: the tree, and how replies are shown
 ```
 
 Both must pass before any commit is pushed (constitution, Development Workflow). Neither calls the

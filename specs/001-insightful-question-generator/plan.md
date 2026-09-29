@@ -28,7 +28,7 @@ only: `pytest`. Nothing else; the HTTP handler uses the standard library.
 discarded on reload.
 
 **Testing**: `pytest` with a hand-written fake model client, never the live API. Browser tree logic:
-Node's built-in `node --test`, no packages (see Complexity Tracking).
+Node's built-in `node --test "tests/*.test.mjs"`, no packages (see Complexity Tracking).
 
 **Target Platform**: Vercel — static files plus one Python serverless function
 
@@ -99,6 +99,7 @@ public/
 ├── index.html
 ├── styles.css              # colours, spacing and type defined once
 ├── tree.mjs                # the session's inquiry tree: structure, navigation, counts. No page access; unit-tested
+├── reply.mjs               # which of a reply's fields the page shows, and the three fixed browser messages; unit-tested
 └── app.js                  # draws the page and sends requests, using tree.mjs
 
 tests/
@@ -109,7 +110,8 @@ tests/
 ├── test_generate.py
 ├── test_http_response.py
 ├── test_handler.py         # api/questions.py run as a local server; never reaches the model
-└── tree.test.mjs           # browser tree logic, run with `node --test`
+├── tree.test.mjs           # browser tree logic
+└── reply.test.mjs          # public/reply.mjs; both run with `node --test "tests/*.test.mjs"`
 
 requirements.txt            # anthropic
 requirements-dev.txt        # pytest

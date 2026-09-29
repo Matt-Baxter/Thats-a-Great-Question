@@ -109,7 +109,7 @@ The structured reply requested from the model, before any checking.
 repaired one (FR-005):
 
 1. `selected` has 3–5 entries, all distinct, all valid positions in `candidates`.
-2. Each selected question, after trimming, is non-empty and ends with a question mark (FR-006).
+2. Each selected question, after trimming, contains a letter or digit and ends with a question mark — `?`, or the full-width `？` or Arabic `؟`, since other languages are not prevented (FR-006).
 3. Each is at most 300 characters (FR-010).
 4. No two are the same once normalised — lower-cased, punctuation removed, whitespace collapsed (FR-007).
 5. None normalises to the same text as the seed or question being opened (FR-009).

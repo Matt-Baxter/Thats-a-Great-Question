@@ -2,8 +2,16 @@
 
 This is the only place an outcome becomes HTTP, so the mapping in
 contracts/questions-api.md can be tested without running a server. Each body carries
-only the fields the contract lists, whatever else a result may hold.
+only the fields the contract lists, whatever else a result may hold. It also holds the
+last-resort response for an error nothing else anticipated, so even then the browser
+gets this app's JSON rather than a crash (FR-039).
 """
+
+import logging
+
+from inquiry import messages
+
+logger = logging.getLogger(__name__)
 
 # The status code for each outcome. A decline is not an error, so it gets 200 like
 # questions do (FR-052). A timeout gets its own code but the same "failed" status in the
@@ -37,3 +45,15 @@ def to_http_response(result):
     else:
         body = {"status": body_status, "message": result["message"]}
     return status_code, body
+
+
+def unexpected_error_response(error):
+    """Return the failure response for an error nothing else caught, logging only the error's type.
+
+    The error's message is never logged, because it could quote the seed (FR-048).
+    """
+    logger.warning("outcome=failed reason=unexpected_error type=%s", type(error).__name__)
+    return STATUS_CODE_FOR_OUTCOME["failed"], {
+        "status": BODY_STATUS_FOR_OUTCOME["failed"],
+        "message": messages.GENERATION_FAILED,
+    }

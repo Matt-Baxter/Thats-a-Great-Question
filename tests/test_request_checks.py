@@ -4,10 +4,13 @@ The browser is not trusted, so every rule is checked again on the server. Each t
 sends a raw request body, exactly as the handler receives it.
 """
 
+import io
 import json
 
+import pytest
+
 from inquiry import config, messages
-from inquiry.request_checks import check_request
+from inquiry.request_checks import check_request, read_body
 
 
 def body_for(payload):
@@ -93,3 +96,43 @@ def test_a_body_exactly_at_the_request_cap_is_not_rejected_for_size():
     assert len(padded) == config.MAX_REQUEST_BYTES
     result = check_request(padded)
     assert result["outcome"] == "checked"
+
+
+def test_a_seed_containing_half_of_a_two_part_character_is_rejected_as_invalid_input():
+    # JSON can carry a lone surrogate, which cannot be sent on as UTF-8.
+    body = b'{"seed": "\\ud800 why?", "ancestors": []}'
+    result = check_request(body)
+    assert result == {"outcome": "invalid_input", "message": messages.INVALID_REQUEST}
+
+
+def test_json_nested_too_deeply_to_parse_is_rejected_as_invalid_input():
+    result = check_request(b"[" * 100_000)
+    assert result == {"outcome": "invalid_input", "message": messages.INVALID_REQUEST}
+
+
+def test_a_body_that_read_body_refused_is_rejected_as_invalid_input():
+    assert check_request(None) == {"outcome": "invalid_input", "message": messages.INVALID_REQUEST}
+
+
+# --- Reading the body -----------------------------------------------------------------
+
+
+def test_read_body_reads_exactly_the_declared_length():
+    stream = io.BytesIO(b'{"seed": "x"}and more')
+    assert read_body("13", stream) == b'{"seed": "x"}'
+
+
+def test_read_body_with_no_declared_length_reads_nothing():
+    assert read_body(None, io.BytesIO(b"ignored")) == b""
+
+
+@pytest.mark.parametrize("declared", ["abc", "-1", "", "1.5", "²", " 12"])
+def test_read_body_refuses_a_length_that_is_not_a_whole_number(declared):
+    # Reading -1 would wait for the connection to close; "abc" would crash int().
+    assert read_body(declared, io.BytesIO(b"body")) is None
+
+
+def test_read_body_refuses_a_length_over_the_cap_without_reading():
+    stream = io.BytesIO(b"x" * 10)
+    assert read_body(str(config.MAX_REQUEST_BYTES + 1), stream) is None
+    assert stream.tell() == 0

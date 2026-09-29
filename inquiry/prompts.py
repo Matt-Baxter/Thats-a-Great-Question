@@ -7,8 +7,14 @@ and described as material to question, so text typed as a seed cannot pass itsel
 as instructions (research.md R9).
 """
 
+import re
+
 from inquiry import config
 from inquiry.lines_of_inquiry import LINES_OF_INQUIRY
+
+# Matches the tags that mark the seed's section, <seed> and </seed>, in any letter case
+# and with stray spaces, so a seed cannot contain them (see build_user_message).
+SECTION_TAG = re.compile(r"<\s*/?\s*seed\s*>", re.IGNORECASE)
 
 # What makes one candidate stronger than another. These come from the specification's
 # Assumptions, "Questions are selected, not merely produced". The fourth also carries
@@ -70,5 +76,11 @@ Reply with `candidates`, every candidate question you wrote, and `selected`, the
 
 
 def build_user_message(seed):
-    """The user's turn: the seed inside its marked section."""
-    return f"<seed>\n{seed}\n</seed>"
+    """The user's turn: the seed inside its marked section.
+
+    Any <seed> or </seed> tag typed into the seed is removed first. Otherwise a seed could
+    close its own section early and put text outside it, where the model might read it as
+    instructions rather than material to question (research.md R9).
+    """
+    seed_without_tags = SECTION_TAG.sub("", seed)
+    return f"<seed>\n{seed_without_tags}\n</seed>"

@@ -16,6 +16,12 @@ import unicodedata
 
 from inquiry import config
 
+# The characters a question may end with: the ordinary question mark, the full-width one
+# used in Chinese and Japanese, and the Arabic one. English is the target language, but
+# other languages are "neither prevented nor guaranteed" (spec, Assumptions), and
+# rejecting their question marks would prevent them.
+QUESTION_MARKS = ("?", "？", "؟")
+
 
 def check_reply(reply, opened_text):
     """Apply every check to a parsed reply, returning the selected questions or the first failed check.
@@ -39,9 +45,9 @@ def check_reply(reply, opened_text):
 
     questions = [candidates[position].strip() for position in selected]
 
-    # Check 2: each is non-empty and ends with a question mark (FR-006).
+    # Check 2: each has words in it and ends with a question mark (FR-006).
     for question in questions:
-        if question == "" or not question.endswith("?"):
+        if not has_letter_or_digit(question) or not question.endswith(QUESTION_MARKS):
             return failed("question_mark")
 
     # Check 3: each is within the maximum length (FR-010).
@@ -77,6 +83,14 @@ def has_expected_shape(reply):
         if isinstance(position, bool) or not isinstance(position, int):
             return False
     return True
+
+
+def has_letter_or_digit(text):
+    """True if the text contains at least one letter or digit, so "?" alone is not a question."""
+    for character in text:
+        if character.isalnum():
+            return True
+    return False
 
 
 def normalise(text):

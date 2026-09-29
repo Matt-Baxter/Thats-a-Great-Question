@@ -176,3 +176,19 @@ def test_normalise_lower_cases_removes_punctuation_and_collapses_whitespace():
 
 def test_normalise_removes_typographic_punctuation_too():
     assert normalise("“Ready” — for what?") == "ready for what"
+
+
+# --- Check 2, continued: what counts as a question mark and as a question ------------
+
+
+def test_a_question_mark_on_its_own_is_rejected():
+    # FR-006: punctuation alone is not phrased as a question.
+    result = check_reply(reply(GOOD + ["?"], [0, 1, 10]), SEED)
+    assert result == {"passed": False, "failed_check": "question_mark"}
+
+
+def test_questions_ending_in_full_width_or_arabic_question_marks_are_accepted():
+    # Spec, Assumptions: other languages are not prevented.
+    candidates = ["城市为什么会发展？", "谁决定城市的规模？", "لماذا تنمو المدن؟"]
+    result = check_reply(reply(candidates, [0, 1, 2]), "城市")
+    assert result["passed"] is True

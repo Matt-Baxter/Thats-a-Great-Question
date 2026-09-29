@@ -5,6 +5,8 @@ Every test uses the fake client in tests/fakes.py. None calls the live model.
 
 import logging
 
+import anthropic
+import httpx2
 import pytest
 
 import fakes
@@ -14,6 +16,18 @@ from inquiry.prompts import REPLY_SCHEMA
 
 SEED = fakes.SEED
 REQUEST = {"seed": SEED, "ancestors": []}
+
+# The smallest reply the real SDK will accept, for tests that capture an outgoing request.
+MINIMAL_MESSAGE = {
+    "id": "msg_test",
+    "type": "message",
+    "role": "assistant",
+    "model": config.MODEL,
+    "content": [{"type": "text", "text": "{}"}],
+    "stop_reason": "end_turn",
+    "stop_sequence": None,
+    "usage": {"input_tokens": 1, "output_tokens": 1},
+}
 
 
 # --- A good reply -------------------------------------------------------------------
@@ -77,6 +91,13 @@ def test_a_refusal_message_contains_none_of_the_refusal_text():
     assert "can't help" not in result["message"]
 
 
+def test_a_refusal_whose_fallback_was_never_tried_gives_failed_not_declined():
+    # research.md R4: only a decline by the whole chain is reported as a decline.
+    client = fakes.FakeClient(fakes.refusal_without_fallback())
+    result = generate_questions(client, REQUEST)
+    assert result == {"outcome": "failed", "message": messages.GENERATION_FAILED}
+
+
 # --- Failures -------------------------------------------------------------------------
 
 
@@ -138,6 +159,7 @@ ALL_REPLIES = [
     fakes.valid_reply,
     fakes.thinking_then_text,
     fakes.refusal,
+    fakes.refusal_without_fallback,
     fakes.cut_off,
     fakes.unparseable,
     fakes.too_few,
@@ -155,7 +177,7 @@ ALL_REPLIES = [
 @pytest.mark.parametrize("make_reply", ALL_REPLIES)
 def test_logs_never_contain_the_seed_or_any_question_text(make_reply, caplog):
     # FR-048, SC-014: across every outcome, including failures.
-    caplog.set_level(logging.DEBUG)
+    caplog.set_level(logging.DEBUG, logger="inquiry")
     generate_questions(fakes.FakeClient(make_reply()), REQUEST)
     logged = caplog.text
     assert "Remote work" not in logged
@@ -167,7 +189,7 @@ def test_logs_never_contain_the_seed_or_any_question_text(make_reply, caplog):
 
 def test_the_log_records_the_outcome_and_the_depth(caplog):
     # FR-049
-    caplog.set_level(logging.INFO)
+    caplog.set_level(logging.INFO, logger="inquiry")
     generate_questions(fakes.FakeClient(fakes.valid_reply()), REQUEST)
     assert "outcome=ok" in caplog.text
     assert "depth=0" in caplog.text
@@ -175,21 +197,28 @@ def test_the_log_records_the_outcome_and_the_depth(caplog):
 
 def test_the_log_records_which_check_a_reply_failed(caplog):
     # FR-049: enough to diagnose, without content.
-    caplog.set_level(logging.INFO)
+    caplog.set_level(logging.INFO, logger="inquiry")
     generate_questions(fakes.FakeClient(fakes.too_many()), REQUEST)
     assert "outcome=failed" in caplog.text
     assert "reason=selection" in caplog.text
 
 
 def test_the_log_records_a_refusals_category(caplog):
-    caplog.set_level(logging.INFO)
+    caplog.set_level(logging.INFO, logger="inquiry")
     generate_questions(fakes.FakeClient(fakes.refusal("cyber")), REQUEST)
     assert "outcome=declined" in caplog.text
     assert "category=cyber" in caplog.text
 
 
+def test_the_log_says_when_the_fallback_was_never_tried(caplog):
+    caplog.set_level(logging.INFO, logger="inquiry")
+    generate_questions(fakes.FakeClient(fakes.refusal_without_fallback("cyber")), REQUEST)
+    assert "reason=fallback_unavailable" in caplog.text
+    assert "category=cyber" in caplog.text
+
+
 def test_the_log_says_when_no_key_is_configured(caplog):
-    caplog.set_level(logging.INFO)
+    caplog.set_level(logging.INFO, logger="inquiry")
     generate_questions(None, REQUEST)
     assert "outcome=failed" in caplog.text
     assert "reason=no_api_key" in caplog.text
@@ -207,6 +236,32 @@ def test_the_client_uses_the_apps_key_and_address_not_other_anthropic_variables(
     assert client.api_key == "the-apps-own-key"
     assert client.auth_token is None
     assert str(client.base_url).rstrip("/") == config.API_BASE_URL
+
+
+def test_the_request_actually_sent_carries_only_the_apps_key(monkeypatch):
+    # research.md R11: the SDK adds headers from ANTHROPIC_CUSTOM_HEADERS, which could
+    # carry another tool's key or token. This checks the headers of the request the real
+    # SDK builds, captured before anything leaves the machine.
+    monkeypatch.setenv(
+        "ANTHROPIC_CUSTOM_HEADERS",
+        "x-api-key: key-for-another-tool\nAuthorization: Bearer token-for-another-tool",
+    )
+    monkeypatch.setenv("ANTHROPIC_BASE_URL", "https://proxy.example.invalid")
+    captured = {}
+
+    def capture(request):
+        captured["url"] = str(request.url)
+        captured["headers"] = request.headers
+        return httpx2.Response(200, json=MINIMAL_MESSAGE)
+
+    http_client = anthropic.DefaultHttpxClient(transport=httpx2.MockTransport(capture))
+    client = build_client({config.API_KEY_ENV_VAR: "the-apps-own-key"}, http_client=http_client)
+    client.beta.messages.create(
+        model=config.MODEL, max_tokens=16, messages=[{"role": "user", "content": "hello"}]
+    )
+    assert captured["url"].startswith(config.API_BASE_URL + "/")
+    assert captured["headers"]["x-api-key"] == "the-apps-own-key"
+    assert "authorization" not in captured["headers"]
 
 
 def test_the_client_has_the_configured_timeout_and_no_retries():
@@ -228,6 +283,7 @@ def test_a_blank_key_gives_no_client():
 
 def test_building_the_client_never_logs_the_key(caplog):
     # Constitution Principle III
-    caplog.set_level(logging.DEBUG)
+    caplog.set_level(logging.DEBUG, logger="inquiry")
+    caplog.set_level(logging.DEBUG, logger="anthropic")
     build_client({config.API_KEY_ENV_VAR: "test-secret-value-not-a-real-key"})
     assert "test-secret-value-not-a-real-key" not in caplog.text

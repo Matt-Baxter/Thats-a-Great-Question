@@ -13,7 +13,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>That's a Great Question</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="app.js" defer></script>
+  <script type="module" src="app.js"></script>
 </head>
 <body>
   <main class="wrap">
@@ -27,9 +27,9 @@
 
       <form class="composer" id="seed-form">
         <label class="sr" for="seed">Your seed — a topic, claim, idea, or question</label>
-        <textarea id="seed" name="seed" placeholder="A topic, a claim, or something you are turning over…"></textarea>
+        <textarea id="seed" name="seed" aria-describedby="count" placeholder="A topic, a claim, or something you are turning over…"></textarea>
         <div class="composer-foot">
-          <span class="count" id="count" aria-live="polite">0 / 2,000</span>
+          <span class="count" id="count">0 / 2,000</span>
           <button class="btn" id="submit" type="submit">Find the questions</button>
         </div>
       </form>
@@ -40,15 +40,19 @@
       <span class="loading-text">Looking for the questions worth asking…</span>
     </div>
 
-    <div class="msg" id="message" aria-live="polite" hidden></div>
+    <div class="msg" id="message" hidden></div>
 
-    <section id="results" aria-live="polite" hidden>
+    <section id="results" hidden>
       <h2 class="list-label">Questions worth asking</h2>
       <ol class="questions" id="questions"></ol>
       <p class="suggestion-note">
         Suggestions, not a complete set. The app does not answer these — that part is yours.
       </p>
     </section>
+
+    <!-- Always rendered, so screen readers hear each change: new questions or a message.
+         Regions that are hidden and then shown are often not announced at all. -->
+    <p class="sr" id="announcer" role="status"></p>
 
   </main>
 </body>

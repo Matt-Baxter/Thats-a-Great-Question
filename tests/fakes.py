@@ -41,10 +41,14 @@ class FakeBlock:
 
 
 class FakeStopDetails:
-    """Why the model refused, as the real API reports it."""
+    """Why the model refused, as the real API reports it.
 
-    def __init__(self, category):
+    `recommended_model` is set only when the fallback could not be tried.
+    """
+
+    def __init__(self, category, recommended_model=None):
         self.category = category
+        self.recommended_model = recommended_model
 
 
 class FakeResponse:
@@ -150,6 +154,15 @@ def refusal(category="reasoning_extraction"):
         [FakeBlock("text", "I can't help with that request.")],
         stop_reason="refusal",
         stop_details=FakeStopDetails(category),
+    )
+
+
+def refusal_without_fallback(category="reasoning_extraction"):
+    """The model declined and the fallback was overloaded, so it was never tried."""
+    return FakeResponse(
+        [FakeBlock("text", "I can't help with that request.")],
+        stop_reason="refusal",
+        stop_details=FakeStopDetails(category, recommended_model="claude-opus-5"),
     )
 
 

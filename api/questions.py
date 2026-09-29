@@ -16,29 +16,47 @@ import os
 from http.server import BaseHTTPRequestHandler
 
 from inquiry.generate import build_client, generate_questions
-from inquiry.http_response import to_http_response
-from inquiry.request_checks import check_request
+from inquiry.http_response import to_http_response, unexpected_error_response
+from inquiry.request_checks import check_request, read_body
 
-# Show the app's own outcome lines (see inquiry/generate.py), and only warnings from
-# anything else, so no library prints request details into the log.
+# Show the app's own outcome lines (see inquiry/generate.py) and only warnings from
+# anything else. The SDK and its HTTP library are set to warnings by name, because
+# setting ANTHROPIC_LOG=debug would otherwise make the SDK log every request in full,
+# seed included (FR-048).
 logging.basicConfig(level=logging.WARNING)
+logging.getLogger("anthropic").setLevel(logging.WARNING)
+logging.getLogger("httpx2").setLevel(logging.WARNING)
 logging.getLogger("inquiry").setLevel(logging.INFO)
 
 
 # Vercel's Python runtime looks for a class with exactly this lower-case name.
 class handler(BaseHTTPRequestHandler):
-    """Answers POST with questions or a message; answers every other method with 405."""
+    """Answers POST with questions or a message; answers the other standard methods with 405."""
 
     def do_POST(self):
-        body = self.read_body()
+        # Anything unforeseen still ends in this app's JSON, never a crash (FR-039).
+        try:
+            status_code, payload = self.answer()
+        except Exception as error:
+            status_code, payload = unexpected_error_response(error)
+        self.write_json(status_code, payload)
+
+    def answer(self):
+        """Read and check the request, ask the model if it passed, and return the status code and body."""
+        body = read_body(self.headers.get("Content-Length"), self.rfile)
         result = check_request(body)
         if result["outcome"] == "checked":
             client = build_client(os.environ)
             result = generate_questions(client, result["request"])
-        status_code, payload = to_http_response(result)
-        self.write_json(status_code, payload)
+        return to_http_response(result)
 
     def do_GET(self):
+        self.write_method_not_allowed()
+
+    def do_HEAD(self):
+        self.write_method_not_allowed()
+
+    def do_OPTIONS(self):
         self.write_method_not_allowed()
 
     def do_PUT(self):
@@ -50,11 +68,6 @@ class handler(BaseHTTPRequestHandler):
     def do_DELETE(self):
         self.write_method_not_allowed()
 
-    def read_body(self):
-        """Read the request body, using the length the browser declared."""
-        length = int(self.headers.get("Content-Length") or 0)
-        return self.rfile.read(length)
-
     def write_json(self, status_code, payload):
         """Send a status code and a JSON body."""
         encoded = json.dumps(payload).encode("utf-8")
@@ -65,7 +78,7 @@ class handler(BaseHTTPRequestHandler):
         self.wfile.write(encoded)
 
     def write_method_not_allowed(self):
-        """Send a fixed 405 for any method other than POST. No body is promised."""
+        """Send a fixed 405 for any standard method other than POST. No body is promised."""
         self.send_response(405)
         self.send_header("Allow", "POST")
         self.send_header("Content-Length", "0")
