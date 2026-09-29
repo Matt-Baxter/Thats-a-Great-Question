@@ -12,6 +12,8 @@ import {
   endRequest,
   getNode,
   isRequestInFlight,
+  needsRequest,
+  pathTo,
   startRequest,
 } from "../public/tree.mjs";
 
@@ -154,4 +156,58 @@ test("a question's ancestors run from the seed's child down to the question itse
   attachResult(tree, two.id, ["Two-one?", "Two-two?", "Two-three?"]);
   const twoThree = childLabelled(tree, two.id, "2.3");
   assert.deepEqual(ancestorTexts(tree, twoThree.id), ["Two?", "Two-three?"]);
+});
+
+// --- Staying oriented (T036) ------------------------------------------------------------
+
+// Open `id` with the given questions, as a successful request would.
+function open(tree, id, questions) {
+  startRequest(tree, id);
+  attachResult(tree, id, questions);
+}
+
+test("the path runs from the seed to the node, in order (FR-017)", () => {
+  const tree = openedTree(FIVE);
+  const two = childLabelled(tree, tree.seedId, "2");
+  open(tree, two.id, FIVE);
+  const twoThree = childLabelled(tree, two.id, "2.3");
+  const labels = pathTo(tree, twoThree.id).map(function (node) { return node.label; });
+  assert.deepEqual(labels, ["", "2", "2.3"]);
+});
+
+test("the path to the seed is the seed alone", () => {
+  const tree = createTree("A seed.");
+  assert.deepEqual(pathTo(tree, tree.seedId).map(function (node) { return node.id; }), [tree.seedId]);
+});
+
+test("a node needs a request only if it has never been opened (FR-023)", () => {
+  const tree = openedTree(FIVE);
+  assert.equal(needsRequest(tree, tree.seedId), false);
+  const one = childLabelled(tree, tree.seedId, "1");
+  assert.equal(needsRequest(tree, one.id), true);
+});
+
+test("reopening an expanded node needs no request and returns the same children (FR-022)", () => {
+  const tree = openedTree(FIVE);
+  const two = childLabelled(tree, tree.seedId, "2");
+  open(tree, two.id, ["A?", "B?", "C?"]);
+  const before = childrenOf(tree, two.id);
+  assert.equal(needsRequest(tree, two.id), false);
+  assert.deepEqual(childrenOf(tree, two.id), before);
+});
+
+test("any sibling can be opened, and opening it leaves the first branch unchanged (FR-024, FR-025)", () => {
+  const tree = openedTree(FIVE);
+  const two = childLabelled(tree, tree.seedId, "2");
+  open(tree, two.id, ["A?", "B?", "C?"]);
+  const twoA = childLabelled(tree, two.id, "2.1");
+  open(tree, twoA.id, ["Deep?", "Deeper?", "Deepest?"]);
+  const firstBranch = JSON.stringify(pathTo(tree, twoA.id)) + JSON.stringify(childrenOf(tree, twoA.id));
+
+  const four = childLabelled(tree, tree.seedId, "4");
+  assert.equal(startRequest(tree, four.id), true);
+  attachResult(tree, four.id, ["X?", "Y?", "Z?"]);
+
+  assert.equal(JSON.stringify(pathTo(tree, twoA.id)) + JSON.stringify(childrenOf(tree, twoA.id)), firstBranch);
+  assert.equal(childrenOf(tree, four.id).length, 3);
 });

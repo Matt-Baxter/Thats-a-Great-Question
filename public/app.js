@@ -19,6 +19,8 @@ import {
   endRequest,
   getNode,
   isRequestInFlight,
+  needsRequest,
+  pathTo,
   startRequest,
 } from "./tree.mjs";
 
@@ -36,6 +38,7 @@ const seedForm = document.getElementById("seed-form");
 const seedInput = document.getElementById("seed");
 const counter = document.getElementById("count");
 const submitButton = document.getElementById("submit");
+const trail = document.getElementById("trail");
 const focusKind = document.getElementById("focus-kind");
 const focusText = document.getElementById("focus-text");
 const loading = document.getElementById("loading");
@@ -82,9 +85,10 @@ function nameOf(node) {
 // --- Drawing the page ----------------------------------------------------------------
 
 function renderQuestion(node) {
+  const opened = !needsRequest(tree, node.id);
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "q";
+  button.className = opened ? "q seen" : "q";
   button.disabled = isRequestInFlight(tree);
 
   const number = document.createElement("span");
@@ -97,7 +101,7 @@ function renderQuestion(node) {
 
   const hint = document.createElement("span");
   hint.className = "q-open";
-  hint.textContent = "open →";
+  hint.textContent = opened ? "opened" : "open →";
 
   button.append(number, text, hint);
   button.addEventListener("click", function () { openQuestion(node.id); });
@@ -107,8 +111,42 @@ function renderQuestion(node) {
   return item;
 }
 
-// Draw whatever `currentId` points at: the seed entry, or a seed or question with its
-// questions beneath it (FR-020).
+// One entry in the trail: a button that returns to that point in one action (FR-019).
+// The label and the start of the text show; the rest is cut off by CSS (FR-018).
+function renderCrumb(node) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "crumb";
+  button.disabled = isRequestInFlight(tree);
+  if (node.id === currentId) {
+    button.setAttribute("aria-current", "location");
+  }
+
+  const label = document.createElement("span");
+  label.className = "crumb-label";
+  label.textContent = node.kind === "seed" ? "Seed" : node.label;
+  button.append(label, " " + node.text);
+
+  button.addEventListener("click", function () { goTo(node.id); });
+  return button;
+}
+
+function renderTrail() {
+  trail.replaceChildren();
+  pathTo(tree, currentId).forEach(function (node, index) {
+    if (index > 0) {
+      const separator = document.createElement("span");
+      separator.className = "trail-sep";
+      separator.setAttribute("aria-hidden", "true");
+      separator.textContent = "›";
+      trail.append(separator);
+    }
+    trail.append(renderCrumb(node));
+  });
+}
+
+// Draw whatever `currentId` points at: the seed entry, or the trail and a seed or
+// question with only its own questions beneath it (FR-020).
 function render() {
   const onHome = currentId === null;
   homeView.hidden = !onHome;
@@ -119,6 +157,7 @@ function render() {
   }
 
   const node = getNode(tree, currentId);
+  renderTrail();
   focusKind.textContent = nameOf(node);
   focusText.textContent = node.text;
   if (node.kind === "seed") {
@@ -138,7 +177,7 @@ function setBusy(busy, text) {
   loading.hidden = !busy;
   loadingText.textContent = text;
   submitButton.disabled = busy;
-  for (const button of questionList.querySelectorAll("button.q")) {
+  for (const button of document.querySelectorAll("button.q, button.crumb")) {
     button.disabled = busy;
   }
   if (busy) {
@@ -223,7 +262,26 @@ function submitSeed(event) {
   requestChildren(tree.seedId, "Looking for the questions worth asking…");
 }
 
+// Show a node that already has questions, with no request (FR-022).
+function goTo(id) {
+  if (isRequestInFlight(tree)) {
+    return;
+  }
+  currentId = id;
+  messageBox.hidden = true;
+  render();
+  focusText.focus();
+  const node = getNode(tree, id);
+  announce(nameOf(node) + ", " + childrenOf(tree, id).length + " questions below.");
+}
+
+// Open a question: show its questions if it has any, or ask for them if it has never
+// been opened (FR-022, FR-023). Any sibling can be opened this way (FR-024).
 function openQuestion(id) {
+  if (!needsRequest(tree, id)) {
+    goTo(id);
+    return;
+  }
   const node = getNode(tree, id);
   requestChildren(id, "Looking for questions about question " + node.label + "…");
 }

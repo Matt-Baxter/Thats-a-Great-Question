@@ -179,6 +179,40 @@ button:disabled { cursor: progress; opacity: .7; }
 /* --------------------------------------------------------------- inquiry --- */
 .inquiry-top { padding-block: 26px 0; }
 
+/* The trail from the seed to here (FR-017). Mono, because it reads as a coordinate,
+   not prose. Each entry is shortened to one line; the full text is still read out by
+   screen readers, because CSS truncation hides nothing from them (FR-018). */
+.trail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 4px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  margin-bottom: 22px;
+}
+.trail-sep { color: var(--line-firm); padding-inline: 1px; }
+.crumb {
+  background: none;
+  border: 0;
+  padding: 3px 6px;
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crumb:hover:not(:disabled) { background: var(--surface-2); color: var(--accent); }
+.crumb[aria-current="location"] {
+  color: var(--ink);
+  font-weight: 500;
+  background: var(--accent-bg);
+}
+.crumb-label { color: var(--accent); }
+
 /* The seed or question currently being viewed, shown in full (FR-018). */
 .focus-block {
   border-left: 2px solid var(--accent);
@@ -268,6 +302,17 @@ ol.questions {
   transition: opacity .13s ease;
 }
 .q:hover .q-open, .q:focus-visible .q-open { opacity: 1; }
+/* A question already opened: its questions are kept and show again with no request. */
+.q.seen .q-open { opacity: 1; }
+
+/* On a phone, deep labels such as 2.3.1.4.2 would squeeze the question into a narrow
+   column. The label and hint share the top line and the question takes the full width
+   below. Phones have no hover, so the hint is always shown (FR-044). */
+@media (max-width: 480px) {
+  .q { flex-wrap: wrap; row-gap: 4px; }
+  .q-open { order: 1; opacity: 1; padding-top: 3px; }
+  .q-text { order: 2; flex-basis: 100%; }
+}
 
 .suggestion-note {
   color: var(--muted);

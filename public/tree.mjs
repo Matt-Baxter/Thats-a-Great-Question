@@ -108,3 +108,20 @@ export function ancestorTexts(tree, id) {
   }
   return texts;
 }
+
+// Every node from the seed down to this one, in order: what the trail shows (FR-017).
+export function pathTo(tree, id) {
+  let node = getNode(tree, id);
+  const path = [node];
+  while (node.parentId !== null) {
+    node = getNode(tree, node.parentId);
+    path.unshift(node);
+  }
+  return path;
+}
+
+// True only if the node has never been opened. Opening one that has shows its existing
+// questions without asking again (FR-022, FR-023).
+export function needsRequest(tree, id) {
+  return getNode(tree, id).childIds === null;
+}

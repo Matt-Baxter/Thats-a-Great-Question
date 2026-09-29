@@ -115,10 +115,10 @@ branches that stay as they were.
 **Independent test**: go five levels deep, return to the seed in one click, open a sibling, then go
 back to the first branch — it appears immediately, unchanged, with no loading state.
 
-- [ ] T036 [P] [US3] Add to `tests/tree.test.mjs`: the path from the seed to any node, in order; reopening an expanded node needs no request and returns the same children (FR-022); any sibling can be opened (FR-024), and opening it leaves the first branch unchanged (FR-025)
-- [ ] T037 [US3] Add to `public/tree.mjs`: the path from the seed to a node, and whether opening a node needs a request (only when it has never been expanded, FR-023)
-- [ ] T038 [US3] Extend `public/app.js`, `public/index.html` and `public/styles.css`: a trail above the current questions showing every ancestor from the seed (FR-017), the current seed or question in full with ancestors shortened (FR-018), every trail entry a button returning to that point in one action (FR-019), only the current seed or question and its children on screen (FR-020), no request when revisiting (FR-022), and no horizontal scrolling at phone width (FR-044)
-- [ ] T039 [US3] Run `node --test tests/tree.test.mjs`, then quickstart.md scenarios 3, 4 and 11
+- [X] T036 [P] [US3] Add to `tests/tree.test.mjs`: the path from the seed to any node, in order; reopening an expanded node needs no request and returns the same children (FR-022); any sibling can be opened (FR-024), and opening it leaves the first branch unchanged (FR-025)
+- [X] T037 [US3] Add to `public/tree.mjs`: the path from the seed to a node, and whether opening a node needs a request (only when it has never been expanded, FR-023)
+- [X] T038 [US3] Extend `public/app.js`, `public/index.html` and `public/styles.css`: a trail above the current questions showing every ancestor from the seed (FR-017), the current seed or question in full with ancestors shortened (FR-018), every trail entry a button returning to that point in one action (FR-019), only the current seed or question and its children on screen (FR-020), no request when revisiting (FR-022), and no horizontal scrolling at phone width (FR-044)
+- [X] T039 [US3] Run `node --test tests/tree.test.mjs`, then quickstart.md scenarios 3, 4 and 11
 
 ---
 
