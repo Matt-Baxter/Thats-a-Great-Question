@@ -71,6 +71,7 @@ specs/001-insightful-question-generator/
 ├── research.md          # decisions and rejected alternatives
 ├── data-model.md        # entities, fields, validation, state transitions
 ├── quickstart.md        # how to run it and prove it works
+├── review-set.md        # T049: every review-set seed and its questions at medium and high, for human scoring
 ├── contracts/
 │   └── questions-api.md # the one HTTP endpoint
 ├── checklists/

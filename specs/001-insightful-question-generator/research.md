@@ -37,6 +37,12 @@ the level it is tuned around. And extra effort pays off most on long, many-step 
 improves a five-question list is an open question the review set can answer, whereas its cost —
 longer waits, closer to the thirty-second hard stop — is certain.
 
+**Review set, 2026-09-29**: 25 seeds run at `medium` and at `high`; all 50 responses returned
+questions and none took more than 13.8 seconds, so both levels meet the thirty-second condition.
+`high` was slower on factual and adversarial seeds (10–14 seconds) and about the same elsewhere.
+Whether its questions are clearly better is for the maintainer to judge, blind, in
+[review-set.md](review-set.md); the effort stays `medium` until then.
+
 ## R2. One model call or two
 
 **Decision**: one call. Its structured response contains both the candidates (10–15) and the

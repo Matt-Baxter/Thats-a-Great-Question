@@ -75,6 +75,7 @@ standing in for a real request.
 | Task list — the 50 build steps, in order |  [`specs/001-insightful-question-generator/tasks.md`](specs/001-insightful-question-generator/tasks.md) | rendered document |
 | Implementation plan — how it will be built, and why | [`specs/001-insightful-question-generator/plan.md`](specs/001-insightful-question-generator/plan.md) | rendered document |
 | Specification quality checklist | [`specs/001-insightful-question-generator/checklists/requirements.md`](specs/001-insightful-question-generator/checklists/requirements.md) | rendered document |
+| Review set — 25 seeds and their questions at two effort levels, for scoring by hand | [`specs/001-insightful-question-generator/review-set.md`](specs/001-insightful-question-generator/review-set.md) | rendered document |
 | Review history — every question asked of the spec, and every defect found | [`specs/001-insightful-question-generator/checklists/reviews.md`](specs/001-insightful-question-generator/checklists/reviews.md) | rendered document |
 | Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) | rendered document |
 | Every judgment the app makes — checks, prompt, lines of inquiry, messages | [`inquiry/`](inquiry/) | Python source |
