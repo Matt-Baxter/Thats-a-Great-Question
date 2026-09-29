@@ -194,6 +194,59 @@ same review set as SC-009 to SC-011 (T049).
 
 Counts after this change: 61 functional requirements, 20 success criteria.
 
+## 10. Measured speed (T048)
+
+Twenty consecutive requests on 2026-09-29, one seed each, at `medium` effort with `claude-opus-5-5`,
+sent one after another through the real handler (`api/questions.py`) and timed from sending the
+request to receiving the whole reply.
+
+| Measure | Seconds |
+|---|---|
+| Fastest | 5.28 |
+| Median | 6.70 |
+| Eighteenth fastest — the new SC-015 figure | 7.38 |
+| Slowest | 8.22 |
+
+All twenty returned five questions. None came near the thirty-second hard stop (FR-038), so none is
+a defect under SC-001. SC-015 is now "at least 90% within 7.4 seconds", replacing the provisional ten.
+
+What this measurement does and does not show:
+
+- **Not measured on Vercel.** The requests ran from a cloud development container through its
+  outbound proxy to `api.anthropic.com`, using a local stand-in for `vercel dev`. A visitor to the
+  live site also waits for the network between their browser and Vercel, and for a cold start when
+  the function has been idle. Repeating this against the live address would give the figure a user
+  actually sees.
+- **One sitting.** Twenty requests in about two and a half minutes say nothing about slower hours.
+- **Faster than the first live runs.** On 2026-09-25, before FR-061 asked for shorter questions,
+  live requests took 10–12 seconds. Shorter replies are the likely reason, but the two runs used
+  different seeds, so that is an inference, not a measurement.
+- **First sets only.** Every request was about a seed. Expansions send a longer prompt; the single
+  live expansion measured so far was not timed separately.
+
+| # | Seed | Outcome | Questions | Seconds |
+|---|---|---|---|---|
+| 1 | Remote work makes teams less innovative. | ok | 5 | 6.80 |
+| 2 | Should I learn to code at 45? | ok | 5 | 6.31 |
+| 3 | Social media is making teenagers more anxious. | ok | 5 | 6.37 |
+| 4 | Is nuclear power the answer to climate change? | ok | 5 | 7.38 |
+| 5 | Our startup should raise a Series A now rather than wait a year. | ok | 5 | 6.54 |
+| 6 | Standardized tests are a fair way to admit students to college. | ok | 5 | 6.07 |
+| 7 | Why do so many New Year's resolutions fail? | ok | 5 | 7.68 |
+| 8 | AI will replace most junior software developers within five years. | ok | 5 | 6.73 |
+| 9 | Cities should make public transit free. | ok | 5 | 6.68 |
+| 10 | Is it ethical to eat meat? | ok | 5 | 8.22 |
+| 11 | I'm thinking of moving to a new city where I don't know anyone. | ok | 5 | 5.28 |
+| 12 | Minimum wage increases cost jobs. | ok | 5 | 6.62 |
+| 13 | The Roman Empire fell because of lead poisoning. | ok | 5 | 7.31 |
+| 14 | Should our team adopt a four-day work week? | ok | 5 | 6.72 |
+| 15 | Homework in primary school does more harm than good. | ok | 5 | 7.37 |
+| 16 | Why is housing so expensive? | ok | 5 | 7.10 |
+| 17 | Electric cars are better for the environment than petrol cars. | ok | 5 | 6.42 |
+| 18 | Free will is an illusion. | ok | 5 | 5.91 |
+| 19 | We should rewrite our legacy system from scratch. | ok | 5 | 7.10 |
+| 20 | Is a college degree still worth it? | ok | 5 | 6.54 |
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The
