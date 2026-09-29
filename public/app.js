@@ -1,13 +1,14 @@
 /*
-  The page's behaviour: taking a seed, opening questions, and showing what comes back.
+  The page's behaviour: taking a seed, opening questions, moving along the trail,
+  asking again, cancelling, and starting over.
 
-  It makes no judgment about questions or seeds. The inquiry tree — its structure, and
-  which node is waiting for a reply — is kept by tree.mjs; which of a reply's fields to
-  show is decided by reply.mjs; every message about a request is written in Python
-  (inquiry/messages.py). All three are tested; this file only connects them to the
-  page. Every string from the server is inserted with textContent, never as markup, so
-  nothing it contains can run in the page (FR-034). Nothing is saved to browser
-  storage, so a reload starts empty (FR-042).
+  It makes no judgment about questions or seeds. The inquiry tree — its structure, the
+  path to any node, what would be discarded, and which node is waiting for a reply — is
+  kept by tree.mjs; which of a reply's fields to show is decided by reply.mjs; every
+  message about a request is written in Python (inquiry/messages.py). All three are
+  tested; this file only connects them to the page. Every string from the server is
+  inserted with textContent, never as markup, so nothing it contains can run in the
+  page (FR-034). Nothing is saved to browser storage, so a reload starts empty (FR-042).
 */
 
 import { countCharacters, messageForNoReply, replyToDisplay } from "./reply.mjs";
@@ -15,6 +16,7 @@ import {
   ancestorTexts,
   attachResult,
   childrenOf,
+  countDescendants,
   createTree,
   endRequest,
   getNode,
@@ -43,15 +45,28 @@ const focusKind = document.getElementById("focus-kind");
 const focusText = document.getElementById("focus-text");
 const loading = document.getElementById("loading");
 const loadingText = document.getElementById("loading-text");
+const cancelButton = document.getElementById("cancel");
 const messageBox = document.getElementById("message");
 const listLabel = document.getElementById("list-label");
 const questionList = document.getElementById("questions");
+const askAgainButton = document.getElementById("ask-again");
+const newInquiryButton = document.getElementById("new-inquiry");
+const confirmDialog = document.getElementById("confirm");
+const confirmTitle = document.getElementById("confirm-title");
+const confirmBody = document.getElementById("confirm-body");
+const confirmDiscard = document.getElementById("confirm-discard");
+const confirmKeep = document.getElementById("confirm-keep");
 const announcer = document.getElementById("announcer");
 
 // The session's inquiry, and the node on screen. `currentId` is null while the seed
 // entry is showing. Both live only in memory.
 let tree = null;
 let currentId = null;
+
+// The request in flight, so Cancel can stop it: its AbortController, and the control
+// that started it, so keyboard focus can go back there if it does not succeed.
+let activeController = null;
+let returnFocusTo = null;
 
 // --- Small helpers -----------------------------------------------------------------
 
@@ -74,12 +89,36 @@ function showMessage(text) {
   announce(text);
 }
 
-// How a node is named on the page: "Seed", or "question 2.3".
+// How a node is named on the page: "Seed", or "Question 2.3".
 function nameOf(node) {
   if (node.kind === "seed") {
     return "Seed";
   }
   return "Question " + node.label;
+}
+
+// "1 question" or "5 questions".
+function questionCount(count) {
+  if (count === 1) {
+    return "1 question";
+  }
+  return count + " questions";
+}
+
+// Ask the user to confirm discarding something. Resolves to true only if they choose
+// to discard; closing the dialog any other way, including Escape, keeps everything.
+function askToConfirm(title, body, discardLabel, keepLabel) {
+  confirmTitle.textContent = title;
+  confirmBody.textContent = body;
+  confirmDiscard.textContent = discardLabel;
+  confirmKeep.textContent = keepLabel;
+  confirmDialog.returnValue = "";
+  confirmDialog.showModal();
+  return new Promise(function (resolve) {
+    confirmDialog.addEventListener("close", function () {
+      resolve(confirmDialog.returnValue === "discard");
+    }, { once: true });
+  });
 }
 
 // --- Drawing the page ----------------------------------------------------------------
@@ -172,17 +211,26 @@ function render() {
 }
 
 // Show that the app is busy, and make every control that would start another request
-// inert, so an ignored click is never silent (FR-054, FR-055).
+// or move away inert, so an ignored click is never silent (FR-054, FR-055). Cancel is
+// the one control that stays live (FR-058).
 function setBusy(busy, text) {
   loading.hidden = !busy;
   loadingText.textContent = text;
   submitButton.disabled = busy;
-  for (const button of document.querySelectorAll("button.q, button.crumb")) {
+  for (const button of document.querySelectorAll("button.q, button.crumb, button.action")) {
     button.disabled = busy;
   }
   if (busy) {
     messageBox.hidden = true;
   }
+}
+
+// After a request that did not succeed, put keyboard focus back where it started.
+function restoreFocus() {
+  if (returnFocusTo !== null && document.body.contains(returnFocusTo)) {
+    returnFocusTo.focus();
+  }
+  returnFocusTo = null;
 }
 
 // --- Talking to the server -----------------------------------------------------------
@@ -205,16 +253,20 @@ async function fetchQuestions(seed, ancestors, signal) {
   return { status: response.status, body: body };
 }
 
-// Ask for the children of node `id`. On success they are attached to that node — and
-// only that node (FR-056) — and it is shown. Anything else leaves the tree and the
-// view as they were, with a message, so the same node can be opened again (FR-036).
+// Ask for the children of node `id` — a first set, an expansion, or a fresh set. On
+// success they are attached to that node, and only that node (FR-056), and it is
+// shown. Anything else leaves the tree and the view as they were, with a message, so
+// the same node can be opened again (FR-029, FR-036).
 async function requestChildren(id, busyText) {
   if (!startRequest(tree, id)) {
     return;
   }
+  returnFocusTo = document.activeElement;
   setBusy(true, busyText);
+  cancelButton.focus();
 
   const controller = new AbortController();
+  activeController = controller;
   let timedOut = false;
   const timer = setTimeout(function () {
     timedOut = true;
@@ -231,12 +283,20 @@ async function requestChildren(id, busyText) {
   }
   clearTimeout(timer);
 
+  // Cancelled by the user: cancelRequest has already put everything back, and another
+  // request may have started since, so nothing more is done here (FR-059).
+  if (controller.signal.aborted && !timedOut) {
+    return;
+  }
+  activeController = null;
+
   if (display.kind === "questions" && attachResult(tree, id, display.questions)) {
     setBusy(false, "");
     currentId = id;
     render();
     focusText.focus();
-    announce(display.questions.length + " questions about " + nameOf(getNode(tree, id)).toLowerCase() + ", listed below.");
+    returnFocusTo = null;
+    announce(questionCount(display.questions.length) + " about " + nameOf(getNode(tree, id)).toLowerCase() + ", listed below.");
     return;
   }
 
@@ -246,9 +306,26 @@ async function requestChildren(id, busyText) {
     tree = null;
   }
   setBusy(false, "");
-  if (display.kind === "message") {
-    showMessage(display.text);
+  restoreFocus();
+  showMessage(display.text);
+}
+
+// Stop the request in flight. The inquiry is left exactly as it was, no partial result
+// is shown, and the next request is accepted at once (FR-058, FR-059). The model call
+// may still finish on the server, and is still billed (research.md R7).
+function cancelRequest() {
+  if (activeController === null) {
+    return;
   }
+  activeController.abort();
+  activeController = null;
+  endRequest(tree);
+  if (currentId === null) {
+    tree = null;
+  }
+  setBusy(false, "");
+  restoreFocus();
+  announce("Cancelled. Nothing was changed.");
 }
 
 // --- What the user does ----------------------------------------------------------------
@@ -271,8 +348,7 @@ function goTo(id) {
   messageBox.hidden = true;
   render();
   focusText.focus();
-  const node = getNode(tree, id);
-  announce(nameOf(node) + ", " + childrenOf(tree, id).length + " questions below.");
+  announce(nameOf(getNode(tree, id)) + ", " + questionCount(childrenOf(tree, id).length) + " below.");
 }
 
 // Open a question: show its questions if it has any, or ask for them if it has never
@@ -286,7 +362,58 @@ function openQuestion(id) {
   requestChildren(id, "Looking for questions about question " + node.label + "…");
 }
 
+// Ask for a fresh set for the seed or question on screen, first set included (FR-026).
+// It would discard what is there, so the user confirms first, told how many questions
+// go (FR-028). Nothing is discarded unless the new set arrives (FR-027, FR-029).
+async function askAgain() {
+  if (isRequestInFlight(tree)) {
+    return;
+  }
+  const shown = childrenOf(tree, currentId).length;
+  const beneath = countDescendants(tree, currentId) - shown;
+  let body = "A fresh set replaces these " + questionCount(shown) + ".";
+  if (beneath > 0) {
+    body = "A fresh set replaces these " + questionCount(shown) + ", and the " +
+      questionCount(beneath) + " you opened beneath them will be gone.";
+  }
+  const confirmed = await askToConfirm("Replace these questions?", body + " This cannot be undone.", "Replace", "Keep them");
+  if (!confirmed) {
+    return;
+  }
+  const node = getNode(tree, currentId);
+  requestChildren(currentId, "Looking for a fresh set for " + nameOf(node).toLowerCase() + "…");
+}
+
+// Start over with a different seed, without reloading (FR-030). The whole inquiry
+// would be lost, so the user confirms first, told how many questions go (FR-057).
+async function newInquiry() {
+  if (isRequestInFlight(tree)) {
+    return;
+  }
+  const total = countDescendants(tree, tree.seedId);
+  const confirmed = await askToConfirm(
+    "Lose this inquiry?",
+    "A new seed clears everything here — " + questionCount(total) +
+      " across this inquiry. Nothing is saved, so this cannot be recovered.",
+    "Discard",
+    "Keep it"
+  );
+  if (!confirmed) {
+    return;
+  }
+  tree = null;
+  currentId = null;
+  seedInput.value = "";
+  updateCounter();
+  messageBox.hidden = true;
+  render();
+  seedInput.focus();
+}
+
 seedInput.addEventListener("input", updateCounter);
 seedForm.addEventListener("submit", submitSeed);
+cancelButton.addEventListener("click", cancelRequest);
+askAgainButton.addEventListener("click", askAgain);
+newInquiryButton.addEventListener("click", newInquiry);
 updateCounter();
 render();

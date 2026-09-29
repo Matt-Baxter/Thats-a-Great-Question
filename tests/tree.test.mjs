@@ -8,7 +8,9 @@ import {
   ancestorTexts,
   attachResult,
   childrenOf,
+  countDescendants,
   createTree,
+  discardBelow,
   endRequest,
   getNode,
   isRequestInFlight,
@@ -210,4 +212,73 @@ test("any sibling can be opened, and opening it leaves the first branch unchange
 
   assert.equal(JSON.stringify(pathTo(tree, twoA.id)) + JSON.stringify(childrenOf(tree, twoA.id)), firstBranch);
   assert.equal(childrenOf(tree, four.id).length, 3);
+});
+
+// --- Asking again, and starting over (T040) ------------------------------------------------
+
+// A tree with the seed opened (5), question 2 opened (3), and 2.1 opened (3): 11 questions.
+function deepTree() {
+  const tree = openedTree(FIVE);
+  const two = childLabelled(tree, tree.seedId, "2");
+  open(tree, two.id, ["A?", "B?", "C?"]);
+  const twoOne = childLabelled(tree, two.id, "2.1");
+  open(tree, twoOne.id, ["Deep?", "Deeper?", "Deepest?"]);
+  return { tree: tree, two: two, twoOne: twoOne };
+}
+
+test("counting a node's descendants counts every question beneath it, at every depth", () => {
+  const { tree, two, twoOne } = deepTree();
+  assert.equal(countDescendants(tree, tree.seedId), 11);
+  assert.equal(countDescendants(tree, two.id), 6);
+  assert.equal(countDescendants(tree, twoOne.id), 3);
+  assert.equal(countDescendants(tree, childLabelled(tree, twoOne.id, "2.1.1").id), 0);
+});
+
+test("discarding below a node removes every descendant and leaves it unopened", () => {
+  const { tree, two, twoOne } = deepTree();
+  const deepId = childLabelled(tree, twoOne.id, "2.1.1").id;
+  discardBelow(tree, two.id);
+  assert.equal(getNode(tree, two.id).childIds, null);
+  assert.equal(getNode(tree, twoOne.id), undefined);
+  assert.equal(getNode(tree, deepId), undefined);
+  assert.equal(countDescendants(tree, tree.seedId), 5);
+});
+
+test("asking again replaces a node's children and discards everything beneath the old ones (FR-027)", () => {
+  const { tree, two, twoOne } = deepTree();
+  assert.equal(startRequest(tree, two.id), true);
+  attachResult(tree, two.id, ["New one?", "New two?", "New three?", "New four?"]);
+  const texts = childrenOf(tree, two.id).map(function (node) { return node.text; });
+  assert.deepEqual(texts, ["New one?", "New two?", "New three?", "New four?"]);
+  assert.equal(getNode(tree, twoOne.id), undefined);
+  assert.equal(countDescendants(tree, two.id), 4);
+  const labels = childrenOf(tree, two.id).map(function (node) { return node.label; });
+  assert.deepEqual(labels, ["2.1", "2.2", "2.3", "2.4"]);
+});
+
+test("a failed or cancelled request to ask again leaves the tree unchanged (FR-029, FR-059)", () => {
+  const { tree, two } = deepTree();
+  const before = JSON.stringify(tree.nodes);
+  assert.equal(startRequest(tree, two.id), true);
+  endRequest(tree);
+  assert.equal(JSON.stringify(tree.nodes), before);
+  assert.equal(isRequestInFlight(tree), false);
+});
+
+test("asking again for the seed replaces the first set", () => {
+  const { tree } = deepTree();
+  startRequest(tree, tree.seedId);
+  attachResult(tree, tree.seedId, ["Fresh?", "Start?", "Over?"]);
+  assert.equal(countDescendants(tree, tree.seedId), 3);
+});
+
+test("a new inquiry starts from a tree that shares nothing with the old one (FR-030)", () => {
+  // Clearing the whole tree is done by replacing it: the page drops the old tree and
+  // creates a new one, so no old node can survive.
+  const { tree: oldTree } = deepTree();
+  const newTree = createTree("A different seed.");
+  assert.equal(Object.keys(newTree.nodes).length, 1);
+  assert.equal(getNode(newTree, newTree.seedId).text, "A different seed.");
+  assert.equal(countDescendants(newTree, newTree.seedId), 0);
+  assert.equal(countDescendants(oldTree, oldTree.seedId), 11);
 });

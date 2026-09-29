@@ -130,10 +130,10 @@ without reloading — never losing work without a warning.
 **Independent test**: regenerate a question with descendants (warned first, then replaced); cancel a
 request (nothing changes); start a new seed (warned first, then cleared without a reload).
 
-- [ ] T040 [P] [US4] Add to `tests/tree.test.mjs`: counting all of a node's descendants; discarding everything below a node; replacing a node's children only when the new set succeeds, leaving the tree unchanged on failure or cancel (FR-029, FR-059); clearing the whole tree
-- [ ] T041 [US4] Add those functions to `public/tree.mjs`
-- [ ] T042 [US4] Extend `public/app.js` and `public/index.html`: an "Ask again" control for the current seed or question, including the first set (FR-026); a confirmation naming how many questions will be discarded before regenerating anything with descendants (FR-028); replacement on success (FR-027) and no change on failure (FR-029); a Cancel control during loading, using `AbortController`, that leaves the tree unchanged and accepts the next request immediately (FR-058, FR-059); and a "New inquiry" control that warns how many questions will be lost (FR-057) and clears without a reload (FR-030). Confirmations use `<dialog>` and work from the keyboard (FR-043)
-- [ ] T043 [US4] Run `node --test tests/tree.test.mjs`, then quickstart.md scenarios 5, 6, 7 and 12
+- [X] T040 [P] [US4] Add to `tests/tree.test.mjs`: counting all of a node's descendants; discarding everything below a node; replacing a node's children only when the new set succeeds, leaving the tree unchanged on failure or cancel (FR-029, FR-059); clearing the whole tree. *Clearing is done by replacing the tree with a new one, so the test checks that a new tree shares nothing with the old; no separate clearing function was needed*
+- [X] T041 [US4] Add those functions to `public/tree.mjs`
+- [X] T042 [US4] Extend `public/app.js` and `public/index.html`: an "Ask again" control for the current seed or question, including the first set (FR-026); a confirmation naming how many questions will be discarded before regenerating anything with descendants (FR-028); replacement on success (FR-027) and no change on failure (FR-029); a Cancel control during loading, using `AbortController`, that leaves the tree unchanged and accepts the next request immediately (FR-058, FR-059); and a "New inquiry" control that warns how many questions will be lost (FR-057) and clears without a reload (FR-030). Confirmations use `<dialog>` and work from the keyboard (FR-043)
+- [X] T043 [US4] Run `node --test tests/tree.test.mjs`, then quickstart.md scenarios 5, 6, 7 and 12
 
 ---
 

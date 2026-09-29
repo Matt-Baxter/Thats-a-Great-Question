@@ -82,10 +82,14 @@ export function endRequest(tree) {
 // Give a node the questions that came back for it, and end the request. The result is
 // attached only if this node is the one waiting; a result for any other node, or one
 // that arrives after its request ended, is ignored and false is returned (FR-056).
+// If the node already had questions — the user asked again — they and everything
+// beneath them are discarded first (FR-027). Until this moment nothing is touched, so
+// a request that fails or is cancelled changes nothing (FR-029, FR-059).
 export function attachResult(tree, id, questions) {
   if (tree.loadingId !== id) {
     return false;
   }
+  discardBelow(tree, id);
   const parent = getNode(tree, id);
   const childIds = [];
   questions.forEach(function (text, index) {
@@ -124,4 +128,23 @@ export function pathTo(tree, id) {
 // questions without asking again (FR-022, FR-023).
 export function needsRequest(tree, id) {
   return getNode(tree, id).childIds === null;
+}
+
+// How many questions sit beneath a node, at every depth: what asking again, or starting
+// a new inquiry from the seed, would discard (FR-028, FR-057).
+export function countDescendants(tree, id) {
+  let total = 0;
+  for (const child of childrenOf(tree, id)) {
+    total = total + 1 + countDescendants(tree, child.id);
+  }
+  return total;
+}
+
+// Remove every question beneath a node, at every depth, and mark it never opened.
+export function discardBelow(tree, id) {
+  for (const child of childrenOf(tree, id)) {
+    discardBelow(tree, child.id);
+    delete tree.nodes[child.id];
+  }
+  getNode(tree, id).childIds = null;
 }

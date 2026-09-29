@@ -51,6 +51,7 @@
     <div class="loading" id="loading" hidden>
       <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
       <span class="loading-text" id="loading-text"></span>
+      <button class="btn-quiet loading-cancel" id="cancel" type="button">Cancel</button>
     </div>
 
     <div class="msg" id="message" hidden></div>
@@ -62,6 +63,10 @@
       <p class="suggestion-note">
         Suggestions, not a complete set. The app does not answer these — that part is yours.
       </p>
+      <div class="actions">
+        <button class="btn-quiet action" id="ask-again" type="button">Ask again</button>
+        <button class="btn-quiet action" id="new-inquiry" type="button">New inquiry</button>
+      </div>
     </section>
 
     <!-- Always rendered, so screen readers hear each change: new questions or a message.
@@ -69,5 +74,18 @@
     <p class="sr" id="announcer" role="status"></p>
 
   </main>
+
+  <!-- Confirmation before anything is discarded (FR-028, FR-057). A native dialog: it
+       takes focus, keeps it inside, and closes with Escape, which counts as keeping. -->
+  <dialog id="confirm" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+    <form method="dialog">
+      <h2 id="confirm-title"></h2>
+      <p id="confirm-body"></p>
+      <div class="actions">
+        <button class="btn-quiet" id="confirm-keep" value="keep" autofocus>Keep</button>
+        <button class="btn" id="confirm-discard" value="discard">Discard</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>
