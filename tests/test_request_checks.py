@@ -136,3 +136,53 @@ def test_read_body_refuses_a_length_over_the_cap_without_reading():
     stream = io.BytesIO(b"x" * 10)
     assert read_body(str(config.MAX_REQUEST_BYTES + 1), stream) is None
     assert stream.tell() == 0
+
+
+# --- Ancestors: the chain of questions above the one being opened (T026) --------------
+
+
+def test_an_empty_ancestor_list_is_accepted():
+    result = check_request(body_for({"seed": "A seed.", "ancestors": []}))
+    assert result["outcome"] == "checked"
+    assert result["request"]["ancestors"] == []
+
+
+def test_ancestors_are_passed_on_in_order_and_trimmed():
+    ancestors = ["What is assumed? ", " Who decides?"]
+    result = check_request(body_for({"seed": "A seed.", "ancestors": ancestors}))
+    assert result["request"]["ancestors"] == ["What is assumed?", "Who decides?"]
+
+
+def test_an_empty_ancestor_is_rejected():
+    result = check_request(body_for({"seed": "A seed.", "ancestors": ["What is assumed?", "   "]}))
+    assert result == {"outcome": "invalid_input", "message": messages.INVALID_REQUEST}
+
+
+def test_an_ancestor_of_exactly_the_question_limit_is_accepted():
+    ancestor = "W" + "h" * (config.MAX_QUESTION_CHARS - 2) + "?"
+    result = check_request(body_for({"seed": "A seed.", "ancestors": [ancestor]}))
+    assert result["outcome"] == "checked"
+
+
+def test_an_ancestor_over_the_question_limit_is_rejected():
+    ancestor = "W" + "h" * (config.MAX_QUESTION_CHARS - 1) + "?"
+    result = check_request(body_for({"seed": "A seed.", "ancestors": [ancestor]}))
+    assert result == {"outcome": "invalid_input", "message": messages.INVALID_REQUEST}
+
+
+def test_a_missing_ancestor_list_is_rejected():
+    result = check_request(body_for({"seed": "A seed."}))
+    assert result == {"outcome": "invalid_input", "message": messages.INVALID_REQUEST}
+
+
+@pytest.mark.parametrize("ancestors", ["What is assumed?", None, {"a": "b"}, ["fine?", 7]])
+def test_ancestors_that_are_not_a_list_of_strings_are_rejected(ancestors):
+    result = check_request(body_for({"seed": "A seed.", "ancestors": ancestors}))
+    assert result == {"outcome": "invalid_input", "message": messages.INVALID_REQUEST}
+
+
+def test_a_long_chain_of_ancestors_is_accepted():
+    # FR-015: no depth is refused, as long as the request fits under the size cap.
+    ancestors = [f"What about step {number}?" for number in range(200)]
+    result = check_request(body_for({"seed": "A seed.", "ancestors": ancestors}))
+    assert result["outcome"] == "checked"

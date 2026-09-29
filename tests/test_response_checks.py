@@ -192,3 +192,14 @@ def test_questions_ending_in_full_width_or_arabic_question_marks_are_accepted():
     candidates = ["城市为什么会发展？", "谁决定城市的规模？", "لماذا تنمو المدن؟"]
     result = check_reply(reply(candidates, [0, 1, 2]), "城市")
     assert result["passed"] is True
+
+
+# --- Expansions (T028): compared against the question being opened -------------------
+
+
+def test_a_question_restating_the_question_being_opened_is_rejected():
+    # FR-009, FR-016
+    opened = "Who benefits if people believe remote teams innovate less?"
+    candidates = GOOD + ["Who benefits, if people believe remote teams innovate less?"]
+    result = check_reply(reply(candidates, [0, 3, 10]), opened)
+    assert result == {"passed": False, "failed_check": "restates"}

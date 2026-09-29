@@ -18,7 +18,7 @@ One seed or one question in the inquiry tree.
 | `text` | string | The seed as typed, or the question as returned |
 | `parentId` | string or null | Null only for the seed |
 | `childIds` | list of strings, or null | **Null means never opened.** An empty list never occurs |
-| `state` | see below | Whether a request for this node's children is in progress |
+| `state` | see below | Whether a request for this node's children is in progress. `public/tree.mjs` holds this once, as the tree's `loadingId`, rather than on every node: only one node can be loading at a time (FR-054), so one field says which |
 
 **Rules**
 - A node's children are numbered from it: the children of `2.3` are `2.3.1` through `2.3.5`.

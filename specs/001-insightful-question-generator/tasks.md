@@ -89,19 +89,19 @@ numbered from it, and can be expanded again with no limit.
 
 ### Tests — write first, confirm they fail
 
-- [ ] T026 [P] [US2] Add to `tests/test_request_checks.py`: an empty `ancestors` list accepted; a list entry that is empty, or longer than 300 characters, rejected; `ancestors` missing or not a list rejected
-- [ ] T027 [P] [US2] Add to `tests/test_prompts.py`: a chain of six or fewer ancestors appears whole; a chain of nine keeps the seed and the last six, and says that earlier links were left out; the last ancestor is named as the question being opened, so the new questions are about it rather than the seed (FR-014); no depth is ever refused (FR-015) (research.md R6)
-- [ ] T028 [P] [US2] Add to `tests/test_response_checks.py` and `tests/test_generate.py`: a question restating the question being opened is rejected (FR-009); a decline on an expansion produces the message about a *question*, not a seed (FR-052)
-- [ ] T029 [P] [US2] Write `tests/tree.test.mjs` for `public/tree.mjs`, run with `node --test tests/tree.test.mjs`: the seed's children are labelled `1`–`5` and the children of `2.3` are labelled `2.3.1`–`2.3.5`; a result is attached only to the node it was requested for (FR-056); a failed request leaves the node unopened so it can be opened again (FR-036); while a request is in flight, starting another is refused (FR-054)
+- [X] T026 [P] [US2] Add to `tests/test_request_checks.py`: an empty `ancestors` list accepted; a list entry that is empty, or longer than 300 characters, rejected; `ancestors` missing or not a list rejected
+- [X] T027 [P] [US2] Add to `tests/test_prompts.py`: a chain of six or fewer ancestors appears whole; a chain of nine keeps the seed and the last six, and says that earlier links were left out; the last ancestor is named as the question being opened, so the new questions are about it rather than the seed (FR-014); no depth is ever refused (FR-015) (research.md R6)
+- [X] T028 [P] [US2] Add to `tests/test_response_checks.py` and `tests/test_generate.py`: a question restating the question being opened is rejected (FR-009); a decline on an expansion produces the message about a *question*, not a seed (FR-052)
+- [X] T029 [P] [US2] Write `tests/tree.test.mjs` for `public/tree.mjs`, run with `node --test tests/tree.test.mjs`: the seed's children are labelled `1`–`5` and the children of `2.3` are labelled `2.3.1`–`2.3.5`; a result is attached only to the node it was requested for (FR-056); a failed request leaves the node unopened so it can be opened again (FR-036); while a request is in flight, starting another is refused (FR-054)
 
 ### Implementation
 
-- [ ] T030 [US2] Extend `inquiry/request_checks.py` to check `ancestors` as data-model.md, "Generation request", specifies: "each at most 300 characters, not empty"
-- [ ] T031 [US2] Extend `inquiry/prompts.py` to include the seed plus the last `config.MAX_ANCESTORS_IN_PROMPT` ancestors, mark any links left out, and name the last ancestor as the question being opened
-- [ ] T032 [US2] Extend `inquiry/response_checks.py` and `inquiry/generate.py` so expansions pass exactly the same checks as the first set (FR-016), comparing against the question being opened rather than always the seed, and to pass `"question"` to `messages.declined` when `ancestors` is not empty
-- [ ] T033 [P] [US2] Create `public/tree.mjs` as an ES module of pure functions with no page access: create a tree from a seed and hold it for the session (FR-021), add children to a node with hierarchical labels, look up a node, and track whether a request is in flight (data-model.md, Node)
-- [ ] T034 [US2] Extend `public/app.js`, loaded as `type="module"` and importing `./tree.mjs`: render each question as a button that opens it (FR-013); send the seed and ancestor chain; show that the app is busy and ignore other opens while a request is in flight (FR-054, FR-055); attach the result to the requested node only (FR-056); after a failure, leave the question closed and openable again (FR-036). Nothing about the tree is saved to browser storage, so a reload starts empty (FR-042)
-- [ ] T035 [US2] Run `pytest` and `node --test tests/tree.test.mjs`, then quickstart.md scenarios 2 and 8
+- [X] T030 [US2] Extend `inquiry/request_checks.py` to check `ancestors` as data-model.md, "Generation request", specifies: "each at most 300 characters, not empty"
+- [X] T031 [US2] Extend `inquiry/prompts.py` to include the seed plus the last `config.MAX_ANCESTORS_IN_PROMPT` ancestors, mark any links left out, and name the last ancestor as the question being opened
+- [X] T032 [US2] Extend `inquiry/response_checks.py` and `inquiry/generate.py` so expansions pass exactly the same checks as the first set (FR-016), comparing against the question being opened rather than always the seed, and to pass `"question"` to `messages.declined` when `ancestors` is not empty
+- [X] T033 [P] [US2] Create `public/tree.mjs` as an ES module of pure functions with no page access: create a tree from a seed and hold it for the session (FR-021), add children to a node with hierarchical labels, look up a node, and track whether a request is in flight (data-model.md, Node)
+- [X] T034 [US2] Extend `public/app.js`, loaded as `type="module"` and importing `./tree.mjs`: render each question as a button that opens it (FR-013); send the seed and ancestor chain; show that the app is busy and ignore other opens while a request is in flight (FR-054, FR-055); attach the result to the requested node only (FR-056); after a failure, leave the question closed and openable again (FR-036). Nothing about the tree is saved to browser storage, so a reload starts empty (FR-042)
+- [X] T035 [US2] Run `pytest` and `node --test tests/tree.test.mjs`, then quickstart.md scenarios 2 and 8
 
 **Checkpoint**: questions open into questions, to any depth.
 

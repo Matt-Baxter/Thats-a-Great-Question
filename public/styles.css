@@ -176,6 +176,36 @@ button:disabled { cursor: progress; opacity: .7; }
   border-radius: 6px;
 }
 
+/* --------------------------------------------------------------- inquiry --- */
+.inquiry-top { padding-block: 26px 0; }
+
+/* The seed or question currently being viewed, shown in full (FR-018). */
+.focus-block {
+  border-left: 2px solid var(--accent);
+  padding: 2px 0 2px 16px;
+  margin-bottom: 26px;
+}
+.focus-kind {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 6px;
+}
+.focus-text {
+  font-family: var(--serif);
+  font-size: clamp(19px, 4.6vw, 24px);
+  line-height: 1.36;
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+/* Focus moves here after a new set arrives, for keyboard and screen-reader users;
+   it needs no visible ring because it is not something to click. */
+.focus-text:focus { outline: none; }
+
 /* ---------------------------------------------------------------- results --- */
 .list-label {
   font-family: var(--mono);
@@ -195,15 +225,23 @@ ol.questions {
   gap: var(--gap);
 }
 
+/* Each question is a button: the whole row is the target, keyboard included (FR-013). */
 .q {
+  width: 100%;
   display: flex;
   gap: 12px;
   align-items: flex-start;
+  text-align: left;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 13px var(--pad);
   color: var(--ink);
+  transition: border-color .13s ease, transform .13s ease;
+}
+.q:hover:not(:disabled) {
+  border-color: var(--accent);
+  transform: translateX(2px);
 }
 .q-num {
   font-family: var(--mono);
@@ -219,6 +257,17 @@ ol.questions {
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
+.q-open {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 4px;
+  opacity: 0;
+  transition: opacity .13s ease;
+}
+.q:hover .q-open, .q:focus-visible .q-open { opacity: 1; }
 
 .suggestion-note {
   color: var(--muted);
@@ -260,6 +309,7 @@ ol.questions {
 }
 @media (prefers-reduced-motion: reduce) {
   .dots i { animation: none; opacity: .7; }
+  .q:hover:not(:disabled) { transform: none; }
 }
 
 .msg {

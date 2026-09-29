@@ -98,6 +98,50 @@ def test_a_refusal_whose_fallback_was_never_tried_gives_failed_not_declined():
     assert result == {"outcome": "failed", "message": messages.GENERATION_FAILED}
 
 
+# --- Expansions (T028) -----------------------------------------------------------------
+
+OPENED = "Which kinds of innovation depend on chance meetings, and which do not?"
+EXPANSION = {"seed": SEED, "ancestors": [fakes.GOOD_CANDIDATES[4], OPENED]}
+
+
+def test_an_expansion_sends_the_question_being_opened():
+    # FR-014
+    client = fakes.FakeClient(fakes.valid_reply())
+    generate_questions(client, EXPANSION)
+    content = client.calls()[0]["messages"][0]["content"]
+    assert f"<question_being_opened>\n{OPENED}\n</question_being_opened>" in content
+
+
+def test_a_decline_on_an_expansion_names_the_question_not_the_seed():
+    # FR-052
+    client = fakes.FakeClient(fakes.refusal())
+    result = generate_questions(client, EXPANSION)
+    assert result == {"outcome": "declined", "message": messages.declined("question")}
+
+
+def test_an_expansion_restating_the_question_being_opened_gives_failed():
+    # FR-009, FR-016: the same checks, against the question being opened.
+    candidates = fakes.GOOD_CANDIDATES[:6] + [OPENED.upper()]
+    client = fakes.FakeClient(fakes.reply_with(candidates, [0, 1, 6]))
+    result = generate_questions(client, EXPANSION)
+    assert result == {"outcome": "failed", "message": messages.GENERATION_FAILED}
+
+
+def test_an_expansion_passes_the_same_checks_as_a_first_set():
+    # FR-016: a reply that is fine for the seed is fine for an expansion too.
+    client = fakes.FakeClient(fakes.reply_with(fakes.GOOD_CANDIDATES, [0, 1, 2]))
+    result = generate_questions(client, EXPANSION)
+    assert result["outcome"] == "ok"
+
+
+def test_the_log_records_the_depth_of_an_expansion(caplog):
+    # FR-049
+    caplog.set_level(logging.INFO, logger="inquiry")
+    generate_questions(fakes.FakeClient(fakes.valid_reply()), EXPANSION)
+    assert "depth=2" in caplog.text
+    assert OPENED not in caplog.text
+
+
 # --- Failures -------------------------------------------------------------------------
 
 

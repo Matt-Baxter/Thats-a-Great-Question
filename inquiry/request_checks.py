@@ -57,10 +57,33 @@ def check_request(body):
     if trimmed_seed == "":
         return invalid(messages.EMPTY_SEED)
 
-    # Until User Story 2 (T030), every request is about the seed: the ancestors the page
-    # sends are not yet read, so the chain is always empty here.
-    checked_request = {"seed": trimmed_seed, "ancestors": []}
+    ancestors = check_ancestors(payload.get("ancestors"))
+    if ancestors is None:
+        return invalid(messages.INVALID_REQUEST)
+
+    checked_request = {"seed": trimmed_seed, "ancestors": ancestors}
     return {"outcome": "checked", "request": checked_request}
+
+
+def check_ancestors(ancestors):
+    """Return the ancestor questions trimmed, or None if they break a rule.
+
+    The ancestors are the questions from the seed's first question down to the one being
+    opened; an empty list means the request is about the seed. Each was returned by this
+    app, so each must be a non-empty question within the question limit (data-model.md,
+    "Generation request"). There is no limit on how many there are (FR-015).
+    """
+    if not isinstance(ancestors, list):
+        return None
+    trimmed_ancestors = []
+    for ancestor in ancestors:
+        if not is_sendable_text(ancestor):
+            return None
+        trimmed = ancestor.strip()
+        if trimmed == "" or len(trimmed) > config.MAX_QUESTION_CHARS:
+            return None
+        trimmed_ancestors.append(trimmed)
+    return trimmed_ancestors
 
 
 def parse_json_object(body):

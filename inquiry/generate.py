@@ -93,7 +93,9 @@ def call_model(client, request):
         model=config.MODEL,
         max_tokens=config.MAX_OUTPUT_TOKENS,
         system=build_system_prompt(),
-        messages=[{"role": "user", "content": build_user_message(request["seed"])}],
+        messages=[
+            {"role": "user", "content": build_user_message(request["seed"], request["ancestors"])}
+        ],
         output_config={
             "effort": config.EFFORT,
             "format": {"type": "json_schema", "schema": REPLY_SCHEMA},
@@ -116,7 +118,7 @@ def result_from_response(response, request, depth):
     # or logged (FR-053); only its category is logged.
     if response.stop_reason == "refusal":
         log_outcome("declined", "refusal", depth, refusal_category(response))
-        return {"outcome": "declined", "message": messages.declined("seed")}
+        return {"outcome": "declined", "message": messages.declined(what_is_opened(request))}
 
     # The reply was cut off at the output-token limit, so its JSON is incomplete (FR-035).
     if response.stop_reason == "max_tokens":
@@ -128,13 +130,29 @@ def result_from_response(response, request, depth):
         log_outcome("failed", "unparseable", depth)
         return {"outcome": "failed", "message": messages.GENERATION_FAILED}
 
-    checked = check_reply(reply, request["seed"])
+    # Expansions pass exactly the same checks as a first set, compared against the
+    # question being opened rather than the seed (FR-009, FR-016).
+    checked = check_reply(reply, text_being_opened(request))
     if not checked["passed"]:
         log_outcome("failed", checked["failed_check"], depth)
         return {"outcome": "failed", "message": messages.GENERATION_FAILED}
 
     log_outcome("ok", "passed", depth)
     return {"outcome": "ok", "questions": checked["questions"]}
+
+
+def text_being_opened(request):
+    """The seed, or the question being opened: the last ancestor, when there are any."""
+    if len(request["ancestors"]) == 0:
+        return request["seed"]
+    return request["ancestors"][-1]
+
+
+def what_is_opened(request):
+    """Return "seed" or "question", whichever the request is about, for the declined message (FR-052)."""
+    if len(request["ancestors"]) == 0:
+        return "seed"
+    return "question"
 
 
 def read_reply(response):

@@ -1,11 +1,12 @@
 <!doctype html>
 <!--
-  The app's only page. A seed goes in; three to five questions about it, or a
-  plain-language message, come back.
+  The app's only page. A seed goes in; three to five questions about it come back,
+  and any of them can be opened for questions about that question.
 
-  Structure only: styles.css holds every style and app.js every behaviour. No
-  third-party scripts, fonts or trackers are loaded, so nothing a user types is
-  sent anywhere except this app's own server (FR-050).
+  Structure only: styles.css holds every style, app.js every behaviour, tree.mjs the
+  inquiry tree and reply.mjs how a reply is shown. No third-party scripts, fonts or
+  trackers are loaded, so nothing a user types is sent anywhere except this app's own
+  server (FR-050).
 -->
 <html lang="en">
 <head>
@@ -18,7 +19,8 @@
 <body>
   <main class="wrap">
 
-    <section class="home">
+    <!-- Seed entry: shown until the first set of questions arrives. -->
+    <section class="home" id="view-home">
       <h1 class="greeting">Let's investigate.<br><em>What are you turning over?</em></h1>
       <p class="sub">
         Give a topic, a claim, a half-formed idea, or a question. You get back the questions
@@ -35,15 +37,25 @@
       </form>
     </section>
 
+    <!-- The inquiry, top half: the seed or question being viewed, in full. -->
+    <section class="inquiry-top" id="view-inquiry-top" hidden>
+      <div class="focus-block">
+        <span class="focus-kind" id="focus-kind">Seed</span>
+        <p class="focus-text" id="focus-text" tabindex="-1"></p>
+      </div>
+    </section>
+
+    <!-- Shared by both views: the loading state and any message. -->
     <div class="loading" id="loading" hidden>
       <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
-      <span class="loading-text">Looking for the questions worth asking…</span>
+      <span class="loading-text" id="loading-text"></span>
     </div>
 
     <div class="msg" id="message" hidden></div>
 
-    <section id="results" hidden>
-      <h2 class="list-label">Questions worth asking</h2>
+    <!-- The inquiry, bottom half: the questions about what is being viewed. -->
+    <section id="view-inquiry-questions" hidden>
+      <h2 class="list-label" id="list-label">Questions worth asking</h2>
       <ol class="questions" id="questions"></ol>
       <p class="suggestion-note">
         Suggestions, not a complete set. The app does not answer these — that part is yours.
