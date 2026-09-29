@@ -43,6 +43,11 @@ Coursework for SEIS 606 (Vibe Coding), University of St. Thomas. Project 1.
 | `.specify/memory/constitution.md` | The governing principles. Read first. |
 | `specs/001-insightful-question-generator/spec.md` | The specification: user stories, FR-NNN requirements, SC-NNN success criteria. |
 | `specs/001-insightful-question-generator/checklists/` | Quality checklists for the spec. |
+| `specs/001-insightful-question-generator/plan.md`, `tasks.md` | How it is built, and the numbered build steps. |
+| `inquiry/` | Every judgment the app makes: request checks, the prompt, lines of inquiry, reply checks, messages, and which status code each outcome gets. |
+| `api/questions.py` | The one endpoint. Passes values between `inquiry/` functions; no judgments. |
+| `public/` | The page. `tree.mjs` keeps the inquiry tree and `reply.mjs` picks what a reply shows; both are unit-tested. `app.js` connects them to the page. |
+| `tests/` | `pytest` for Python and `node --test "tests/*.test.mjs"` for the browser modules. None calls the live model. |
 | `.claude/skills/speckit-*/` | The `/speckit-*` commands. |
 | `.specify/templates/` | Templates those commands fill. |
 

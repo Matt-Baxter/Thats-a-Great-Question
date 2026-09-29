@@ -36,10 +36,14 @@ browser, for the length of the session — a page refresh starts you over.
 
 ## Project status
 
-Being built. The first user story works: a seed goes in and three to five checked questions, or a
-plain-language message, come back. Opening a question for more questions, the trail, and asking
-again are still to come (tasks.md, Phases 4–6). Deployed to Vercel on 2026-09-26; every push to
-`main` redeploys it.
+All four user stories are built. A seed returns three to five checked questions; any question
+opens into questions about it, to any depth; a trail leads back to any earlier point, and branches
+stay as they were; and any set can be asked for again, a slow request cancelled, or a new inquiry
+started, with a confirmation before anything is discarded. Deployed to Vercel on 2026-09-26; every
+push to `main` redeploys it.
+
+Still open: the firewall rate limit and the checks against the live site (T047), and the
+maintainer's scoring of the question-quality review set (T049).
 
 ### ▶ Open the UI mockup
 
@@ -73,6 +77,10 @@ standing in for a real request.
 | Specification quality checklist | [`specs/001-insightful-question-generator/checklists/requirements.md`](specs/001-insightful-question-generator/checklists/requirements.md) | rendered document |
 | Review history — every question asked of the spec, and every defect found | [`specs/001-insightful-question-generator/checklists/reviews.md`](specs/001-insightful-question-generator/checklists/reviews.md) | rendered document |
 | Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) | rendered document |
+| Every judgment the app makes — checks, prompt, lines of inquiry, messages | [`inquiry/`](inquiry/) | Python source |
+| The one HTTP endpoint, which only passes values to `inquiry/` | [`api/questions.py`](api/questions.py) | Python source |
+| The page, the inquiry tree, and how replies are shown | [`public/`](public/) | HTML, CSS, JavaScript |
+| Tests — none calls the live model | [`tests/`](tests/) | Python and JavaScript |
 
 The specification defines 4 prioritized user stories with Given/When/Then acceptance scenarios,
 61 functional requirements (`FR-001`–`FR-061`), and 20 measurable success criteria
@@ -95,8 +103,8 @@ would be false precision.
 
 ## Running it locally
 
-You need Python 3.11 or newer, the [Vercel CLI](https://vercel.com/docs/cli) for `vercel dev`, and
-an Anthropic API key.
+You need Python 3.11 or newer, Node.js (for the Vercel CLI and the browser-logic tests), the
+[Vercel CLI](https://vercel.com/docs/cli) for `vercel dev`, and an Anthropic API key.
 
 ```bash
 python -m venv .venv
@@ -105,6 +113,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 cp .env.example .env               # then put your key after QUESTION_APP_API_KEY=
 git check-ignore .env              # must print ".env"; if it prints nothing, stop
 pytest                             # needs no key, and never calls the live model
+node --test "tests/*.test.mjs"     # the inquiry tree and how replies are shown; no packages
 vercel dev                         # serves the page and the API together
 ```
 

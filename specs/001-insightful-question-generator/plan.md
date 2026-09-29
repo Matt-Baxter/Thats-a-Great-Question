@@ -86,6 +86,7 @@ api/
 └── questions.py            # Vercel entry point: reads the request, calls inquiry/, writes JSON. No judgment.
 
 inquiry/                    # every judgment the app makes
+├── __init__.py             # the package's docstring only
 ├── config.py               # named, commented constants: limits, counts, model, effort, timeout, key variable, API address
 ├── lines_of_inquiry.py     # the written list of angles a question may take, each commented
 ├── prompts.py              # builds the model prompt from a seed and its ancestor chain
@@ -100,7 +101,7 @@ public/
 ├── styles.css              # colours, spacing and type defined once
 ├── tree.mjs                # the session's inquiry tree: structure, navigation, counts. No page access; unit-tested
 ├── reply.mjs               # which of a reply's fields the page shows, and the three fixed browser messages; unit-tested
-└── app.js                  # draws the page and sends requests, using tree.mjs
+└── app.js                  # draws the page and sends requests, using tree.mjs and reply.mjs
 
 tests/
 ├── fakes.py                # a fake model client returning canned responses
@@ -115,6 +116,7 @@ tests/
 
 requirements.txt            # anthropic
 requirements-dev.txt        # pytest
+pytest.ini                  # lets tests import inquiry/ and api/ from the repository root
 vercel.json                 # function duration; no rewrites needed
 .gitignore                  # first commit: .env*, .vercel/, __pycache__/
 .env.example                # the variable name (QUESTION_APP_API_KEY) only, never a value
