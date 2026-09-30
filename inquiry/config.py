@@ -56,10 +56,11 @@ MAX_ANCESTORS_IN_PROMPT = 6
 # The model that writes the questions, chosen by the maintainer (research.md R1).
 MODEL = "claude-opus-5-5"
 
-# How hard the model thinks. Quality comes before speed; "medium" is this model's
-# own default and the starting point, with "high" to be tried on the review set
-# (research.md R1, T049).
-EFFORT = "medium"
+# How hard the model thinks. Quality comes before speed. "high" was adopted on
+# 2026-09-30 after the review set: it was the only level to pass every quality
+# criterion, where "medium" fell short on short, single questions (SC-020). It is
+# slower, and SC-015 was measured again at this level (research.md R1, T049).
+EFFORT = "high"
 
 # The most tokens the model may produce. Thinking counts toward this limit even though
 # its text is not returned, so it is sized for thinking plus the reply (research.md R1).

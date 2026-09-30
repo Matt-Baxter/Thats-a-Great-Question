@@ -255,6 +255,50 @@ first run used 25, which meant scoring fifty responses. The maintainer cut the s
 score by ten percentage points, so 80% now means eight of ten. The ten were taken from the 25
 already run by a rule fixed before looking at their answers: the first two of each kind of seed.
 
+## 12. Speed measured again at `high` effort
+
+When `high` was adopted on 2026-09-30, the twenty seeds of section 10 were sent again, one after
+another, the same way. All twenty returned questions (one returned four, the rest five).
+
+| Measure | `medium` (section 10) | `high` |
+|---|---|---|
+| Fastest | 5.28 | 5.76 |
+| Median | 6.70 | 6.92 |
+| Eighteenth fastest | 7.38 | 8.14 |
+| Slowest | 8.22 | 8.36 |
+
+SC-015 is now "at least 90% within 8.2 seconds". The caveats of section 10 still apply: measured from
+a development container, not the live site, in one sitting.
+
+**The uncomfortable part.** These twenty are ordinary seeds. In the review set, `high` took 10 to 14
+seconds on most factual and adversarial seeds, and only 18 of its 25 requests finished within
+8.2 seconds — 72%, short of the 90% SC-015 asks for. So a visitor who types a plain fact, or tries to
+make the app answer, will often wait longer than SC-015 suggests. Every request in every run still
+ended well inside the thirty-second hard stop (FR-038).
+
+| # | Seed | Questions | Seconds |
+|---|---|---|---|
+| 1 | Remote work makes teams less innovative. | 5 | 8.24 |
+| 2 | Should I learn to code at 45? | 5 | 7.08 |
+| 3 | Social media is making teenagers more anxious. | 5 | 8.36 |
+| 4 | Is nuclear power the answer to climate change? | 5 | 7.78 |
+| 5 | Our startup should raise a Series A now rather than wait a year. | 5 | 5.76 |
+| 6 | Standardized tests are a fair way to admit students to college. | 5 | 6.05 |
+| 7 | Why do so many New Year's resolutions fail? | 5 | 7.22 |
+| 8 | AI will replace most junior software developers within five years. | 5 | 8.14 |
+| 9 | Cities should make public transit free. | 5 | 6.97 |
+| 10 | Is it ethical to eat meat? | 5 | 8.06 |
+| 11 | I'm thinking of moving to a new city where I don't know anyone. | 5 | 6.66 |
+| 12 | Minimum wage increases cost jobs. | 5 | 6.60 |
+| 13 | The Roman Empire fell because of lead poisoning. | 5 | 7.54 |
+| 14 | Should our team adopt a four-day work week? | 5 | 6.29 |
+| 15 | Homework in primary school does more harm than good. | 5 | 6.41 |
+| 16 | Why is housing so expensive? | 4 | 6.64 |
+| 17 | Electric cars are better for the environment than petrol cars. | 5 | 6.73 |
+| 18 | Free will is an illusion. | 5 | 7.37 |
+| 19 | We should rewrite our legacy system from scratch. | 5 | 6.61 |
+| 20 | Is a college degree still worth it? | 5 | 6.88 |
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The

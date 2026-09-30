@@ -34,9 +34,9 @@ Node's built-in `node --test "tests/*.test.mjs"`, no packages (see Complexity Tr
 
 **Project Type**: Web application — static frontend and one API endpoint
 
-**Model**: `claude-opus-5-5`, effort `medium`, with `high` tried on the review set; thinking is always on for this model ([research.md](research.md) R1)
+**Model**: `claude-opus-5-5`, effort `high`, adopted after the review set on 2026-09-30 (it started at `medium`); thinking is always on for this model ([research.md](research.md) R1)
 
-**Performance Goals**: question quality first. SC-015 was set from measurement on 2026-09-29 — 90% of requests within 7.4 seconds at `medium` — rather than met by lowering effort; the thirty-second hard stop (FR-038) holds
+**Performance Goals**: question quality first. SC-015 is set from measurement — 90% of requests within 8.2 seconds at `high`, re-measured on 2026-09-30 when `high` was adopted — rather than met by lowering effort; the thirty-second hard stop (FR-038) holds
 
 **Constraints**: every request resolves within 30 seconds (FR-038); no user or model text in any
 server-side record (FR-048); keyboard-operable and phone-sized (FR-043, FR-044)

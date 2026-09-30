@@ -291,7 +291,7 @@ were `N` at both.
 **Effort decision** (T049): switch to `high` only if its questions are clearly better. Every request
 at both levels finished well within 30 seconds, so speed does not rule either out.
 
-- `high` clearly better? _____
+- `high` clearly better? **Yes — adopted 2026-09-30.** It is the only level that passes all four criteria.
 
 ---
 

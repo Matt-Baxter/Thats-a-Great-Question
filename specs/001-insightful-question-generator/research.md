@@ -6,9 +6,9 @@ checked while planning; each names what to confirm and what changes if it turns 
 
 ## R1. Which model, and how hard it thinks
 
-**Decision**: `claude-opus-5-5`, chosen by the maintainer. Effort is set explicitly to `medium`.
-`high` is tried on the human review set (SC-009) and adopted if it produces clearly better
-questions within the thirty-second hard stop.
+**Decision**: `claude-opus-5-5`, chosen by the maintainer. Effort is set explicitly. It started at
+`medium`; `high` was tried on the human review set (SC-009) and, on 2026-09-30, adopted (see the
+result at the end of this entry).
 
 **Quality comes before speed.** The maintainer decided on 2026-09-24 that better questions are worth
 a slower answer. Effort is never lowered to meet SC-015; if `medium` or `high` is slower than ten
@@ -40,9 +40,13 @@ longer waits, closer to the thirty-second hard stop — is certain.
 **Review set, 2026-09-29**: 25 seeds run at `medium` and at `high`; all 50 responses returned
 questions and none took more than 13.8 seconds, so both levels meet the thirty-second condition.
 `high` was slower on factual and adversarial seeds (10–14 seconds) and about the same elsewhere.
-Whether its questions are clearly better is for the maintainer to judge, blind, in
-[review-set.md](review-set.md), which keeps ten of the 25 seeds (SC-009 was cut to ten on
-2026-09-30); the effort stays `medium` until then.
+The maintainer scored ten of the 25 seeds blind in [review-set.md](review-set.md) (SC-009 was cut
+to ten on 2026-09-30). Both levels scored 10/10 on SC-009, SC-010 and SC-011. On SC-020 — short,
+single questions — `medium` scored 6/10, below the pass mark of 8, and `high` scored exactly 8/10.
+
+**Result, 2026-09-30: `high` adopted**, by the maintainer, as the only level that passed every
+criterion. The margin is thin: two seeds out of ten, and `high` sits exactly on the pass mark.
+SC-015 was measured again at `high`.
 
 ## R2. One model call or two
 
