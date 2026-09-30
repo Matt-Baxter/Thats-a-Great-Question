@@ -55,8 +55,8 @@ for SC-011.
 
 | | SC-009 | SC-010 | SC-011 | SC-020 |
 |---|---|---|---|---|
-| A | | | | |
-| B | | | | |
+| A | Y| Y| Y| N|
+| B | Y| Y| Y| Y|
 
 ### 2. We should rewrite our Python backend in Rust for performance.
 
