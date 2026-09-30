@@ -299,6 +299,21 @@ ended well inside the thirty-second hard stop (FR-038).
 | 19 | We should rewrite our legacy system from scratch. | 5 | 6.61 |
 | 20 | Is a college degree still worth it? | 5 | 6.88 |
 
+## 13. Checks on the live site (T047)
+
+Run by the maintainer on 2026-09-30 against https://thats-a-great-question.vercel.app/, after adding
+the firewall rate-limit rule. The build session could not reach the site, so these results are as
+the maintainer reported them: all four passed.
+
+| Check | What was done | Criteria |
+|---|---|---|
+| Basic use | A seed returned questions; five levels deep; one click on "Seed" returned to the start | Quickstart scenarios 1 and 3; SC-006 |
+| Error message | The key was set to a wrong value and redeployed: a plain-language failure appeared and the page stayed usable; the real key was then restored | Quickstart scenario 10; FR-035, FR-039 |
+| Rate limit | The rule was lowered to 3 requests per 60 seconds and exceeded: the wait-and-try-again message appeared with the questions on screen untouched; the rule was then restored to 60 per 600 seconds | SC-013; FR-045 to FR-047 |
+| First-time user | Someone who had not seen the app reached a set of questions, unaided, in under sixty seconds | SC-005 |
+
+The first-time user's exact time was not recorded, only that it was under sixty seconds.
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The

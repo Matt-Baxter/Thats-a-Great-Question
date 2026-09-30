@@ -48,8 +48,8 @@ started, with a confirmation before anything is discarded. Deployed to Vercel on
 push to `main` redeploys it.
 
 The question-quality review set has been scored, and the app now runs at `high` effort, the only
-level that passed every quality check (T049). Still open: the firewall rate limit and the checks
-against the live site (T047).
+level that passed every quality check (T049). A per-visitor rate limit is on, and the checks against
+the live site all passed (T047). Every task in the task list is done.
 
 ### The original mockup (not the app)
 
