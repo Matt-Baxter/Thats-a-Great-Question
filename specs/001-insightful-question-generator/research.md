@@ -41,7 +41,8 @@ longer waits, closer to the thirty-second hard stop — is certain.
 questions and none took more than 13.8 seconds, so both levels meet the thirty-second condition.
 `high` was slower on factual and adversarial seeds (10–14 seconds) and about the same elsewhere.
 Whether its questions are clearly better is for the maintainer to judge, blind, in
-[review-set.md](review-set.md); the effort stays `medium` until then.
+[review-set.md](review-set.md), which keeps ten of the 25 seeds (SC-009 was cut to ten on
+2026-09-30); the effort stays `medium` until then.
 
 ## R2. One model call or two
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-21
 
-**Last Updated**: 2026-09-29
+**Last Updated**: 2026-09-30
 
 **Status**: Draft
 
@@ -292,7 +292,7 @@ metric claiming otherwise would be false precision.
 - **SC-006**: A user at any depth can identify the original seed from the trail and return to it in a single action, on both a desktop and a phone-sized screen.
 - **SC-007**: 100% of returns to a previously expanded question, within a session, display the same questions that were shown before, with no new generation.
 - **SC-008**: 100% of regeneration requests on a question with descendants warn the user and require confirmation before anything is discarded.
-- **SC-009**: Across a review set of at least twenty varied seeds spanning technical, social, and philosophical subjects, a human reviewer judges that at least 80% of responses contain at least one question the reviewer had not already considered.
+- **SC-009**: Across a review set of at least ten varied seeds spanning technical, social, and philosophical subjects, a human reviewer judges that at least 80% of responses contain at least one question the reviewer had not already considered. *Reduced from twenty to ten on 2026-09-30, so that scoring by hand stays practical; with ten seeds, 80% means eight.*
 - **SC-010**: Across the same review set, a human reviewer judges that at least 80% of responses contain no two questions pursuing the same underlying goal in different words.
 - **SC-011**: Across the same review set, 100% of responses contain no answers, no commentary, and no question that merely restates the seed.
 - **SC-012**: 100% of interactive elements can be reached and operated using a keyboard alone.

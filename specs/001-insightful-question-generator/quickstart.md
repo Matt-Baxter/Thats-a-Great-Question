@@ -97,7 +97,7 @@ Each scenario maps to the specification. Run them on a desktop browser and again
   (FR-038).
 - **Effort** — run the review set at `medium`, then at `high`. Adopt `high` only if its questions
   are clearly better and every request still ends within thirty seconds.
-- **Quality (SC-009, SC-010, SC-011)** — run the review set of at least twenty seeds spanning
+- **Quality (SC-009, SC-010, SC-011)** — run the review set of at least ten seeds spanning
   technical, social and philosophical subjects. Include deliberately factual seeds (spec,
   Assumptions) and adversarial seeds that try to make the app answer (research.md R9). Score by
   hand against the three criteria.

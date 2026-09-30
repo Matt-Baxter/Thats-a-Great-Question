@@ -247,6 +247,14 @@ What this measurement does and does not show:
 | 19 | We should rewrite our legacy system from scratch. | ok | 5 | 7.10 |
 | 20 | Is a college degree still worth it? | ok | 5 | 6.54 |
 
+## 11. Review set cut to ten seeds
+
+SC-009 asked for a review set of at least twenty seeds, each scored by hand at two effort levels. The
+first run used 25, which meant scoring fifty responses. The maintainer cut the set to ten on
+2026-09-30 to keep that practical. The cost is precision: with ten seeds, each response moves a
+score by ten percentage points, so 80% now means eight of ten. The ten were taken from the 25
+already run by a rule fixed before looking at their answers: the first two of each kind of seed.
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The
