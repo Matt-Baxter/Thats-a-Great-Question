@@ -7,6 +7,11 @@ of stopping at the first set.
 
 **It generates questions only. It never answers them.**
 
+## ▶ [Use the app: thats-a-great-question.vercel.app](https://thats-a-great-question.vercel.app/)
+
+Type a topic, claim, idea or question and get back the questions worth asking about it. Nothing to
+install and no account needed.
+
 Coursework for SEIS 606: Vibe Coding, University of St. Thomas, Fall 2026 — Project 1.
 
 ## Why
@@ -42,14 +47,16 @@ stay as they were; and any set can be asked for again, a slow request cancelled,
 started, with a confirmation before anything is discarded. Deployed to Vercel on 2026-09-26; every
 push to `main` redeploys it.
 
-Still open: the firewall rate limit and the checks against the live site (T047), and the
-maintainer's scoring of the question-quality review set (T049).
+The question-quality review set has been scored, and the app now runs at `high` effort, the only
+level that passed every quality check (T049). Still open: the firewall rate limit and the checks
+against the live site (T047).
 
-### ▶ Open the UI mockup
+### The original mockup (not the app)
 
-**[Run the mockup in your browser →](https://matt-baxter.github.io/Thats-a-Great-Question/mockups/inquiry-flow.html)**
+[Open the mockup →](https://matt-baxter.github.io/Thats-a-Great-Question/mockups/inquiry-flow.html)
 
-That link opens the working page. It is clickable end to end: it starts with an example seed
+A clickable prototype made before the app was built, to settle how it should look and behave. **To
+use the real app, use the link at the top of this page.** The mockup is clickable end to end: it starts with an example seed
 loaded, returns five numbered questions about it, and any of those can be opened to get its own
 five, numbered from it. The trail across the top walks back to any earlier question, or to the
 seed, in one click.
@@ -59,7 +66,7 @@ of question the app is meant to return, and the pause before a set appears is a 
 standing in for a real request.
 
 > **Note on the two kinds of link below.** GitHub never renders HTML files — clicking an `.html`
-> file here shows its source code, not the page. Use the green link above to *run* the mockup, and
+> file here shows its source code, not the page. Use the link above to *run* the mockup, and
 > the file link below to *read* how it is built. If the link above does not load, the file can also
 > be downloaded from the repository and opened directly; it is self-contained and needs nothing
 > installed.
@@ -68,7 +75,8 @@ standing in for a real request.
 
 | What | Link | Opens as |
 |---|---|---|
-| **UI mockup — run it** | [live page](https://matt-baxter.github.io/Thats-a-Great-Question/mockups/inquiry-flow.html) | a working web page |
+| **The app — use it** | [thats-a-great-question.vercel.app](https://thats-a-great-question.vercel.app/) | the live website |
+| UI mockup — the prototype made before the app | [mockup page](https://matt-baxter.github.io/Thats-a-Great-Question/mockups/inquiry-flow.html) | a clickable web page, no model connected |
 | UI mockup — read the source | [`mockups/inquiry-flow.html`](mockups/inquiry-flow.html) | HTML source on GitHub |
 | Constitution — the project's governing principles | [`.specify/memory/constitution.md`](.specify/memory/constitution.md) | rendered document |
 | Specification — user stories, requirements, success criteria | [`specs/001-insightful-question-generator/spec.md`](specs/001-insightful-question-generator/spec.md) | rendered document |
