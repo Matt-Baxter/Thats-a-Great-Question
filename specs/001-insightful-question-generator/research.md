@@ -245,6 +245,6 @@ enough to test it. Firewall rate limiting on Hobby is still unverified and is ch
 | Item | Entry | Default assumed for now | If it turns out otherwise |
 |---|---|---|---|
 | Maximum function duration on Vercel Hobby | R5 | At least 30 seconds; `vercel.json` sets 30 | **Settled 2026-09-26:** the deploy accepted 30 |
-| Firewall rate limiting on Vercel Hobby, and its configuration | R7 | Available (needed only at deploy, T047) | FR-045 unmet until the maintainer chooses a store or a paid plan |
+| Firewall rate limiting on Vercel Hobby, and its configuration | R7 | Available (needed only at deploy, T047) | **Settled 2026-09-30:** available on Hobby. Rule added: requests to `/api/questions`, fixed window of 600 seconds, 60 requests per IP address, answered with 429 |
 | Python handler shape and bundling of a root-level package | R8 | Both work; the package stays at `inquiry/` | **Settled 2026-09-26:** both work on the live deploy |
 | Where the Anthropic spend limit is set | R11 | — (needed only before going public, T046) | **Settled 2026-09-26:** a monthly spend limit, set in the Anthropic Console |
