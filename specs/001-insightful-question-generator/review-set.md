@@ -281,8 +281,12 @@ After scoring, use the key below to put each response under its effort level, an
 
 | Effort | SC-009 (need 8) | SC-010 (need 8) | SC-011 (need 10) | SC-020 (need 8) |
 |---|---|---|---|---|
-| `medium` | /10 | /10 | /10 | /10 |
-| `high` | /10 | /10 | /10 | /10 |
+| `medium` | 10/10 | 10/10 | 10/10 | 6/10 — **below 8** |
+| `high` | 10/10 | 10/10 | 10/10 | 8/10 |
+
+Counted from the maintainer's scores on 2026-09-30, using the key below. The two levels differ only
+on SC-020, and only on two seeds: 1 and 8 were `N` at `medium` and `Y` at `high`. Seeds 4 and 10
+were `N` at both.
 
 **Effort decision** (T049): switch to `high` only if its questions are clearly better. Every request
 at both levels finished well within 30 seconds, so speed does not rule either out.
