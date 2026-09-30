@@ -35,6 +35,8 @@ would have changed the conclusion.
    original seed. Any entry takes you straight back — including to the seed, in one click.
 5. From an earlier point you can follow a different line instead. The branch you left is unchanged
    when you return to it.
+6. Any set can be asked for again, a slow request cancelled, or a new inquiry started. The app asks
+   before discarding anything.
 
 There is no limit on how deep you can go. Nothing you type is stored anywhere but your own
 browser, for the length of the session — a page refresh starts you over.
@@ -56,7 +58,7 @@ the live site all passed (T047). Every task in the task list is done.
 [Open the mockup →](https://matt-baxter.github.io/Thats-a-Great-Question/mockups/inquiry-flow.html)
 
 A clickable prototype made before the app was built, to settle how it should look and behave. **To
-use the real app, use the link at the top of this page.** The mockup is clickable end to end: it starts with an example seed
+use the real app, use the link at the top of this page.** The mockup starts with an example seed
 loaded, returns five numbered questions about it, and any of those can be opened to get its own
 five, numbered from it. The trail across the top walks back to any earlier question, or to the
 seed, in one click.
@@ -65,11 +67,8 @@ It calls no model. Every question shown is written by hand as an example of the 
 of question the app is meant to return, and the pause before a set appears is a fixed timer
 standing in for a real request.
 
-> **Note on the two kinds of link below.** GitHub never renders HTML files — clicking an `.html`
-> file here shows its source code, not the page. Use the link above to *run* the mockup, and
-> the file link below to *read* how it is built. If the link above does not load, the file can also
-> be downloaded from the repository and opened directly; it is self-contained and needs nothing
-> installed.
+> GitHub never renders HTML files: clicking `mockups/inquiry-flow.html` in the file list shows its
+> source code, not the page. Use the link above to run the mockup.
 
 ### Where everything lives
 
@@ -80,10 +79,10 @@ standing in for a real request.
 | UI mockup — read the source | [`mockups/inquiry-flow.html`](mockups/inquiry-flow.html) | HTML source on GitHub |
 | Constitution — the project's governing principles | [`.specify/memory/constitution.md`](.specify/memory/constitution.md) | rendered document |
 | Specification — user stories, requirements, success criteria | [`specs/001-insightful-question-generator/spec.md`](specs/001-insightful-question-generator/spec.md) | rendered document |
-| Task list — the 50 build steps, in order |  [`specs/001-insightful-question-generator/tasks.md`](specs/001-insightful-question-generator/tasks.md) | rendered document |
-| Implementation plan — how it will be built, and why | [`specs/001-insightful-question-generator/plan.md`](specs/001-insightful-question-generator/plan.md) | rendered document |
+| Task list — the 50 build steps, all done |  [`specs/001-insightful-question-generator/tasks.md`](specs/001-insightful-question-generator/tasks.md) | rendered document |
+| Implementation plan — how it is built, and why | [`specs/001-insightful-question-generator/plan.md`](specs/001-insightful-question-generator/plan.md) | rendered document |
 | Specification quality checklist | [`specs/001-insightful-question-generator/checklists/requirements.md`](specs/001-insightful-question-generator/checklists/requirements.md) | rendered document |
-| Review set — 10 seeds and their questions at two effort levels, for scoring by hand | [`specs/001-insightful-question-generator/review-set.md`](specs/001-insightful-question-generator/review-set.md) | rendered document |
+| Review set — 10 seeds and their questions at two effort levels, scored by hand to choose the effort level | [`specs/001-insightful-question-generator/review-set.md`](specs/001-insightful-question-generator/review-set.md) | rendered document |
 | Review history — every question asked of the spec, and every defect found | [`specs/001-insightful-question-generator/checklists/reviews.md`](specs/001-insightful-question-generator/checklists/reviews.md) | rendered document |
 | Context for AI agents working in this repository | [`CLAUDE.md`](CLAUDE.md) | rendered document |
 | Every judgment the app makes — checks, prompt, lines of inquiry, messages | [`inquiry/`](inquiry/) | Python source |
@@ -95,7 +94,7 @@ The specification defines 4 prioritized user stories with Given/When/Then accept
 61 functional requirements (`FR-001`–`FR-061`), and 20 measurable success criteria
 (`SC-001`–`SC-020`), with five clarifications recorded from the clarify phase.
 
-## How this is being built
+## How this was built
 
 Spec-driven development using [Spec Kit](https://github.com/github/spec-kit), following the
 workflow: constitution → specify → plan → tasks → implement. The constitution is read at the start
