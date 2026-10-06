@@ -114,7 +114,7 @@ repaired one (FR-005):
 4. No two are the same once normalised — lower-cased, punctuation removed, whitespace collapsed (FR-007).
 5. None normalises to the same text as the seed or question being opened (FR-009).
 
-Checks for different angles (FR-008) and for leading or rhetorical questions (FR-011) are
+Checks for two questions asking the same thing in different words (FR-008) and for leading or rhetorical questions (FR-011) are
 judgements, handled by the model's selection criteria and verified by human review (SC-010, SC-011).
 No automated check claims them.
 

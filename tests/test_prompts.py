@@ -31,18 +31,41 @@ def test_every_line_of_inquiry_appears_with_its_description():
         assert f"{line['name']}: {line['description']}" in prompt
 
 
-def test_all_six_selection_criteria_appear():
+def test_all_eight_selection_criteria_appear():
     prompt = build_system_prompt()
-    assert len(SELECTION_CRITERIA) == 6
+    assert len(SELECTION_CRITERIA) == 8
     for criterion in SELECTION_CRITERIA:
         assert criterion in prompt
 
 
-def test_the_criteria_cover_different_angles_and_rule_out_leading_questions():
-    # FR-008, FR-011: the two rules no automated check can enforce are put to the model.
+def test_insight_leads_both_the_guidance_and_the_criteria():
+    # FR-062: insightful above all.
+    assert "Above all, the questions should be insightful" in build_system_prompt()
+    assert SELECTION_CRITERIA[0].startswith("It is insightful.")
+
+
+def test_the_prompt_rules_out_questions_generic_enough_to_fit_any_seed():
+    # FR-062
+    assert "too generic to choose" in build_system_prompt()
+    assert "would not make sense asked about a different one" in SELECTION_CRITERIA[1]
+
+
+def test_the_lines_of_inquiry_are_offered_as_ideas_not_a_checklist():
+    # FR-012
+    assert "They are ideas, not a checklist" in build_system_prompt()
+
+
+def test_the_prompt_asks_for_the_best_questions_not_a_spread_of_kinds():
+    # FR-008: chosen for quality, not to cover different angles.
+    prompt = build_system_prompt()
+    assert "not a sample of different kinds" in prompt
+    assert "different angles" not in prompt
+
+
+def test_the_criteria_rule_out_leading_and_rhetorical_questions():
+    # FR-011: a rule no automated check can enforce is put to the model.
     criteria = " ".join(SELECTION_CRITERIA)
-    assert "genuinely different angles" in criteria
-    assert "leading or rhetorical" in criteria
+    assert "not leading, not rhetorical" in criteria
 
 
 def test_the_prompt_asks_for_ten_to_fifteen_candidates():
@@ -50,9 +73,9 @@ def test_the_prompt_asks_for_ten_to_fifteen_candidates():
     assert f"between {config.CANDIDATES_MIN} and {config.CANDIDATES_MAX} candidate questions" in prompt
 
 
-def test_the_prompt_asks_for_the_positions_of_the_strongest_three_to_five():
+def test_the_prompt_asks_for_the_positions_of_the_best_three_to_five():
     prompt = build_system_prompt()
-    assert f"strongest {config.MIN_QUESTIONS} to {config.MAX_QUESTIONS}" in prompt
+    assert f"best {config.MIN_QUESTIONS} to {config.MAX_QUESTIONS}" in prompt
     assert "counting from 0" in prompt
 
 

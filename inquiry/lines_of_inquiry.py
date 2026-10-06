@@ -2,8 +2,9 @@
 
 This is the answer to "how does the app decide what to ask?" Each entry names one
 angle from which a seed can be questioned, with one sentence the model reads telling
-it what that angle looks for. The whole list goes into every prompt; the model draws
-on it to write candidates and to make sure a set covers different angles (FR-008).
+it what that angle looks for. The whole list goes into every prompt as ideas the model
+may draw on, not a checklist it must cover: the best questions can come from any angle,
+or from none of these (FR-012).
 
 The list guides generation only. It is never shown to the user, and no returned
 question carries a label saying which angle it came from (FR-012).

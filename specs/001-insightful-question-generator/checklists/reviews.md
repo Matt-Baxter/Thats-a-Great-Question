@@ -314,6 +314,24 @@ the maintainer reported them: all four passed.
 
 The first-time user's exact time was not recorded, only that it was under sixty seconds.
 
+## 14. Prompt revised for insight (FR-062)
+
+Live questions were sound but often generic: stock openers ("why now?"), coaching templates, and,
+for a seed about AI, questions about the wording of the seed instead of AI itself. The prompt never
+used the word "insightful" at all; it was almost entirely about form. And asking for "genuinely
+different angles" pushed each response toward one shallow question per angle.
+
+The maintainer decided against definitions and examples, on the view that the model already knows
+what an insightful question is and needs direction rather than instruction. The prompt now opens
+with the aim — insightful above all, targeted to this seed, nothing generic enough to fit any seed —
+offers the lines of inquiry as ideas rather than a checklist, and asks for the best questions rather
+than a spread of kinds. FR-008 was reworded to match, FR-012 clarified, and FR-062 added. The list of
+lines of inquiry stays, because the constitution and FR-012 require one; a variant without it was
+tried on the same three seeds and was not clearly better or worse on one run each.
+
+Checked by eye on three seeds, not formally scored: the maintainer judged the project too early for a
+full review after every prompt change.
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The

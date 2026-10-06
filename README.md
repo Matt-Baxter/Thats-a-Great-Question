@@ -33,7 +33,7 @@ The folders starting with a dot hold tooling. The project's ground rules are in
 ## How it was built
 
 Spec-driven development with [Spec Kit](https://github.com/github/spec-kit): constitution →
-specification → plan → tasks → code. Every requirement has an ID (`FR-001` to `FR-061`) that the
+specification → plan → tasks → code. Every requirement has an ID (`FR-001` to `FR-062`) that the
 code and tests point back to. Question quality can't be measured automatically, so it was scored
 by hand on a [review set](specs/001-insightful-question-generator/review-set.md).
 
