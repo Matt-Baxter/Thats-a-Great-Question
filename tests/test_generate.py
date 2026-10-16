@@ -3,7 +3,9 @@
 Every test uses the fake client in tests/fakes.py. None calls the live model.
 """
 
+import json
 import logging
+from pathlib import Path
 
 import anthropic
 import httpx2
@@ -313,6 +315,14 @@ def test_the_client_has_the_configured_timeout_and_no_retries():
     client = build_client({config.API_KEY_ENV_VAR: "the-apps-own-key"})
     assert client.timeout == config.API_TIMEOUT_SECONDS
     assert client.max_retries == config.API_MAX_RETRIES
+
+
+def test_the_model_call_gives_up_before_the_platform_stops_the_function():
+    # research.md R5: the server must have time to send its own timed-out message, so
+    # its wait for the model has to end before vercel.json's cap on the whole function.
+    vercel_settings = json.loads((Path(__file__).parent.parent / "vercel.json").read_text())
+    function_cap = vercel_settings["functions"]["api/questions.py"]["maxDuration"]
+    assert config.API_TIMEOUT_SECONDS < function_cap
 
 
 def test_a_missing_key_gives_no_client_even_when_another_key_is_set(monkeypatch):

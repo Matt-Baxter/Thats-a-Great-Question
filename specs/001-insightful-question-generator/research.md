@@ -12,7 +12,7 @@ result at the end of this entry).
 
 **Quality comes before speed.** The maintainer decided on 2026-09-24 that better questions are worth
 a slower answer. Effort is never lowered to meet SC-015; if `medium` or `high` is slower than ten
-seconds, SC-015 is re-set from real measurements instead. The thirty-second hard stop (FR-038) is a
+seconds, SC-015 is re-set from real measurements instead. The sixty-second hard stop (FR-038) is a
 different kind of promise — that the app never appears to hang — and is not traded away.
 
 **Rationale**: question quality is the only thing this app is judged on, and Opus 5.5 is the current
@@ -54,7 +54,7 @@ SC-015 was measured again at `high`.
 model's selection of the strongest 3–5, given as positions in the candidate list.
 
 **Rationale**: two sequential calls roughly double the waiting, and even with speed second to
-quality, every request must end within thirty seconds (FR-038). One call still separates generating from choosing — the response shows both, so tests
+quality, every request must end within sixty seconds (FR-038). One call still separates generating from choosing — the response shows both, so tests
 can check that the selection really came from the candidates, and a reviewer running the app
 locally can see what was passed over. The model does the choosing against the written criteria;
 Python then checks the choice against the specification's hard rules.
@@ -99,17 +99,28 @@ into questions instead of a dead end.
 not a decline: the API sets that field only when it could not try the fallback (it was overloaded or
 out of capacity), so the seed may be fine and asking again may work. Found in code review, 2026-09-29.
 
-## R5. Staying inside thirty seconds
+## R5. Staying inside sixty seconds
 
-**Decision**: the model client times out at 25 seconds with no automatic retries. The function's
-maximum duration is set to at least 30 seconds. The browser abandons any request at 30 seconds.
+**Decision**: the model client times out at 55 seconds with no automatic retries. The function's
+maximum duration is set to 60 seconds. The browser abandons any request at 60 seconds. Each limit
+is a little longer than the one inside it, so the server normally answers — with questions, or its
+own timed-out message — before the platform or the browser gives up.
+
+**Raised 2026-10-16** from 25, 30 and 30 seconds, after "What are the most insightful questions for
+a biologist to ask in 2026?" was cut off with the timed-out message on the live site. The server's
+25 seconds is the only limit that sends that message before 30 seconds, so it was most likely the
+one reached, though that request was not timed. `high` effort runs slow on some seeds (checklists/
+reviews.md, section 12), and a slow answer is better than none (spec, Assumptions). Sixty seconds
+is believed to be within the Hobby plan's limit, but that could not be checked from the build
+session; if the deploy rejects `vercel.json`, the plan allows less, and all three limits must come
+down to fit (see Verify below).
 
 **Rationale**: the SDK retries timeouts as well as errors, so with retries on, total time can reach
 the timeout multiplied by the number of attempts — which would break FR-038. With retries off, the
 worst case is one attempt plus overhead, and a user who hits a failure can simply ask again.
 
-**Verify**: the maximum function duration on Vercel's free (Hobby) plan. If it is below 30 seconds,
-the client timeout must drop below that limit, and the thirty seconds in FR-038 becomes a ceiling
+**Verify**: the maximum function duration on Vercel's free (Hobby) plan. If it is below 60 seconds,
+the client timeout must drop below that limit, and the sixty seconds in FR-038 becomes a ceiling
 the platform enforces rather than one the app does.
 
 ## R6. The ancestor chain

@@ -368,6 +368,21 @@ Decided at the same time:
   the seed box, and "The app does not answer these — that part is yours" under the questions.
   "Suggestions, not a complete set." stays, as FR-032 and constitution Principle IV require.
 
+## 16. Hard stop raised to sixty seconds
+
+On the live site, "What are the most insightful questions for a biologist to ask in 2026?" ended in
+"That took too long and was stopped." The maintainer was sure it was well under thirty seconds.
+Only two limits send that message: the server's 25-second wait for the model, and the browser's
+30 seconds. So the server's limit was most likely reached, and the request took longer than it
+seemed. That request was not timed, so this is an inference, not a measurement.
+
+The maintainer chose to raise the limit rather than lower effort, in line with quality before speed.
+The model wait is now 55 seconds, the function's cap 60 and the browser's 60. FR-038, SC-001 and the
+constitution's performance constraint (now 1.3.0) say sixty. A new test checks that the model wait
+stays shorter than the function's cap, so the server can always send its own message first.
+
+The cost: a request that would have failed at 25 seconds now leaves the user waiting up to a minute.
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The

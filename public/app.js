@@ -30,8 +30,10 @@ import {
 // MAX_SEED_CHARS in inquiry/config.py. The server is what enforces it (FR-003).
 const MAX_SEED_CHARS = 2000;
 
-// How long to wait for questions before giving up, in milliseconds (FR-038).
-const REQUEST_TIMEOUT_MS = 30000;
+// How long to wait for questions before giving up, in milliseconds (FR-038). No shorter
+// than vercel.json's cap on the server function, so the server's own reply, which may
+// be its timed-out message, normally arrives first (research.md R5).
+const REQUEST_TIMEOUT_MS = 60000;
 
 const homeView = document.getElementById("view-home");
 const inquiryTop = document.getElementById("view-inquiry-top");

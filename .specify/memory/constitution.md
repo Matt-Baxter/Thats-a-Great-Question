@@ -96,7 +96,7 @@ broad one that half-works.
 
 - A visible loading state MUST appear immediately when a request starts, so the app never looks
   frozen.
-- A request MUST resolve to either questions or an error message within 30 seconds.
+- A request MUST resolve to either questions or an error message within 60 seconds.
 
 ## Documentation Standards
 
@@ -140,4 +140,4 @@ broad one that half-works.
   happen, so ordinary work is governed by these principles as much as `/speckit-*` work is. A
   constitution that only applies to four commands is not a standing brief.
 
-**Version**: 1.2.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-25
+**Version**: 1.3.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-10-16

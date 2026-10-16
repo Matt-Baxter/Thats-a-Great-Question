@@ -111,7 +111,7 @@ Returned by the hosting platform's rate limit (FR-045). The body is the platform
 contract's, so the browser shows its own fixed wait-and-try-again message for any 429 (FR-046).
 
 That is one of exactly three user-facing messages not written in `inquiry/messages.py`. The second
-is the browser's own message when it abandons a request at 30 seconds, since by then no response has
+is the browser's own message when it abandons a request at 60 seconds, since by then no response has
 arrived to carry one. The third is for when a reply arrives but is not this application's JSON, or
 the network fails outright: no message from the server exists to show (FR-039). All three are fixed
 strings, not judgments; the last two reuse the server's wording for a timeout and a failure.
@@ -123,7 +123,7 @@ strings, not judgments; the last two reuse the server's wording for a timeout an
   of the request (FR-048, FR-049).
 - **Nothing is sent elsewhere.** The request's content goes to the model provider and nowhere else
   (FR-050).
-- **Every request ends within 30 seconds** with one of the responses above (FR-038).
+- **Every request ends within 60 seconds** with one of the responses above (FR-038).
 - **The server remembers nothing** between requests. Two identical requests are handled
   independently, and may return different questions.
 
@@ -132,7 +132,7 @@ strings, not judgments; the last two reuse the server's wording for a timeout an
 Not an HTTP contract, but the obligations that make the one above work:
 
 - Send no second request while one is in flight (FR-054), and show that it is busy (FR-055).
-- Abandon any request after 30 seconds and show the timed-out message.
+- Abandon any request after 60 seconds and show the timed-out message.
 - On cancel, abandon the request and leave the tree exactly as it was (FR-058, FR-059). The model
   call on the server may still complete and be billed — see research.md R7.
 - Attach an `ok` result to the node it was requested for and no other (FR-056).
