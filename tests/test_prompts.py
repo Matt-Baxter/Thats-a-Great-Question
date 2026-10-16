@@ -107,6 +107,19 @@ def test_the_prompt_says_never_to_answer_or_comment():
     assert "never comment" in prompt
 
 
+def test_a_seed_that_asks_for_questions_gets_those_questions():
+    # FR-063: supplying the questions a seed asks for is not answering it.
+    prompt = build_system_prompt()
+    assert "A request for questions is the one request in a seed you do follow" in prompt
+    assert "Do not write questions about their request" in prompt
+    assert "do not ask them for details they left out" in prompt
+
+
+def test_a_request_for_questions_keeps_the_count_and_form_rules():
+    # FR-063 with FR-004: a seed asking for twenty questions still gets three to five.
+    assert "Everything below still applies, including how many questions to choose" in build_system_prompt()
+
+
 def test_the_schema_requires_exactly_candidates_and_selected():
     assert REPLY_SCHEMA == {
         "type": "object",

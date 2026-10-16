@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-21
 
-**Last Updated**: 2026-10-06
+**Last Updated**: 2026-10-16
 
 **Status**: Draft
 
@@ -18,7 +18,7 @@ this table is the same mapping gathered in one place, down to the individual req
 | Format element | Where it lives |
 |---|---|
 | **Objective** — the failure mode, not the feature description | The **Objective** section at the top, stated as the failure it exists to prevent rather than a description of the product, with who suffers that failure and who the product is explicitly not for. |
-| **Behavior** — observable outcomes only, no tech details | User Stories 1–4, and the requirement groups labelled *Behavior*: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012, FR-061, FR-062), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
+| **Behavior** — observable outcomes only, no tech details | User Stories 1–4, and the requirement groups labelled *Behavior*: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012, FR-061, FR-062, FR-063), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
 | **Constraints** — non-negotiables regardless of implementation | The requirement groups labelled *Constraints*, plus Assumptions and Out of Scope: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs or blanks, and resolves within thirty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and that ordinary use never reaches (FR-045, FR-047, FR-060); no user or model text recorded or sent elsewhere (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). |
 | **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, written as Given / When / Then; the Edge Cases, which are the boundary conditions; and Success Criteria SC-001 through SC-020. SC-009, SC-010, SC-011 and SC-020 are assessed by human review and are labelled as such rather than presented as automated tests. |
 
@@ -63,6 +63,7 @@ A person is reasoning through a complex claim or decision on their own. They typ
 3. **Given** a seed has been submitted, **When** the questions are displayed, **Then** no two of them ask the same thing in different words.
 4. **Given** a seed has been submitted, **When** the response is displayed, **Then** no answer, explanation, or commentary about any question appears.
 5. **Given** the user has submitted a seed, **When** the request is in progress, **Then** a visible loading state is shown from the moment of submission until the result appears.
+6. **Given** a seed that asks for questions of a particular kind, such as the best questions to ask in an interview, **When** the questions are displayed, **Then** they are questions of that kind, ready to use, not questions about the request.
 
 ---
 
@@ -130,6 +131,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **Too few questions**: Generation returns fewer than three questions. This is treated as a failed response, not displayed as a short list.
 - **Too many questions**: Generation returns more than five questions. This is treated as a failed response, not silently truncated to five — a response of the wrong shape is a signal that something went wrong, not something to quietly repair.
 - **Over-length question**: A returned question exceeds the maximum question length. The response is treated as unusable rather than displayed truncated.
+- **A seed that asks for questions**: The user asks for questions directly — "What are the best questions to ask in my interview?" The app returns the questions that best fit the request, not questions about it, such as which role the interview is for (FR-063). Supplying the questions a seed asks for is not answering it.
 - **Duplicate questions**: Two returned questions are identical once normalised. The response is rejected rather than displayed with a redundant question in it (FR-007). Two questions that pursue the same underlying goal in *different* wording are not mechanically detectable; that is handled when questions are selected (FR-008) and judged by human review (SC-010), not by rejecting the response.
 - **Clicking while busy**: The user opens a second question while the first is still loading. The second request is ignored rather than queued or raced, and the display makes clear the app is already working. The user is not stuck: they may cancel the request in flight and then make the request they wanted.
 - **Generation declines**: The model returns a refusal instead of questions. The user sees a distinct message saying no questions could be generated for that seed and that rephrasing may help — not a technical error, and not the refusal text itself. The inquiry already on screen is untouched.
@@ -271,6 +273,10 @@ related ones.
 
 - **FR-062**: System MUST ask, above all, for insightful questions, each targeted to the seed or question being opened rather than generic enough to fit almost any seed. Whether they are insightful is judged by human review (SC-009). *Added 2026-10-06, after live questions were sound but often generic or formulaic.*
 
+**Seeds that ask for questions** — *Behavior*
+
+- **FR-063**: System MUST, when a seed asks for questions of a particular kind — the most important, most insightful or most pressing questions about something, or the best questions to ask in some situation — return the questions that best fit that request, rather than questions about the request or questions asking the user for details they left out. Supplying the questions a seed asks for is not answering it (FR-031). Whether the questions fit the request is judged by human review, as for FR-062. *Added 2026-10-16, after "What are the most important questions to ask in 2026?" returned questions about the request, such as "Important to whom?", instead of the questions it asked for.*
+
 ### Key Entities
 
 - **Seed**: The free text a user submits to begin an inquiry. Bounded in length. The root of the inquiry tree. Not retained beyond the user's browser session.
@@ -331,7 +337,10 @@ metric claiming otherwise would be false precision.
   the questions-only boundary that the rest of this specification rests on. Whether the questions
   returned for a settled seed are actually worth reading is a matter of how well generation
   interrogates framing and definition rather than subject matter, and is to be confirmed in testing
-  against deliberately factual seeds.
+  against deliberately factual seeds. A question may still name a settled fact in passing — asking
+  how Canberra came to be chosen names Australia's capital. That is accepted: the response still
+  holds only questions, and the maintainer judged it a technicality rather than the purpose breaking
+  down (2026-10-16).
 - **Repeated requests for the same question will not return identical questions.** Generation is not deterministic. This is why asking again is useful, and why reproducibility is not promised.
 - **A specific bad response cannot be reconstructed after the fact.** Because no seed or question text is recorded server-side (FR-048), a complaint that "the questions were poor" cannot be traced to the exact exchange that produced them. Quality problems are diagnosed by human review against a deliberate review set, not by inspecting telemetry. This is an accepted cost of not holding what users type.
 - **Users have an internet connection and a current browser.**

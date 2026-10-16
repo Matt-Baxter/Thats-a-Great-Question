@@ -183,6 +183,11 @@ because Y?"). FR-011 forbids that, but it is a judgement no automated check make
 covered by selection and by human review (SC-011), and the review set should include deliberately
 adversarial seeds.
 
+**Requests for questions** (2026-10-16): a seed that asks for questions is the one request the model
+follows, because supplying questions is the app's job, not answering (FR-063). This gives an
+attacker nothing new: the reply must still be three to five questions and is checked the same way.
+A settled fact named in passing inside a question is accepted (spec.md, Assumptions).
+
 ## R10. Testing without the live model
 
 **Decision**: `generate.py` receives the model client as a parameter. Tests pass a small hand-written
