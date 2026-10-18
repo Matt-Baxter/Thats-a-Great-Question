@@ -3,7 +3,7 @@
 Give it a topic, a claim, or a half-formed idea, and it gives back the questions worth asking
 about it. **It never answers them.**
 
-### ▶ Try it: [thats-a-great-question.vercel.app](https://thats-a-great-question.vercel.app/)
+### ▶ Try it: [thatsagreatquestion.vercel.app](https://thatsagreatquestion.vercel.app/)
 
 SEIS 606 (Vibe Coding), University of St. Thomas, Fall 2026 — Project 1.
 
