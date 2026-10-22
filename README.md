@@ -27,15 +27,6 @@ Nothing you type is stored. Refreshing the page starts you over.
 | [`specs/`](specs/001-insightful-question-generator/) | The specification, plan, task list, and review results |
 | [`mockups/`](mockups/) | The clickable prototype made before the app ([open it](https://matt-baxter.github.io/Thats-a-Great-Question/mockups/inquiry-flow.html)) |
 
-| File | What it does |
-|---|---|
-| [`requirements.txt`](requirements.txt) | The one library the app needs (Anthropic's client); Vercel installs it when deploying |
-| [`requirements-dev.txt`](requirements-dev.txt) | pytest, needed only to run the tests |
-| [`pytest.ini`](pytest.ini) | Lets the tests find the app's code |
-| [`vercel.json`](vercel.json) | Gives the server up to 60 seconds per request, the app's one time limit |
-| [`.env.example`](.env.example) | For running locally: names the setting your API key goes in |
-| [`CLAUDE.md`](CLAUDE.md) | Standing instructions for Claude Code, the AI assistant used to build the app |
-
 The folders starting with a dot hold tooling. The project's ground rules are in
 [`.specify/memory/constitution.md`](.specify/memory/constitution.md).
 
