@@ -5,6 +5,7 @@ Every test uses the fake client in tests/fakes.py. None calls the live model.
 
 import json
 import logging
+import re
 import time
 from pathlib import Path
 
@@ -336,12 +337,15 @@ def test_the_client_has_the_configured_timeout_and_no_retries():
     assert client.max_retries == config.API_MAX_RETRIES
 
 
-def test_the_model_call_gives_up_before_the_platform_stops_the_function():
-    # research.md R5: the server must have time to send its own timed-out message, so
-    # its wait for the model has to end before vercel.json's cap on the whole function.
-    vercel_settings = json.loads((Path(__file__).parent.parent / "vercel.json").read_text())
+def test_the_app_has_one_time_limit_everywhere():
+    # research.md R5: the server's wait for the model, vercel.json's cap on the function,
+    # and the browser's limit in public/app.js are all the same sixty seconds (FR-038).
+    repository = Path(__file__).parent.parent
+    vercel_settings = json.loads((repository / "vercel.json").read_text())
     function_cap = vercel_settings["functions"]["api/questions.py"]["maxDuration"]
-    assert config.API_TIMEOUT_SECONDS < function_cap
+    browser_line = re.search(r"const REQUEST_TIMEOUT_MS = (\d+);", (repository / "public" / "app.js").read_text())
+    browser_limit = int(browser_line.group(1)) / 1000
+    assert config.API_TIMEOUT_SECONDS == function_cap == browser_limit == 60
 
 
 def test_a_missing_key_gives_no_client_even_when_another_key_is_set(monkeypatch):

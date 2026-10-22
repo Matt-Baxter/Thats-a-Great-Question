@@ -66,17 +66,16 @@ EFFORT = "high"
 # its text is not returned, so it is sized for thinking plus the reply (research.md R1).
 MAX_OUTPUT_TOKENS = 16000
 
-# How long to wait for the model before giving up, in seconds, in total. Kept under the
-# sixty seconds within which every request must resolve (FR-038), leaving room for the
-# rest of the request, so the server can still send its own timed-out message before
-# vercel.json's 60-second cap on the whole function stops it. Raised from 25 on
-# 2026-10-16, after a request at "high" effort was cut off. generate.py enforces it as one
+# How long to wait for the model before giving up, in seconds, in total: the sixty
+# seconds within which every request must resolve (FR-038). The same 60 seconds is the
+# cap on the whole function in vercel.json and the browser's limit in public/app.js, so
+# the app has one time limit everywhere (research.md R5). generate.py enforces it as one
 # overall deadline; the SDK is given it too, but applies it to each network step
-# separately, so on its own it is only a backstop (research.md R5).
-API_TIMEOUT_SECONDS = 55
+# separately, so on its own it is only a backstop.
+API_TIMEOUT_SECONDS = 60
 
 # How many times the SDK retries a failed call on its own. Zero, because the SDK
-# retries timeouts too, and each retry could add another 55 seconds (research.md R5).
+# retries timeouts too, and each retry could add another 60 seconds (research.md R5).
 API_MAX_RETRIES = 0
 
 

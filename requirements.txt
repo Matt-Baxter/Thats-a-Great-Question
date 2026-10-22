@@ -1,3 +1,3 @@
-# The official Anthropic SDK: the standard library has no client for the Claude API,
-# and writing one by hand would mean reimplementing its errors, timeouts and types.
+# The one library the app needs: Anthropic's official client for the Claude API.
+# Vercel installs what is listed here when it deploys the app.
 anthropic>=1.0,<2.0

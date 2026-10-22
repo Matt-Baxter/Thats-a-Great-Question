@@ -401,6 +401,15 @@ reproduced locally without any paid model calls.
 ChatGPT also ran the test suite (all passing) and found no way for returned text to run as code in
 the page and no exposed key.
 
+## 18. One time limit everywhere
+
+During a clean-up of the repository on 2026-10-22, the maintainer asked for the time limit to read
+the same everywhere. The server had stopped waiting for the model at 55 seconds, five seconds inside
+the 60-second limits of the function and the browser, so that it could send its own timed-out
+message first. It now stops at 60 as well. The user sees the same message either way, because the
+browser's timer starts first; the server just rarely logs its own timed-out line. A test now checks
+that all three limits are 60 seconds (research.md R5).
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The

@@ -101,35 +101,39 @@ out of capacity), so the seed may be fine and asking again may work. Found in co
 
 ## R5. Staying inside sixty seconds
 
-**Decision**: the model client times out at 55 seconds with no automatic retries. The function's
-maximum duration is set to 60 seconds. The browser abandons any request at 60 seconds. Each limit
-is a little longer than the one inside it, so the server normally answers — with questions, or its
-own timed-out message — before the platform or the browser gives up.
+**Decision**: one time limit everywhere, 60 seconds. The server stops waiting for the model at 60
+seconds, with no automatic retries; the function's maximum duration in `vercel.json` is 60 seconds;
+and the browser abandons any request at 60 seconds. A test checks that the three agree.
+
+**One number, chosen 2026-10-22** by the maintainer, for a limit that reads the same everywhere.
+Until then the server stopped at 55 seconds, five seconds inside the other two, so that it could
+send its own timed-out message before the platform cut the function off. With all three at 60, the
+browser's timer, which starts first, is what stops a request that runs that long, and the user sees
+the same timed-out message either way. The cost is small: the server rarely gets to log its own
+timed-out line, because the platform stops the function at the same moment, and records a timeout
+of its own instead.
 
 **Raised 2026-10-16** from 25, 30 and 30 seconds, after "What are the most insightful questions for
 a biologist to ask in 2026?" was cut off with the timed-out message on the live site. The server's
 25 seconds is the only limit that sends that message before 30 seconds, so it was most likely the
 one reached, though that request was not timed. `high` effort runs slow on some seeds (checklists/
-reviews.md, section 12), and a slow answer is better than none (spec, Assumptions). Sixty seconds
-is believed to be within the Hobby plan's limit, but that could not be checked from the build
-session; if the deploy rejects `vercel.json`, the plan allows less, and all three limits must come
-down to fit (see Verify below).
+reviews.md, section 12), and a slow answer is better than none (spec, Assumptions). The Hobby plan
+accepted the 60-second duration, and a live request has since run past 30 seconds.
 
 **One overall deadline** (2026-10-22): the SDK applies its timeout to each network step separately
 — connecting, sending, and each piece of the reply — so a slow connection or a reply arriving in
-pieces could add up to more than 55 seconds and run into the platform's cut-off. An AI-assisted
+pieces could add up to more than the limit. An AI-assisted
 review (ChatGPT) found this, and it was reproduced locally: with a 0.5-second timeout, a reply sent
 in small pieces still succeeded after 1.5 seconds. The model call now runs in a separate thread that
-the request stops waiting for at 55 seconds in total, however the time was spent. The SDK keeps the
+the request stops waiting for at the limit in total, however the time was spent. The SDK keeps the
 same timeout as a backstop that ends the abandoned call.
 
 **Rationale**: the SDK retries timeouts as well as errors, so with retries on, total time can reach
 the timeout multiplied by the number of attempts — which would break FR-038. With retries off, the
 worst case is one attempt plus overhead, and a user who hits a failure can simply ask again.
 
-**Verify**: the maximum function duration on Vercel's free (Hobby) plan. If it is below 60 seconds,
-the client timeout must drop below that limit, and the sixty seconds in FR-038 becomes a ceiling
-the platform enforces rather than one the app does.
+**Verified**: Vercel's free (Hobby) plan accepts a 60-second function duration (deployed
+2026-10-16).
 
 ## R6. The ancestor chain
 
