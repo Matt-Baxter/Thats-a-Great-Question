@@ -23,8 +23,8 @@ permission, and the app refuses that check (`OPTIONS` gets 405).
 
 | Field | Required | Rules | Requirement |
 |---|---|---|---|
-| `seed` | yes | string; not empty after trimming; at most 2,000 characters | FR-001, FR-002, FR-003 |
-| `ancestors` | yes | list of strings, possibly empty; each not empty and at most 300 characters | FR-014, FR-016 |
+| `seed` | yes | string; not empty after trimming; at most 2,000 characters; no broken characters (half of a two-part character) | FR-001, FR-002, FR-003 |
+| `ancestors` | yes | list of strings, possibly empty; each not empty, at most 300 characters, and with no broken characters | FR-014, FR-016 |
 
 - An empty `ancestors` asks for questions about the seed.
 - Otherwise the **last** entry is the question being opened, and the entries before it are its
@@ -33,6 +33,8 @@ permission, and the app refuses that check (`OPTIONS` gets 405).
   first.
 - The request body is capped in size. This is a practical ceiling on depth of several hundred
   levels, recorded in [plan.md](../plan.md).
+- The hosting platform also routes `/api/questions.py` to the same function. That address is not
+  part of this contract, and the page never uses it (research.md R7).
 
 ### Responses
 
@@ -52,7 +54,8 @@ Every response the application writes is JSON with a `status` field. The browser
 }
 ```
 
-`questions` holds 3–5 strings, each already checked against FR-004 to FR-010. Never labelled, never
+`questions` holds 3–5 strings, each already checked against FR-004 to FR-010, and for broken
+characters that would stop it being opened later (FR-033). Never labelled, never
 accompanied by an answer or commentary (FR-012, FR-031).
 
 **200 — declined**
@@ -76,7 +79,9 @@ question, whichever the request concerned. The refusal's own text is never inclu
 }
 ```
 
-For an empty seed, an over-length seed, or a malformed request (FR-002, FR-003).
+For an empty seed, an over-length seed, or a request that cannot be read: not sent as JSON, not a
+JSON object, missing a field, too large, or holding a broken character (FR-002, FR-003, FR-064).
+Those last cases get "That request could not be read. Reload the page and try again."
 
 **502 — failed**
 
@@ -101,7 +106,9 @@ missing API key, and for any error nothing else anticipated (FR-039).
 }
 ```
 
-When the model call exceeds its timeout (FR-038).
+When the model takes longer than 60 seconds in total (FR-038). The browser and the platform also
+stop at 60 seconds, and the browser's timer starts first, so a user usually sees the browser's own
+copy of this message instead (research.md R5).
 
 **405 — method not allowed**
 
@@ -122,8 +129,9 @@ strings, not judgments; the last two reuse the server's wording for a timeout an
 ### Guarantees
 
 - **Nothing is recorded.** No seed, ancestor, or question text is written to a log, an error trace,
-  or any other record on the server. What is recorded is the outcome, its category, and the depth
-  of the request (FR-048, FR-049).
+  or any other record on the server. What is recorded is the outcome, its reason or refusal
+  category, and the depth of the request; for an error nothing anticipated, only the error's type
+  (FR-048, FR-049).
 - **Nothing is sent elsewhere.** The request's content goes to the model provider and nowhere else
   (FR-050).
 - **Every request ends within 60 seconds** with one of the responses above (FR-038).
