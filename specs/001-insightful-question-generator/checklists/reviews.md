@@ -398,7 +398,7 @@ reproduced locally without any paid model calls.
 
 | # | Finding | Verdict | What was done |
 |---|---|---|---|
-| A1 | The documented limit of 60 requests per 10 minutes did not trigger | Partly rejected: the maintainer had raised the limit to 200 for the class presentation | Limit set back to 60 by the maintainer. The server also answers at `/api/questions.py`; whether the firewall rule covers that address depends on how the rule matches the path |
+| A1 | The documented limit of 60 requests per 10 minutes did not trigger | Partly rejected: the maintainer had raised the limit to 200 for the class presentation | Limit set back to 60 by the maintainer. The server also answers at `/api/questions.py`; the firewall rule's condition, "Request Path contains `/api/questions`", already covers it |
 | A2 | Another website could trigger paid requests through its visitors' browsers | Verified | Fixed: requests not sent as JSON are refused (FR-064) |
 | A3 | The 55-second timeout applies to each network step, not the whole call | Verified (0.5 s timeout, reply trickled in, succeeded after 1.5 s) | Fixed: the call now has one overall deadline |
 | A4 | A 5,000-digit number in the body or the declared length gave a 502 instead of a 400 | Verified | Fixed: treated as an unreadable request |

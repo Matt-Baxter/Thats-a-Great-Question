@@ -189,9 +189,9 @@ rule already stops browsers.
 requests to `/api/questions`, 60 per IP address per 10 minutes, answered with 429. It was raised to
 200 for the class presentation and set back to 60 on 2026-10-22.
 
-**Still to check**: the server also answers at `/api/questions.py` (found by the AI-assisted review,
-2026-10-22). Whether the rule covers that address depends on how its path condition is written; a
-condition such as "path starts with `/api/`" covers both.
+**Second address, checked 2026-10-22**: the server also answers at `/api/questions.py` (found by the
+AI-assisted review). The rule's condition is "Request Path contains `/api/questions`", which matches
+both addresses, so both share the one limit. No change was needed.
 
 ## R8. The HTTP handler
 
@@ -285,6 +285,6 @@ enough to test it. Firewall rate limiting on Hobby is still unverified and is ch
 | Item | Entry | Default assumed for now | If it turns out otherwise |
 |---|---|---|---|
 | Maximum function duration on Vercel Hobby | R5 | At least 30 seconds; `vercel.json` sets 30 | **Settled 2026-09-26:** the deploy accepted 30. Raised to 60 on 2026-10-16, also accepted |
-| Firewall rate limiting on Vercel Hobby, and its configuration | R7 | Available (needed only at deploy, T047) | **Settled 2026-09-30:** available on Hobby. Rule added: requests to `/api/questions`, fixed window of 600 seconds, 60 requests per IP address, answered with 429. Whether it also covers `/api/questions.py` is still to check (R7) |
+| Firewall rate limiting on Vercel Hobby, and its configuration | R7 | Available (needed only at deploy, T047) | **Settled 2026-09-30:** available on Hobby. Rule added: requests to `/api/questions`, fixed window of 600 seconds, 60 requests per IP address, answered with 429. It also covers `/api/questions.py`: the path condition is "contains `/api/questions`" (checked 2026-10-22) |
 | Python handler shape and bundling of a root-level package | R8 | Both work; the package stays at `inquiry/` | **Settled 2026-09-26:** both work on the live deploy |
 | Where the Anthropic spend limit is set | R11 | — (needed only before going public, T046) | **Settled 2026-09-26:** a monthly spend limit, set in the Anthropic Console |

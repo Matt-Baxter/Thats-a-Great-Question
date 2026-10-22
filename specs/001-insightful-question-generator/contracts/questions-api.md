@@ -34,7 +34,7 @@ permission, and the app refuses that check (`OPTIONS` gets 405).
 - The request body is capped in size. This is a practical ceiling on depth of several hundred
   levels, recorded in [plan.md](../plan.md).
 - The hosting platform also routes `/api/questions.py` to the same function. That address is not
-  part of this contract, and the page never uses it (research.md R7).
+  part of this contract, and the page never uses it; the rate limit covers it too (research.md R7).
 
 ### Responses
 
