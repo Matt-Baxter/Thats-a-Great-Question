@@ -54,7 +54,7 @@ vercel dev                         # run the app
 ```
 
 The key is read only by the server, from `QUESTION_APP_API_KEY`. It never reaches the browser or
-the repository. Full setup and manual checks:
+the repository. To check the app does what the spec asks:
 [quickstart.md](specs/001-insightful-question-generator/quickstart.md).
 
 ---
