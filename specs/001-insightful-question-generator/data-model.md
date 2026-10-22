@@ -72,10 +72,11 @@ What the browser sends for one set of questions. Full shapes in
 
 | Field | Type | Server-side check |
 |---|---|---|
-| `seed` | string | Not empty after trimming (FR-002); at most 2,000 characters (FR-003) |
-| `ancestors` | list of strings, possibly empty | Each at most 300 characters, not empty; the list is the path from the seed's first question down to the question being opened |
+| `seed` | string | Not empty after trimming (FR-002); at most 2,000 characters (FR-003); no broken characters |
+| `ancestors` | list of strings, possibly empty | Each at most 300 characters, not empty, no broken characters; the list is the path from the seed's first question down to the question being opened |
 
-The question being opened is the last entry of `ancestors`, or the seed when the list is empty. The
+The request must be declared as JSON (FR-064), and a body that cannot be read as a JSON object is
+refused. The question being opened is the last entry of `ancestors`, or the seed when the list is empty. The
 server keeps the seed plus the most recent six ancestors when building the prompt.
 
 ### Generation result
@@ -86,8 +87,8 @@ What the server returns. Exactly one of these outcomes.
 |---|---|---|
 | `ok` | 3–5 questions | The model's selection passed every check |
 | `declined` | a message | The model, and its fallback, declined (FR-051 to FR-053) |
-| `invalid_input` | a message | The request failed a server-side check (FR-002, FR-003) |
-| `failed` | a message | Timeout, unreachable model, or a reply that failed validation (FR-035) |
+| `invalid_input` | a message | The request could not be read or failed a server-side check (FR-002, FR-003, FR-064) |
+| `failed` | a message | The model could not be reached, or its reply failed validation (FR-035). A timeout is also reported as `failed`, but with its own message and HTTP 504 rather than 502 (FR-038) |
 
 Every message is written in `inquiry/messages.py`. The browser displays it as text and never
 composes one — except when no reply from this application exists to carry one: the platform's
@@ -106,7 +107,8 @@ The structured reply requested from the model, before any checking.
 | `selected` | list of integers | Positions in `candidates` of the chosen 3–5 |
 
 **Checks applied, in order** — a reply failing any of them becomes a `failed` result, never a
-repaired one (FR-005):
+repaired one (FR-005). First, the reply must have the shape above: an object with these two fields,
+of these types. Then:
 
 1. `selected` has 3–5 entries, all distinct, all valid positions in `candidates`.
 2. Each selected question, after trimming, contains a letter or digit and ends with a question mark — `?`, or the full-width `？` or Arabic `؟`, since other languages are not prevented (FR-006).
