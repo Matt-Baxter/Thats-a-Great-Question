@@ -6,7 +6,7 @@
 
 **Last Updated**: 2026-10-22
 
-**Status**: Draft
+**Status**: Implemented — every requirement below is built and running at https://thatsagreatquestion.vercel.app
 
 **Input**: User description: A web app that takes a seed — a topic, a claim, a half-formed idea, or a question — and returns a small set of insightful questions worth asking about it. Any returned question can be opened to generate further questions about that question, so a user follows one line of inquiry deeper instead of stopping at the first set. The app generates questions only. It never answers them.
 
@@ -237,7 +237,7 @@ related ones.
 
 **Protecting against abuse** — *Behavior and Constraints*
 
-- **FR-045**: System MUST limit the number of question requests a single visitor may make within a rolling time window.
+- **FR-045**: System MUST limit the number of question requests a single visitor may make within a time window. *Reworded 2026-10-22 from "a rolling time window": the hosting platform's rule counts in fixed 10-minute windows, which serves the same purpose.*
 - **FR-046**: System MUST show a plain-language message asking the visitor to wait and try again when that limit is exceeded.
 - **FR-047**: System MUST leave the inquiry already on screen intact when a request is refused for exceeding the limit. Hitting a limit MUST NOT cost the user their work.
 
@@ -288,7 +288,7 @@ related ones.
 - **Question**: A single generated question. Non-empty, phrased as a question, bounded in length, unlabeled, and distinct from its siblings and from its parent. Never accompanied by an answer. May be unexpanded, or expanded and therefore holding children of its own.
 - **Inquiry Tree**: The whole structure built during a session — the seed, every question generated from it, and the parent-child links between them. Retained in full for the session so the user can move freely between branches; discarded entirely on reload, or on a new seed once the user has confirmed the loss.
 - **Trail**: The ordered path from the seed to the question currently being viewed. What the user is shown in order to stay oriented, and the means by which they navigate back up. A view onto the tree rather than a separate structure.
-- **Lines of Inquiry**: The explicit written list of angles a question may take — assumption, evidence, consequence, alternative, stakeholder, definition, framing, precedent, incentive, failure mode, and others. Guides generation; is not exposed as labels on output.
+- **Lines of Inquiry**: The explicit written list of angles a question may take — assumption, evidence, consequence, alternative, stakeholder, definition, framing, precedent, incentive, and failure mode. Guides generation as ideas rather than a checklist; is not exposed as labels on output.
 
 ## Success Criteria *(mandatory)*
 
@@ -307,13 +307,13 @@ metric claiming otherwise would be false precision.
 - **SC-006**: A user at any depth can identify the original seed from the trail and return to it in a single action, on both a desktop and a phone-sized screen.
 - **SC-007**: 100% of returns to a previously expanded question, within a session, display the same questions that were shown before, with no new generation.
 - **SC-008**: 100% of regeneration requests on a question with descendants warn the user and require confirmation before anything is discarded.
-- **SC-009**: Across a review set of at least ten varied seeds spanning technical, social, and philosophical subjects, a human reviewer judges that at least 80% of responses contain at least one question the reviewer had not already considered. *Reduced from twenty to ten on 2026-09-30, so that scoring by hand stays practical; with ten seeds, 80% means eight.*
+- **SC-009**: Across a review set of at least ten varied seeds spanning technical, social, and philosophical subjects, a human reviewer judges that at least 80% of responses contain at least one question the reviewer had not already considered. *Reduced from twenty to ten on 2026-09-30, so that scoring by hand stays practical; with ten seeds, 80% means eight.* Scored on 2026-09-30, before the prompt changes for FR-062 and FR-063; those were checked by eye, and the review set has not been scored again since, for this criterion or for SC-010, SC-011 and SC-020.
 - **SC-010**: Across the same review set, a human reviewer judges that at least 80% of responses contain no two questions pursuing the same underlying goal in different words.
 - **SC-011**: Across the same review set, 100% of responses contain no answers, no commentary, and no question that merely restates the seed.
 - **SC-012**: 100% of interactive elements can be reached and operated using a keyboard alone.
 - **SC-013**: 100% of requests beyond the per-visitor limit produce a plain-language wait-and-retry message, with the inquiry already on screen left intact.
 - **SC-014**: Across every induced failure condition, 100% of server-side log output contains no seed text and no generated question text.
-- **SC-015**: At least 90% of successful requests complete within 8.2 seconds. *Set 2026-09-30 from twenty consecutive requests at `high` effort, eighteen of which finished within 8.14 seconds (checklists/reviews.md, section 12). It was 7.4 seconds at `medium`, and ten seconds before any measurement. Factual and adversarial seeds run slower; see section 12.* The sixty seconds in SC-001 is the point at which a request is abandoned, not a target.
+- **SC-015**: At least 90% of successful requests complete within 8.2 seconds. *Set 2026-09-30 from twenty consecutive requests at `high` effort, eighteen of which finished within 8.14 seconds (checklists/reviews.md, section 12). It was 7.4 seconds at `medium`, and ten seconds before any measurement. Factual and adversarial seeds run slower; see section 12. Not measured again since the prompt changes of 6 and 16 October; on the live site, seeds that ask for questions have taken 10 to 20 seconds, so the 8.2-second figure may no longer hold.* The sixty seconds in SC-001 is the point at which a request is abandoned, not a target.
 - **SC-016**: 100% of declined requests produce the distinct could-not-generate message rather than a technical error message, and 0% display any refusal text. The message names the seed when the request concerned a seed and the question when it concerned a question, at every depth.
 - **SC-017**: 0% of responses are displayed beneath a question other than the one they were requested for, including when a user repeatedly attempts to start requests while one is in flight.
 - **SC-018**: 100% of attempts to start a new inquiry over an inquiry already in progress warn the user and require confirmation before anything is discarded.
@@ -377,9 +377,9 @@ what was decided and when, not a list of anything outstanding.
 
 ### Session 2026-09-22
 
-- Q: Should the app limit how many question requests one visitor can make, and what should a visitor see when they hit that limit? → A: Cap requests per visitor over a rolling window; when exceeded, show a plain-language message saying to wait and try again.
+- Q: Should the app limit how many question requests one visitor can make, and what should a visitor see when they hit that limit? → A: Cap requests per visitor over a rolling window; when exceeded, show a plain-language message saying to wait and try again. *(Built as a fixed 10-minute window; see FR-045.)*
 - Q: Is the app allowed to record what a user types into a server-side log? → A: Log request metadata and failure reasons only — never seed or question text.
-- Q: How quickly should a normal request finish, as distinct from the thirty seconds at which it gives up? → A: Under 10 seconds typical, 30 seconds hard stop.
+- Q: How quickly should a normal request finish, as distinct from the thirty seconds at which it gives up? → A: Under 10 seconds typical, 30 seconds hard stop. *(The typical figure was later set from measurement, see SC-015; the hard stop was raised to 60 seconds on 2026-10-16, see FR-038.)*
 - Q: What should a user see when the model declines to generate questions about their seed? → A: A distinct message saying no questions could be generated for this seed and suggesting a rephrase, claiming no fault either way.
 - Q: What should happen if a user clicks to expand a second question while the first expansion is still loading? → A: Ignore new expansion requests while one is in flight; the loading state shows the app is busy.
 
