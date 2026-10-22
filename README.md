@@ -53,6 +53,9 @@ node --test "tests/*.test.mjs"     # browser tests
 vercel dev                         # run the app
 ```
 
+The first time you run `vercel dev`, it asks you to log in to Vercel (a free account is enough) and
+to link the folder to a project; follow its prompts. The live site above needs none of this.
+
 The key is read only by the server, from `QUESTION_APP_API_KEY`. It never reaches the browser or
 the repository. To check the app does what the spec asks:
 [quickstart.md](specs/001-insightful-question-generator/quickstart.md).
