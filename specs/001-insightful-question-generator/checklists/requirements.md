@@ -6,7 +6,7 @@
 
 ## Content Quality
 
-- [x] No implementation details (languages, frameworks, APIs)
+- [x] No implementation details (languages, frameworks, APIs) — one deliberate exception since, see Notes
 - [x] Focused on user value and business needs
 - [x] Written for non-technical stakeholders
 - [x] All mandatory sections completed
@@ -26,7 +26,7 @@
 
 - [x] All functional requirements have clear acceptance criteria
 - [x] User scenarios cover primary flows
-- [x] Feature meets measurable outcomes defined in Success Criteria
+- [x] Feature meets measurable outcomes defined in Success Criteria — at specification time; see Notes for what has not been measured since
 - [x] No implementation details leak into specification
 
 ## Notes
@@ -39,14 +39,25 @@ completed; the specification is ready for `/speckit-plan`.
 - **No implementation details**: the specification names no language, framework, service,
   or storage technology. "Browser session" appears as a boundary on persistence and
   "phone-sized screen" as a constraint on user experience, not as implementation choices.
-- **Success criteria**: every criterion is objectively checkable except SC-009, SC-010 and
-  SC-011, which are assessed by human review over a defined set of at least twenty seeds.
-  The specification labels those three as human-reviewed rather than presenting them as
+- **Success criteria**: every criterion is objectively checkable except SC-009, SC-010,
+  SC-011 and SC-020, which are assessed by human review over a defined set of at least ten
+  seeds (twenty when this checklist was first passed; reduced on 2026-09-30). The
+  specification labels those four as human-reviewed rather than presenting them as
   automated tests. This is deliberate — question quality is context-dependent and cannot
   be scored automatically, and a metric claiming to would be false precision.
 - **Seed and question length limits** (2,000 and 300 characters) were not supplied in the
   input description. Reasonable defaults were chosen and recorded in Assumptions, where
   they can be changed without affecting any other requirement.
+
+**Re-checked 2026-10-22, after the build**, against the specification as it now stands:
+
+- **Implementation details**: the requirements stay free of them, with one deliberate
+  exception. FR-064 names the request format (`application/json`), because the rule cannot
+  be stated or tested without it. Some dated notes also mention effort levels, the hosting
+  platform or the AI tool that reviewed the code; they record history, not requirements.
+- **Measurable outcomes**: every automated criterion is met. SC-009, SC-010, SC-011 and
+  SC-020 were scored, and SC-015 measured, before the prompt changes for FR-062 and FR-063,
+  and not since; the specification says so beside each one.
 
 The questions asked of the specification and the defects found reviewing it are recorded
 separately, in [`reviews.md`](reviews.md).

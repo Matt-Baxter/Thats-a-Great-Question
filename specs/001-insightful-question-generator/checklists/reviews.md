@@ -1,8 +1,12 @@
 # Review history — That's a Great Question
 
-Every question asked of this specification after it was first drafted, and every defect found
-reviewing it, in the order the work happened. Each entry says what was wrong, what changed, and
-why — so a decision can be revisited later without re-deriving the argument behind it.
+Every question asked of this specification after it was first drafted, every defect found
+reviewing it, and, once the app was built, what measuring and testing it found and what changed as
+a result — in the order the work happened. Each entry says what was wrong, what changed, and why,
+so a decision can be revisited later without re-deriving the argument behind it.
+
+Later sections sometimes change what earlier ones decided. Each is dated; on any point, the latest
+section that mentions it is the current word.
 
 The specification itself is [`../spec.md`](../spec.md). The quality checklist it is measured
 against is [`requirements.md`](requirements.md).
@@ -208,7 +212,8 @@ request to receiving the whole reply.
 | Slowest | 8.22 |
 
 All twenty returned five questions. None came near the thirty-second hard stop (FR-038), so none is
-a defect under SC-001. SC-015 is now "at least 90% within 7.4 seconds", replacing the provisional ten.
+a defect under SC-001. SC-015 is now "at least 90% within 7.4 seconds", replacing the provisional ten. (Re-set to 8.2
+seconds at `high` effort in section 12.)
 
 What this measurement does and does not show:
 
@@ -377,7 +382,8 @@ Only two limits send that message: the server's 25-second wait for the model, an
 seemed. That request was not timed, so this is an inference, not a measurement.
 
 The maintainer chose to raise the limit rather than lower effort, in line with quality before speed.
-The model wait is now 55 seconds, the function's cap 60 and the browser's 60. FR-038, SC-001 and the
+The model wait is now 55 seconds, the function's cap 60 and the browser's 60. (The model wait
+became 60 as well in section 18.) FR-038, SC-001 and the
 constitution's performance constraint (now 1.3.0) say sixty. A new test checks that the model wait
 stays shorter than the function's cap, so the server can always send its own message first.
 
@@ -410,6 +416,22 @@ message first. It now stops at 60 as well. The user sees the same message either
 browser's timer starts first; the server just rarely logs its own timed-out line. A test now checks
 that all three limits are 60 seconds (research.md R5).
 
+## 19. Every planning document read against the build
+
+On 2026-10-22, during a clean-up of the repository, each document in this folder was read against
+the code as built. The same drift turned up in every one: later changes had updated the code and
+the specification but left other documents describing what they replaced.
+
+| Document | What was out of date |
+|---|---|
+| plan.md | Counted three frontend files, not five; named one tested browser module, not two; listed FR-011 as an automated check; left out the JSON-only rule, the overall time limit and the broken-character check |
+| research.md | Three platform questions still marked "Verify" weeks after they were settled; old time limits quoted without saying they were old |
+| data-model.md | Left out the JSON-only rule and the broken-character check on requests; called a timeout simply "failed"; skipped the reply's shape check |
+| spec.md | Status still "Draft"; FR-045 promised a rolling window where the platform counts in fixed ones; quality scores and the speed target presented as current although measured before later prompt changes |
+| tasks.md | Read as current where it is a record; one reference to a renamed section |
+| contracts/questions-api.md | The 400 and 504 cases and the logging guarantee behind the code |
+| quickstart.md | Grown into a builder's guide; cut to the checks a reader can run |
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The
@@ -417,7 +439,9 @@ specification went from 28 requirements to 60 in a day, edited in pieces, and ea
 some earlier sentence describing the behaviour it had replaced. The mechanical checks now run on
 every change — sequential numbering, every requirement mapped to exactly one row of the format
 table — catch structural drift, but they cannot catch a sentence that is merely out of date. That
-is what the read-throughs were for.
+is what the read-throughs were for. Section 19 shows the same pattern held through the build:
+nothing checks a document against the code automatically, so a read-through after each round of
+changes is the only defence, and it is cheaper done often than all at once.
 
 ---
 
