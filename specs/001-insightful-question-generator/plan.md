@@ -1,6 +1,6 @@
 # Implementation Plan: That's a Great Question — Insightful Question Generation
 
-**Feature directory**: `specs/001-insightful-question-generator` (committed to `main`; no feature branch) | **Date**: 2026-09-24 | **Spec**: [spec.md](spec.md)
+**Feature directory**: `specs/001-insightful-question-generator` (committed to `main`; no feature branch) | **Date**: 2026-09-24 | **Last updated**: 2026-10-22 | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `specs/001-insightful-question-generator/spec.md`
 
@@ -27,8 +27,9 @@ only: `pytest`. Nothing else; the HTTP handler uses the standard library.
 **Storage**: None on the server. The inquiry tree lives in browser memory for the session and is
 discarded on reload.
 
-**Testing**: `pytest` with a hand-written fake model client, never the live API. Browser tree logic:
-Node's built-in `node --test "tests/*.test.mjs"`, no packages (see Complexity Tracking).
+**Testing**: `pytest` with a hand-written fake model client, never the live API. Browser logic (the
+inquiry tree, and which part of a reply to show): Node's built-in `node --test "tests/*.test.mjs"`, no
+packages (see Complexity Tracking).
 
 **Target Platform**: Vercel — static files plus one Python serverless function
 
@@ -49,16 +50,17 @@ server-side record (FR-048); keyboard-operable and phone-sized (FR-043, FR-044)
 
 | Principle | Status | How the design meets it |
 |---|---|---|
-| I. Explainable code | ✅ Pass | No web framework — a standard-library handler. The model's reply is checked by one readable Python function rather than a schema library. Every value that shapes behaviour is a named, commented constant in one file. |
-| II. Tests cover decisions | ✅ Pass | Every Python function that transforms or decides has unit tests against a fake client, covering the failure cases the constitution names — including the mapping from outcome to HTTP status. Browser tree logic in `public/tree.mjs` is tested with `node --test`, as constitution 1.2.0 requires. |
+| I. Explainable code | ✅ Pass | No web framework — a standard-library handler. The model's reply is checked by one readable Python function rather than a schema library. Every value that shapes behaviour is a named, commented constant in `inquiry/config.py`; the page's two copies (the seed length and the time limit) are named and commented at the top of `public/app.js`. |
+| II. Tests cover decisions | ✅ Pass | Every Python function that transforms or decides has unit tests against a fake client, covering the failure cases the constitution names — including the mapping from outcome to HTTP status. The browser's logic in `public/tree.mjs` and `public/reply.mjs` is tested with `node --test`, as constitution 1.2.0 requires. |
 | III. Secrets | ✅ Pass | Key read from `QUESTION_APP_API_KEY` — its name a constant in `inquiry/config.py` — in server code only, and passed to the client explicitly along with a fixed `base_url`, so no other `ANTHROPIC_*` variable can supply a different key or redirect the call (research.md R11). `.gitignore` covering `.env*` and `.vercel/` is the first file committed, before any key exists. |
 | IV. Untrusted model output | ✅ Pass | Structured output, then validation in Python, before anything reaches the browser. The browser inserts text with `textContent`, never as markup. Every failure maps to a written message. |
-| V. Small and finished | ✅ Pass | One endpoint, one Python package, three frontend files, one runtime dependency. |
+| V. Small and finished | ✅ Pass | One endpoint, one Python package, five frontend files, one runtime dependency. |
 | Stack constraints | ✅ Pass | Python serverless on Vercel; plain HTML/CSS/JS, no framework, no build step; Claude API. |
 | No user content stored server-side | ✅ Pass | The application stores nothing. The platform's rate limiter keeps per-address request counts, which constitution 1.1.1 permits because they hold no content. |
-| JavaScript's role | ✅ Pass | Constitution 1.2.0 lets JavaScript keep the session's inquiry tree in a separate module, unit-tested, provided it makes no judgment about question content. `public/tree.mjs` is that module. |
+| JavaScript's role | ✅ Pass | Constitution 1.2.0 lets JavaScript keep the session's inquiry tree in a separate module, unit-tested, provided it makes no judgment about question content. `public/tree.mjs` is that module; `public/reply.mjs`, also tested, only picks which part of a reply to show. |
 
-**Gate result**: passes.
+**Gate result**: passes. Re-checked on 2026-10-22 against constitution 1.3.0, which raised the time
+limit to 60 seconds: still passes.
 
 ## Project Structure
 
@@ -71,13 +73,13 @@ specs/001-insightful-question-generator/
 ├── research.md          # decisions and rejected alternatives
 ├── data-model.md        # entities, fields, validation, state transitions
 ├── quickstart.md        # checking it works: the test commands and twelve checks by hand
-├── review-set.md        # T049: every review-set seed and its questions at medium and high, for human scoring
+├── review-set.md        # T049: ten seeds' questions at medium and high effort, scored blind by hand
 ├── contracts/
 │   └── questions-api.md # the one HTTP endpoint
 ├── checklists/
 │   ├── requirements.md
 │   └── reviews.md
-└── tasks.md             # created by /speckit-tasks, not by this command
+└── tasks.md             # the numbered build steps
 ```
 
 ### Source code (repository root)
@@ -91,9 +93,9 @@ inquiry/                    # every judgment the app makes
 ├── config.py               # named, commented constants: limits, counts, model, effort, timeout, key variable, API address
 ├── lines_of_inquiry.py     # the written list of angles a question may take, each commented
 ├── prompts.py              # builds the model prompt from a seed and its ancestor chain
-├── request_checks.py       # validates what the browser sent (FR-002, FR-003, chain lengths)
-├── response_checks.py      # validates what the model returned (FR-004 to FR-011)
-├── generate.py             # builds the model client; one call to the model; maps every outcome to a result
+├── request_checks.py       # validates what the browser sent: sent as JSON, seed and chain rules (FR-002, FR-003, FR-064)
+├── response_checks.py      # validates what the model returned (FR-004 to FR-010, FR-033)
+├── generate.py             # builds the model client; one call to the model, with one overall time limit; maps every outcome to a result
 ├── http_response.py        # turns a result into a status code and JSON body; the only place outcomes become HTTP
 └── messages.py             # every plain-language message a user can see, in one place
 
@@ -118,8 +120,8 @@ tests/
 requirements.txt            # anthropic
 requirements-dev.txt        # pytest
 pytest.ini                  # lets tests import inquiry/ and api/ from the repository root
-vercel.json                 # function duration; no rewrites needed
-.gitignore                  # first commit: .env*, .vercel/, __pycache__/
+vercel.json                 # the function's 60-second limit
+.gitignore                  # keeps .env, .vercel/ and caches out; the first file committed
 .env.example                # the variable name (QUESTION_APP_API_KEY) only, never a value
 ```
 
@@ -133,7 +135,7 @@ folder is untouched; `public/` starts from it.
 
 | Departure | Why it is needed | Simpler alternative rejected because |
 |---|---|---|
-| A second test runner (`node --test`) | The browser tree functions decide things — whether to regenerate, how much a confirmation will discard — and Principle II requires every decision to be tested. `node --test` is built into Node and adds no packages. | Leaving it untested breaks Principle II. Testing it only by hand through the quickstart is the fallback if the maintainer would rather not install Node; that is the maintainer's call. |
+| A second test runner (`node --test`) | The browser tree functions decide things — whether to regenerate, how much a confirmation will discard — and Principle II requires every decision to be tested. `node --test` is built into Node and adds no packages. | Leaving it untested breaks Principle II. Testing it only by hand was the fallback if Node could not be installed; it was installed, so the fallback was not needed. |
 | A platform-level rate limit | FR-045 needs a per-visitor count, and a stateless function cannot keep one. | A database counter breaks the constitution as written; an in-memory counter resets on every cold start and would claim protection it does not give. See research.md R7. |
 
 ## Findings raised during planning
