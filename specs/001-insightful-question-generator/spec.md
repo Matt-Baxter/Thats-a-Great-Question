@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-21
 
-**Last Updated**: 2026-10-16
+**Last Updated**: 2026-10-22
 
 **Status**: Draft
 
@@ -19,7 +19,7 @@ this table is the same mapping gathered in one place, down to the individual req
 |---|---|
 | **Objective** — the failure mode, not the feature description | The **Objective** section at the top, stated as the failure it exists to prevent rather than a description of the product, with who suffers that failure and who the product is explicitly not for. |
 | **Behavior** — observable outcomes only, no tech details | User Stories 1–4, and the requirement groups labelled *Behavior*: accepting a seed (FR-001–FR-003), generating questions (FR-004, FR-006–FR-010, FR-012, FR-061, FR-062, FR-063), expanding (FR-013, FR-014, FR-016), staying oriented (FR-017–FR-020), moving between lines of inquiry (FR-021–FR-025), asking again (FR-026, FR-027, FR-029, FR-030), loading and failure messages (FR-035–FR-037), the wait-and-retry message (FR-046), the declined-request message (FR-052), the busy indication (FR-055), and cancelling (FR-058, FR-059). |
-| **Constraints** — non-negotiables regardless of implementation | The requirement groups labelled *Constraints*, plus Assumptions and Out of Scope: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs or blanks, and resolves within sixty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and that ordinary use never reaches (FR-045, FR-047, FR-060); no user or model text recorded or sent elsewhere (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056). |
+| **Constraints** — non-negotiables regardless of implementation | The requirement groups labelled *Constraints*, plus Assumptions and Out of Scope: wrong-shape responses are never repaired (FR-005); no leading or rhetorical questions (FR-011); no depth limit (FR-015); confirmation before destroying work (FR-028, FR-057); never answers or comments (FR-031, FR-032); generated content is untrusted (FR-033, FR-034); never crashes, hangs or blanks, and resolves within sixty seconds (FR-038, FR-039); nothing stored beyond the browser session (FR-040–FR-042); keyboard and phone access (FR-043, FR-044); a per-visitor request limit that never costs a user their work and that ordinary use never reaches (FR-045, FR-047, FR-060); no user or model text recorded or sent elsewhere (FR-048–FR-050); a refusal is not an error and its text is never shown (FR-051, FR-053); one request at a time, never misattributed (FR-054, FR-056); requests accepted only as JSON (FR-064). |
 | **Verification** — testable criteria, not subjective ones | The Acceptance Scenarios under each user story, written as Given / When / Then; the Edge Cases, which are the boundary conditions; and Success Criteria SC-001 through SC-020. SC-009, SC-010, SC-011 and SC-020 are assessed by human review and are labelled as such rather than presented as automated tests. |
 
 ## Objective
@@ -135,6 +135,7 @@ The user reads a set of questions and finds them unconvincing — or simply want
 - **Duplicate questions**: Two returned questions are identical once normalised. The response is rejected rather than displayed with a redundant question in it (FR-007). Two questions that pursue the same underlying goal in *different* wording are not mechanically detectable; that is handled when questions are selected (FR-008) and judged by human review (SC-010), not by rejecting the response.
 - **Clicking while busy**: The user opens a second question while the first is still loading. The second request is ignored rather than queued or raced, and the display makes clear the app is already working. The user is not stuck: they may cancel the request in flight and then make the request they wanted.
 - **Generation declines**: The model returns a refusal instead of questions. The user sees a distinct message saying no questions could be generated for that seed and that rephrasing may help — not a technical error, and not the refusal text itself. The inquiry already on screen is untouched.
+- **Request from another website**: A page elsewhere tries to make its visitors' browsers send requests to the app, running up model charges. Only requests sent as JSON are accepted (FR-064), and for those the browser must ask the app's permission first, which the app refuses.
 - **Request limit reached**: A visitor exceeds the per-visitor request limit. They see a plain-language message asking them to wait and try again, and the inquiry already on screen is untouched.
 - **Slow response**: Generation does not complete promptly. The request resolves to either questions or a message within sixty seconds, never hanging indefinitely.
 - **Deep chain**: The user expands many levels. No limit is imposed, and the display continues to function.
@@ -276,6 +277,10 @@ related ones.
 **Seeds that ask for questions** — *Behavior*
 
 - **FR-063**: System MUST, when a seed asks for questions of a particular kind — the most important, most insightful or most pressing questions about something, or the best questions to ask in some situation — return the questions that best fit that request, rather than questions about the request or questions asking the user for details they left out. Supplying the questions a seed asks for is not answering it (FR-031). Whether the questions fit the request is judged by human review, as for FR-062. *Added 2026-10-16, after "What are the most important questions to ask in 2026?" returned questions about the request, such as "Important to whom?", instead of the questions it asked for.*
+
+**Requests from other websites** — *Constraints*
+
+- **FR-064**: System MUST refuse any request not sent as JSON (declared as `application/json`), answering it as an unreadable request. A page on another website can make its visitors' browsers send plain-text requests to any address without asking first, and each would cost a model call; for JSON, the browser must first ask the app's permission, which the app refuses. *Added 2026-10-22, after an AI-assisted review (ChatGPT) found that another website could trigger paid requests through its visitors.*
 
 ### Key Entities
 

@@ -10,7 +10,7 @@ import json
 import pytest
 
 from inquiry import config, messages
-from inquiry.request_checks import check_request, read_body
+from inquiry.request_checks import check_post, check_request, read_body
 
 
 def body_for(payload):
@@ -130,6 +130,31 @@ def test_read_body_with_no_declared_length_reads_nothing():
 def test_read_body_refuses_a_length_that_is_not_a_whole_number(declared):
     # Reading -1 would wait for the connection to close; "abc" would crash int().
     assert read_body(declared, io.BytesIO(b"body")) is None
+
+
+def test_a_number_too_long_for_python_to_convert_is_rejected_as_invalid_input():
+    # Found by the AI-assisted review (checklists/reviews.md, section 17): this raised an
+    # error, which reached the user as "could not be generated" instead of a 400.
+    body = b'{"seed": "Cats", "ancestors": [], "extra": ' + b"1" * 5000 + b"}"
+    assert check_request(body) == {"outcome": "invalid_input", "message": messages.INVALID_REQUEST}
+
+
+def test_read_body_refuses_a_declared_length_thousands_of_digits_long():
+    # The same review: converting it would raise an error instead of refusing it.
+    assert read_body("1" * 5000, io.BytesIO(b"")) is None
+
+
+@pytest.mark.parametrize("content_type", ["application/json", "application/json; charset=utf-8", "Application/JSON"])
+def test_a_request_declared_as_json_goes_on_to_the_body_checks(content_type):
+    result = check_post(content_type, body_for({"seed": "Cats", "ancestors": []}))
+    assert result["outcome"] == "checked"
+
+
+@pytest.mark.parametrize("content_type", [None, "text/plain", "application/x-www-form-urlencoded", "multipart/form-data", "application/jsonx"])
+def test_a_request_not_declared_as_json_is_refused_even_with_a_valid_body(content_type):
+    # FR-064: another website can make a visitor's browser send these without asking first.
+    result = check_post(content_type, body_for({"seed": "Cats", "ancestors": []}))
+    assert result == {"outcome": "invalid_input", "message": messages.INVALID_REQUEST}
 
 
 def test_read_body_refuses_a_length_over_the_cap_without_reading():

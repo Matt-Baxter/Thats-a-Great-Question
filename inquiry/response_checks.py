@@ -15,6 +15,7 @@ The name is logged to help diagnose failures; it never contains any question tex
 import unicodedata
 
 from inquiry import config
+from inquiry.request_checks import is_sendable_text
 
 # The characters a question may end with: the ordinary question mark, the full-width one
 # used in Chinese and Japanese, and the Arabic one. English is the target language, but
@@ -63,6 +64,13 @@ def check_reply(reply, opened_text):
     # Check 5: none is a restatement of what the questions are about (FR-009).
     if normalise(opened_text) in normalised_questions:
         return failed("restates")
+
+    # Check 6: each can be sent back when the user opens it. A broken character, such as
+    # half of a two-part character, would display but be refused by the request check, so
+    # the question could never be opened (FR-013, FR-033).
+    for question in questions:
+        if not is_sendable_text(question):
+            return failed("unsendable")
 
     return {"passed": True, "questions": questions}
 

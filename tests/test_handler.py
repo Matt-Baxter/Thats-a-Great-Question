@@ -44,10 +44,10 @@ def server_url(monkeypatch):
 DIRECT_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
-def send(url, method, body=None):
+def send(url, method, body=None, content_type="application/json"):
     """Send a request and return the status code and the decoded JSON body, if any."""
     request = urllib.request.Request(url, data=body, method=method)
-    request.add_header("Content-Type", "application/json")
+    request.add_header("Content-Type", content_type)
     try:
         with DIRECT_OPENER.open(request) as response:
             status, raw = response.status, response.read()
@@ -66,6 +66,15 @@ def test_an_empty_seed_gets_400_with_the_empty_seed_message(server_url):
 
 def test_a_body_that_is_not_json_gets_400(server_url):
     status, payload = send(server_url, "POST", b"not json")
+    assert status == 400
+    assert payload == {"status": "invalid_input", "message": messages.INVALID_REQUEST}
+
+
+def test_a_valid_body_sent_as_plain_text_gets_400_and_never_reaches_the_model(server_url):
+    # FR-064: the kind of request another website can make a visitor's browser send. With
+    # no key configured, reaching the model would give 502, so 400 shows it stopped first.
+    body = json.dumps({"seed": "Why do cities grow?", "ancestors": []}).encode("utf-8")
+    status, payload = send(server_url, "POST", body, content_type="text/plain")
     assert status == 400
     assert payload == {"status": "invalid_input", "message": messages.INVALID_REQUEST}
 
@@ -99,7 +108,7 @@ def send_with_content_length(url, declared_length, body):
     return status, json.loads(raw)
 
 
-@pytest.mark.parametrize("declared_length", ["abc", "-1"])
+@pytest.mark.parametrize("declared_length", ["abc", "-1", "1" * 5000], ids=["letters", "negative", "5000-digits"])
 def test_a_content_length_that_is_not_a_whole_number_gets_400_not_a_hang(server_url, declared_length):
     body = json.dumps({"seed": "Why?", "ancestors": []}).encode("utf-8")
     status, payload = send_with_content_length(server_url, declared_length, body)
@@ -109,10 +118,10 @@ def test_a_content_length_that_is_not_a_whole_number_gets_400_not_a_hang(server_
 
 def test_an_unexpected_error_still_gets_this_apps_json(server_url, monkeypatch):
     # FR-039: nothing the handler calls can make it crash without a reply.
-    def explode(body):
+    def explode(content_type, body):
         raise RuntimeError("something nobody planned for")
 
-    monkeypatch.setattr(api.questions, "check_request", explode)
+    monkeypatch.setattr(api.questions, "check_post", explode)
     body = json.dumps({"seed": "Why?", "ancestors": []}).encode("utf-8")
     status, payload = send(server_url, "POST", body)
     assert status == 502

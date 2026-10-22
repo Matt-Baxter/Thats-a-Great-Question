@@ -4,8 +4,9 @@ The browser is not trusted: anyone can send anything to the server. So every rul
 checked here, even the ones the page also shows, and a request that breaks one is
 answered with a plain-language message instead of reaching the model (FR-002, FR-003).
 
-read_body reads the body only if its declared length is sensible. check_request then
-returns one of two shapes:
+read_body reads the body only if its declared length is sensible. check_post then checks
+that the request was sent as JSON (FR-064) and, through check_request, everything in its
+body, returning one of two shapes:
     {"outcome": "checked", "request": {"seed": ..., "ancestors": [...]}}
     {"outcome": "invalid_input", "message": ...}
 """
@@ -26,10 +27,35 @@ def read_body(content_length, stream):
     # isdigit alone would accept characters like "²", which int() cannot read.
     if not (content_length.isascii() and content_length.isdigit()):
         return None
+    # A number with more digits than the cap is bigger than the cap. Refusing it before
+    # converting also avoids Python's own limit on converting very long numbers, which
+    # would raise an error instead.
+    if len(content_length) > len(str(config.MAX_REQUEST_BYTES)):
+        return None
     length = int(content_length)
     if length > config.MAX_REQUEST_BYTES:
         return None
     return stream.read(length)
+
+
+def check_post(content_type, body):
+    """Check a whole request: that it was sent as JSON, then everything in its body."""
+    if not is_json_content_type(content_type):
+        return invalid(messages.INVALID_REQUEST)
+    return check_request(body)
+
+
+def is_json_content_type(content_type):
+    """True if the request declares itself as JSON, as the page always does (FR-064).
+
+    A page on another website can make a visitor's browser send plain text here without
+    asking first, but for JSON the browser must ask permission, which this app refuses.
+    Anything after a semicolon, such as "; charset=utf-8", is ignored.
+    """
+    if content_type is None:
+        return False
+    media_type = content_type.split(";")[0].strip().lower()
+    return media_type == "application/json"
 
 
 def check_request(body):
@@ -90,8 +116,10 @@ def parse_json_object(body):
     """Decode a body as a UTF-8 JSON object, returning None if it is not one."""
     try:
         payload = json.loads(body.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError):
-        # RecursionError: JSON nested thousands of levels deep, such as a body of "[[[[...".
+    except (ValueError, RecursionError):
+        # ValueError covers bytes that are not UTF-8, text that is not JSON, and a number
+        # too long for Python to convert (over 4,300 digits). RecursionError covers JSON
+        # nested thousands of levels deep, such as a body of "[[[[...".
         return None
     if not isinstance(payload, dict):
         return None

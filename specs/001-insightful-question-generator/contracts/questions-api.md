@@ -7,7 +7,10 @@ for any question being opened, and for any regeneration.
 
 ### Request
 
-`Content-Type: application/json`
+`Content-Type: application/json` — required. A request declared as anything else, such as
+`text/plain`, gets **400** with the unreadable-request message (FR-064). Requiring JSON means a
+page on another website cannot make a visitor's browser send a request without first asking
+permission, and the app refuses that check (`OPTIONS` gets 405).
 
 ```json
 {

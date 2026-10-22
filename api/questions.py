@@ -17,7 +17,7 @@ from http.server import BaseHTTPRequestHandler
 
 from inquiry.generate import build_client, generate_questions
 from inquiry.http_response import to_http_response, unexpected_error_response
-from inquiry.request_checks import check_request, read_body
+from inquiry.request_checks import check_post, read_body
 
 # Show the app's own outcome lines (see inquiry/generate.py) and only warnings from
 # anything else. The SDK and its HTTP library are set to warnings by name, because
@@ -44,7 +44,7 @@ class handler(BaseHTTPRequestHandler):
     def answer(self):
         """Read and check the request, ask the model if it passed, and return the status code and body."""
         body = read_body(self.headers.get("Content-Length"), self.rfile)
-        result = check_request(body)
+        result = check_post(self.headers.get("Content-Type"), body)
         if result["outcome"] == "checked":
             client = build_client(os.environ)
             result = generate_questions(client, result["request"])

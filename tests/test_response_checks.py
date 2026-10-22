@@ -36,6 +36,17 @@ def test_surrounding_whitespace_is_trimmed_from_returned_questions():
     assert result["questions"][0] == "What is assumed?"
 
 
+# --- Check 6: each question can be sent back when it is opened ------------------------
+
+
+def test_a_question_holding_half_of_a_two_part_character_is_rejected():
+    # FR-013, FR-033. Found by the AI-assisted review (checklists/reviews.md, section 17):
+    # the question would display, but the request check would refuse it when opened.
+    broken = "What does \ud800 mean?"
+    result = check_reply(reply([broken, GOOD[1], GOOD[2]], [0, 1, 2]), SEED)
+    assert result == {"passed": False, "failed_check": "unsendable"}
+
+
 # --- Shape: the reply is the object the prompt asked for ----------------------------
 
 

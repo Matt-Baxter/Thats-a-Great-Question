@@ -10,6 +10,7 @@ change a reply another test relies on. No mocking library is used (research.md R
 """
 
 import json
+import time
 
 import anthropic
 import httpx2
@@ -70,9 +71,20 @@ class FakeMessages:
     def create(self, **kwargs):
         self.calls.append(kwargs)
         next_reply = self.queued.pop(0)
+        if isinstance(next_reply, Delayed):
+            time.sleep(next_reply.seconds)
+            next_reply = next_reply.reply
         if isinstance(next_reply, Exception):
             raise next_reply
         return next_reply
+
+
+class Delayed:
+    """A queued reply or exception that arrives only after `seconds`, for testing the deadline."""
+
+    def __init__(self, seconds, reply):
+        self.seconds = seconds
+        self.reply = reply
 
 
 class FakeBeta:

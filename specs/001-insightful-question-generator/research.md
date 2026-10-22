@@ -115,6 +115,14 @@ is believed to be within the Hobby plan's limit, but that could not be checked f
 session; if the deploy rejects `vercel.json`, the plan allows less, and all three limits must come
 down to fit (see Verify below).
 
+**One overall deadline** (2026-10-22): the SDK applies its timeout to each network step separately
+— connecting, sending, and each piece of the reply — so a slow connection or a reply arriving in
+pieces could add up to more than 55 seconds and run into the platform's cut-off. An AI-assisted
+review (ChatGPT) found this, and it was reproduced locally: with a 0.5-second timeout, a reply sent
+in small pieces still succeeded after 1.5 seconds. The model call now runs in a separate thread that
+the request stops waiting for at 55 seconds in total, however the time was spent. The SDK keeps the
+same timeout as a backstop that ends the abandoned call.
+
 **Rationale**: the SDK retries timeouts as well as errors, so with retries on, total time can reach
 the timeout multiplied by the number of attempts — which would break FR-038. With retries off, the
 worst case is one attempt plus overhead, and a user who hits a failure can simply ask again.
@@ -150,6 +158,14 @@ hundred levels. Recorded as a finding in [plan.md](plan.md).
 **Rationale**: a stateless function cannot count anything across requests, so the count has to live
 somewhere else. The platform edge is the only place that keeps no user content and needs no code
 here. The spend limit covers what an address-based rule cannot — many addresses at once.
+
+**Requests from other websites** (2026-10-22): a page on another site can make its visitors'
+browsers send requests here, each costing a model call, without the visitors knowing. Browsers
+send plain-text requests across sites without asking, so the server now refuses anything not
+declared as JSON (FR-064); for JSON, the browser asks permission first and the server refuses.
+Found by an AI-assisted review (ChatGPT). Checking the request's origin as well was considered and
+left out: the allowed list would have to track every address the app is served from, and the JSON
+rule already stops browsers.
 
 **Alternatives considered**:
 - *A counter in a hosted key-value store.* Works precisely, but breaks the constitution as written,

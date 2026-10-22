@@ -5,6 +5,7 @@ Every test uses the fake client in tests/fakes.py. None calls the live model.
 
 import json
 import logging
+import time
 from pathlib import Path
 
 import anthropic
@@ -178,6 +179,24 @@ def test_a_timeout_gives_timed_out():
     client = fakes.FakeClient(fakes.timeout_error())
     result = generate_questions(client, REQUEST)
     assert result == {"outcome": "timed_out", "message": messages.TIMED_OUT}
+
+
+def test_a_call_that_runs_past_the_overall_deadline_gives_timed_out(monkeypatch):
+    # FR-038, research.md R5: the SDK's own timeout covers each network step, not the
+    # whole call, so the deadline is enforced here. Found by the AI-assisted review.
+    monkeypatch.setattr(config, "API_TIMEOUT_SECONDS", 0.1)
+    client = fakes.FakeClient(fakes.Delayed(1.0, fakes.valid_reply()))
+    started = time.perf_counter()
+    result = generate_questions(client, REQUEST)
+    assert result == {"outcome": "timed_out", "message": messages.TIMED_OUT}
+    assert time.perf_counter() - started < 0.9
+
+
+def test_a_call_that_finishes_inside_the_deadline_returns_its_questions(monkeypatch):
+    monkeypatch.setattr(config, "API_TIMEOUT_SECONDS", 5)
+    client = fakes.FakeClient(fakes.Delayed(0.1, fakes.valid_reply()))
+    result = generate_questions(client, REQUEST)
+    assert result["outcome"] == "ok"
 
 
 def test_an_unreachable_model_gives_failed():

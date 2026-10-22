@@ -17,6 +17,7 @@ request. It never logs the seed, any question, the model's text, or the key (FR-
 FR-049; constitution Principle III).
 """
 
+import concurrent.futures
 import json
 import logging
 
@@ -73,7 +74,10 @@ def generate_questions(client, request):
 
     # The timeout error is a kind of connection error in the SDK, so it must be caught first.
     try:
-        response = call_model(client, request)
+        response = call_model_within_deadline(client, request)
+    except concurrent.futures.TimeoutError:
+        log_outcome("timed_out", "deadline", depth)
+        return {"outcome": "timed_out", "message": messages.TIMED_OUT}
     except anthropic.APITimeoutError:
         log_outcome("timed_out", "timeout", depth)
         return {"outcome": "timed_out", "message": messages.TIMED_OUT}
@@ -85,6 +89,25 @@ def generate_questions(client, request):
         return {"outcome": "failed", "message": messages.GENERATION_FAILED}
 
     return result_from_response(response, request, depth)
+
+
+def call_model_within_deadline(client, request):
+    """Make the model call, but stop waiting once API_TIMEOUT_SECONDS have passed in total.
+
+    Raises concurrent.futures.TimeoutError at the deadline; any error from the call itself
+    is raised just as if the call had been made directly.
+    """
+    # The SDK's own timeout applies to each network step separately (connecting, sending,
+    # each piece of the reply), so those steps could add up to more than the limit and run
+    # into the platform's cut-off (research.md R5). Waiting on the call from here, in a
+    # separate thread, gives one deadline however the time is spent.
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    try:
+        future = executor.submit(call_model, client, request)
+        return future.result(timeout=config.API_TIMEOUT_SECONDS)
+    finally:
+        # Do not wait for an abandoned call to finish; the SDK's own timeout ends it.
+        executor.shutdown(wait=False)
 
 
 def call_model(client, request):

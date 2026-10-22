@@ -113,6 +113,7 @@ repaired one (FR-005):
 3. Each is at most 300 characters (FR-010).
 4. No two are the same once normalised — lower-cased, punctuation removed, whitespace collapsed (FR-007).
 5. None normalises to the same text as the seed or question being opened (FR-009).
+6. Each can be sent back to the server when it is opened: it holds no broken character, such as half of a two-part character, that the request check would refuse (FR-013, FR-033). *Added 2026-10-22, after an AI-assisted review found such a question would display but could not be opened.*
 
 Checks for two questions asking the same thing in different words (FR-008) and for leading or rhetorical questions (FR-011) are
 judgements, handled by the model's selection criteria and verified by human review (SC-010, SC-011).

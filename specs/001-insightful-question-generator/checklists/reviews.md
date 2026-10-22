@@ -383,6 +383,24 @@ stays shorter than the function's cap, so the server can always send its own mes
 
 The cost: a request that would have failed at 25 seconds now leaves the user waiting up to a minute.
 
+## 17. AI-assisted review (ChatGPT)
+
+The course asks for a code review by a different AI tool from the one used to build the app. The
+maintainer gave the repository at commit `9c4c2b9` to ChatGPT, acting as a security and QA tester.
+It reported five findings; each was checked against the code, and the four about code were
+reproduced locally without any paid model calls.
+
+| # | Finding | Verdict | What was done |
+|---|---|---|---|
+| A1 | The documented limit of 60 requests per 10 minutes did not trigger | Partly rejected: the maintainer had raised the limit to 200 for the class presentation | Limit set back to 60 by the maintainer. The server also answers at `/api/questions.py`; whether the firewall rule covers that address depends on how the rule matches the path |
+| A2 | Another website could trigger paid requests through its visitors' browsers | Verified | Fixed: requests not sent as JSON are refused (FR-064) |
+| A3 | The 55-second timeout applies to each network step, not the whole call | Verified (0.5 s timeout, reply trickled in, succeeded after 1.5 s) | Fixed: the call now has one overall deadline |
+| A4 | A 5,000-digit number in the body or the declared length gave a 502 instead of a 400 | Verified | Fixed: treated as an unreadable request |
+| A5 | A model question with a broken character would display but could not be opened | Verified with a simulated reply | Fixed: such a reply is rejected before display |
+
+ChatGPT also ran the test suite (all passing) and found no way for returned text to run as code in
+the page and no exposed key.
+
 ## What these passes have in common
 
 Almost every defect was introduced by a later addition rather than present from the start. The
