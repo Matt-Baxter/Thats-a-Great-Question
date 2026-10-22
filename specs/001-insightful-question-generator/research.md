@@ -1,8 +1,9 @@
 # Research: That's a Great Question
 
 Phase 0 of the plan. Each entry records what was decided, why, and what was considered and
-rejected. Entries marked **Verify** depend on facts about the hosting platform that could not be
-checked while planning; each names what to confirm and what changes if it turns out otherwise.
+rejected. Some decisions depended on facts about the hosting platform that could not be checked
+while planning; each is marked **Verified** with what was found, and the list at the end shows
+when each was settled. Entries have been added to as the build went on, each dated.
 
 ## R1. Which model, and how hard it thinks
 
@@ -20,7 +21,7 @@ Opus model at a lower price than Opus 5 ($4 / $20 per million input / output tok
 $25). Three things about it shape the code:
 
 - **Thinking is always on and cannot be switched off**; effort is the only control, and so the
-  first lever against the ten-second target.
+  first lever on speed.
 - **Its default effort is `medium`**, not `high` as on Opus 5, so effort must be set explicitly
   rather than relied on.
 - **Thinking counts toward the output-token limit** even though its text is not returned, so the
@@ -35,10 +36,11 @@ plan's.
 first. `medium` over `high` as the starting point for two reasons. It is Opus 5.5's own default,
 the level it is tuned around. And extra effort pays off most on long, many-step work; whether it
 improves a five-question list is an open question the review set can answer, whereas its cost —
-longer waits, closer to the thirty-second hard stop — is certain.
+longer waits, closer to the hard stop (thirty seconds at the time) — is certain.
 
 **Review set, 2026-09-29**: 25 seeds run at `medium` and at `high`; all 50 responses returned
-questions and none took more than 13.8 seconds, so both levels meet the thirty-second condition.
+questions and none took more than 13.8 seconds, so both levels met the time limit (then thirty
+seconds).
 `high` was slower on factual and adversarial seeds (10–14 seconds) and about the same elsewhere.
 The maintainer scored ten of the 25 seeds blind in [review-set.md](review-set.md) (SC-009 was cut
 to ten on 2026-09-30). Both levels scored 10/10 on SC-009, SC-010 and SC-011. On SC-020 — short,
@@ -54,9 +56,9 @@ SC-015 was measured again at `high`.
 model's selection of the strongest 3–5, given as positions in the candidate list.
 
 **Rationale**: two sequential calls roughly double the waiting, and even with speed second to
-quality, every request must end within sixty seconds (FR-038). One call still separates generating from choosing — the response shows both, so tests
-can check that the selection really came from the candidates, and a reviewer running the app
-locally can see what was passed over. The model does the choosing against the written criteria;
+quality, every request must end within sixty seconds (FR-038). One call still separates generating
+from choosing — the response shows both, so tests can check that the selection really came from the
+candidates, and a reviewer running the app locally can see what was passed over. The model does the choosing against the written criteria;
 Python then checks the choice against the specification's hard rules.
 
 **Alternatives considered**: two calls — generate, then select in a fresh context. The choosing
@@ -72,7 +74,8 @@ FR-048 forbids recording question text server-side. Explanation happens in tests
 **Decision**: request a JSON reply through the API's structured-output setting (`output_config.format`
 with a JSON schema), parse it, then run it through one Python function that checks every rule the
 specification sets: count 3–5, non-empty, ends with a question mark, no normalised duplicates, not
-a restatement of the seed or parent, within 300 characters, selection positions valid and distinct.
+a restatement of the seed or parent, within 300 characters, selection positions valid and distinct,
+and (added 2026-10-22) no broken character that would stop a question being opened.
 
 **Rationale**: the schema guarantees the reply's *shape*; it cannot express most of the
 specification's rules, so those have to be written out anyway. Keeping every rule in one readable
@@ -122,8 +125,7 @@ accepted the 60-second duration, and a live request has since run past 30 second
 
 **One overall deadline** (2026-10-22): the SDK applies its timeout to each network step separately
 — connecting, sending, and each piece of the reply — so a slow connection or a reply arriving in
-pieces could add up to more than the limit. An AI-assisted
-review (ChatGPT) found this, and it was reproduced locally: with a 0.5-second timeout, a reply sent
+pieces could add up to more than the limit. An AI-assisted review (ChatGPT) found this, and it was reproduced locally: with a 0.5-second timeout, a reply sent
 in small pieces still succeeded after 1.5 seconds. The model call now runs in a separate thread that
 the request stops waiting for at the limit in total, however the time was spent. The SDK keeps the
 same timeout as a backstop that ends the abandoned call.
@@ -183,9 +185,13 @@ rule already stops browsers.
   high enough that ordinary use never reaches it, and allows cancelled requests to count.
 - The platform keeps per-address counts. Constitution 1.1.1 permits them, since they hold no content.
 
-**Verify**: that Vercel's firewall rate limiting is available on the Hobby plan, and how it is
-configured. If it is not available, the spend limit alone bounds cost, and FR-045 is not met until
-the maintainer chooses between the key-value store (with a constitution amendment) or a paid plan.
+**Verified** (2026-09-30): firewall rate limiting is available on the Hobby plan. The rule covers
+requests to `/api/questions`, 60 per IP address per 10 minutes, answered with 429. It was raised to
+200 for the class presentation and set back to 60 on 2026-10-22.
+
+**Still to check**: the server also answers at `/api/questions.py` (found by the AI-assisted review,
+2026-10-22). Whether the rule covers that address depends on how its path condition is written; a
+condition such as "path starts with `/api/`" covers both.
 
 ## R8. The HTTP handler
 
@@ -195,10 +201,8 @@ the `inquiry` package from the repository root. No web framework.
 **Rationale**: one endpoint does not need a framework, and the standard library needs no
 justification under Principle V.
 
-**Verify**: that Vercel's current Python runtime accepts this handler shape, and that it bundles a
-package from the repository root with the function. If it does not, `inquiry/` moves under `api/`
-into a folder whose name starts with an underscore, which keeps Vercel from treating it as a
-separate endpoint.
+**Verified** (2026-09-26): Vercel's Python runtime accepts this handler shape and bundles the
+root-level `inquiry/` package with the function, so `inquiry/` stays where it is.
 
 ## R9. What a user types becomes part of a prompt
 
@@ -223,8 +227,8 @@ A settled fact named in passing inside a question is accepted (spec.md, Assumpti
 
 **Decision**: `generate.py` receives the model client as a parameter. Tests pass a small hand-written
 fake that returns canned replies: a good set, too few, too many, duplicates, a non-question, an
-over-length question, a refusal, a cut-off (`max_tokens`) reply, unparseable text, and a timeout.
-No mocking library.
+over-length question, a refusal, a cut-off (`max_tokens`) reply, unparseable text, a timeout, and
+(added 2026-10-22) a reply that arrives late, for the overall time limit. No mocking library.
 
 **Rationale**: Principle II forbids tests that call the live API, and requires the failure cases.
 A fake written in plain Python is easier to read than a mocking library's patching.
@@ -264,12 +268,12 @@ app's key and remove `Authorization`; headers given this way win. A test capture
 real SDK builds, with that variable set, and checks its headers. Other custom headers still pass
 through; none of them can authenticate a call.
 
-**Also verify**: where the monthly spend limit (R7) is set in the Anthropic Console, and set it
-before the site is public.
+**Verified** (2026-09-26): the monthly spend limit (R7) is set in the Anthropic Console, and was set
+before the site went public.
 
-## Must verify before implementation
+## Checked after planning
 
-Collected from the entries above. Each was unreachable while planning.
+Collected from the entries above. Each was unreachable while planning; all four are now settled.
 
 **Status, 2026-09-26**: three of the four are settled by the first deploy. The project deployed
 to Vercel Hobby with the "Other" preset, `vercel.json`'s 30-second duration was accepted, and a live
@@ -280,7 +284,7 @@ enough to test it. Firewall rate limiting on Hobby is still unverified and is ch
 
 | Item | Entry | Default assumed for now | If it turns out otherwise |
 |---|---|---|---|
-| Maximum function duration on Vercel Hobby | R5 | At least 30 seconds; `vercel.json` sets 30 | **Settled 2026-09-26:** the deploy accepted 30 |
-| Firewall rate limiting on Vercel Hobby, and its configuration | R7 | Available (needed only at deploy, T047) | **Settled 2026-09-30:** available on Hobby. Rule added: requests to `/api/questions`, fixed window of 600 seconds, 60 requests per IP address, answered with 429 |
+| Maximum function duration on Vercel Hobby | R5 | At least 30 seconds; `vercel.json` sets 30 | **Settled 2026-09-26:** the deploy accepted 30. Raised to 60 on 2026-10-16, also accepted |
+| Firewall rate limiting on Vercel Hobby, and its configuration | R7 | Available (needed only at deploy, T047) | **Settled 2026-09-30:** available on Hobby. Rule added: requests to `/api/questions`, fixed window of 600 seconds, 60 requests per IP address, answered with 429. Whether it also covers `/api/questions.py` is still to check (R7) |
 | Python handler shape and bundling of a root-level package | R8 | Both work; the package stays at `inquiry/` | **Settled 2026-09-26:** both work on the live deploy |
 | Where the Anthropic spend limit is set | R11 | — (needed only before going public, T046) | **Settled 2026-09-26:** a monthly spend limit, set in the Anthropic Console |
